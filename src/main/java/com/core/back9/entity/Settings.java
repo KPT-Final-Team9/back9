@@ -17,15 +17,15 @@ public class Settings extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "Score_toggle")
-    private boolean ScoreToggle;
+    @Column(name = "rating_toggle")
+    private boolean ratingToggle;
 
     @Column(name = "message")
     private String message;
 
     @Builder
-    private Settings(boolean scoreToggle, String message) {
-        ScoreToggle = scoreToggle;
+    private Settings(boolean ratingToggle, String message) {
+        this.ratingToggle = ratingToggle;
         this.message = message;
     }
 
