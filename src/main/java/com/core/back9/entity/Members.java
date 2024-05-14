@@ -1,8 +1,9 @@
 package com.core.back9.entity;
 
-import com.core.back9.common.constant.SignType;
-import com.core.back9.common.constant.Status;
+import com.core.back9.common.entity.BaseEntity;
 import com.core.back9.entity.constant.Role;
+import com.core.back9.entity.constant.SignType;
+import com.core.back9.entity.constant.Status;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(name = "members") // 향후 platform 로그인 고려 시 index 추가해 검색속도 높이는 것도 고려해보면 좋을 듯함
-public class Members {
+public class Members extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

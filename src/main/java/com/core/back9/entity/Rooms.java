@@ -1,5 +1,6 @@
 package com.core.back9.entity;
 
+import com.core.back9.common.entity.BaseEntity;
 import com.core.back9.entity.constant.RoomStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(name = "rooms")
-public class Rooms {
+public class Rooms extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

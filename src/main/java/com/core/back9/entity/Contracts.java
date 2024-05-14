@@ -1,5 +1,6 @@
 package com.core.back9.entity;
 
+import com.core.back9.common.entity.BaseEntity;
 import com.core.back9.entity.constant.ContractStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -13,7 +14,7 @@ import java.time.LocalDate;
 @Getter
 @Entity
 @Table(name = "contracts")
-public class Contracts {
+public class Contracts extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
