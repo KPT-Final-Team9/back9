@@ -14,10 +14,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "management_scores")
 public class Scores extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "score", nullable = false)
     private int score;
 
@@ -32,10 +28,10 @@ public class Scores extends BaseEntity {
     private RatingType ratingType;
 
     @Builder
-    private Scores(int score, String comment, boolean bookmark) {
+    public Scores(int score, String comment, boolean bookmark, RatingType ratingType) {
         this.score = score;
         this.comment = comment;
         this.bookmark = bookmark;
+        this.ratingType = ratingType;
     }
-
 }

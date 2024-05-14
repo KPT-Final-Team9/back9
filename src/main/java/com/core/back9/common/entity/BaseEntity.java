@@ -1,8 +1,6 @@
 package com.core.back9.common.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,6 +14,10 @@ import java.time.LocalDateTime;
 @ToString
 @Getter
 public class BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP")

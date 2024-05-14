@@ -16,10 +16,6 @@ import java.time.LocalDate;
 @Table(name = "contracts")
 public class Contracts extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 

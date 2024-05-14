@@ -13,10 +13,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "settings")
 public class Settings extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "rating_toggle")
     private boolean ratingToggle;
 

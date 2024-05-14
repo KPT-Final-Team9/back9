@@ -13,10 +13,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "tenants")
 public class Tenants extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "company_number")
     private String companyNumber;
 

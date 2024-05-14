@@ -16,10 +16,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "members") // 향후 platform 로그인 고려 시 index 추가해 검색속도 높이는 것도 고려해보면 좋을 듯함
 public class Members extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "email")
     private String email;
 
