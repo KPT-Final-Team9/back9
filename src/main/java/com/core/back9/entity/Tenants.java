@@ -13,11 +13,15 @@ import lombok.NoArgsConstructor;
 @Table(name = "tenants")
 public class Tenants extends BaseEntity {
 
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "company_number")
     private String companyNumber;
 
     @Builder
-    private Tenants(String companyNumber) {
+    private Tenants(String name, String companyNumber) {
+        this.name = name;
         this.companyNumber = companyNumber;
     }
 

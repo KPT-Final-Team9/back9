@@ -13,14 +13,18 @@ import lombok.NoArgsConstructor;
 @Table(name = "buildings")
 public class Buildings extends BaseEntity {
 
-    @Column
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "address")
     private String address;
 
-    @Column
+    @Column(name = "zip_code")
     private String zipCode;
 
     @Builder
-    private Buildings(String address, String zipCode) {
+    private Buildings(String name, String address, String zipCode) {
+        this.name = name;
         this.address = address;
         this.zipCode = zipCode;
     }

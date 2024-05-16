@@ -19,6 +19,9 @@ public class Members extends BaseEntity {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "password")
+    private String password;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;
@@ -41,8 +44,9 @@ public class Members extends BaseEntity {
     private String firebaseFcmToken; // 즉시 적용여부가 확실치 않아 nullable = true로 남겨두었음
 
     @Builder
-    private Members(String email, Role role, String phoneNumber, Status status, SignType signType, String firebaseUid, String firebaseFcmToken) {
+    private Members(String email, String password, Role role, String phoneNumber, Status status, SignType signType, String firebaseUid, String firebaseFcmToken) {
         this.email = email;
+        this.password = password;
         this.role = role;
         this.phoneNumber = phoneNumber;
         this.status = status;

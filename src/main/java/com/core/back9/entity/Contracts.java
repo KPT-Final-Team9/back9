@@ -25,20 +25,20 @@ public class Contracts extends BaseEntity {
     @Column(name = "check_out", nullable = false)
     private LocalDate checkOut;
 
-    @Column(name = "rental_price", nullable = false)
-    private Long rentalPrice;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "contract_status", nullable = false)
     private ContractStatus contractStatus;
 
+    @Column(name = "rental_price", nullable = false)
+    private Long rentalPrice;
+
     @Builder
-    private Contracts(LocalDate startDate, LocalDate endDate, LocalDate checkOut, Long rentalPrice, ContractStatus contractStatus) {
+    private Contracts(LocalDate startDate, LocalDate endDate, LocalDate checkOut, ContractStatus contractStatus, Long rentalPrice) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.checkOut = checkOut;
-        this.rentalPrice = rentalPrice;
         this.contractStatus = contractStatus;
+        this.rentalPrice = rentalPrice;
     }
 
 }
