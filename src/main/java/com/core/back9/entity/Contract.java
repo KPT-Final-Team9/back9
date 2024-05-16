@@ -25,6 +25,9 @@ public class Contract extends BaseEntity {
 	@Column(name = "check_out", nullable = false)
 	private LocalDate checkOut;
 
+	@Column(name = "deposit", nullable = false)
+	private Long deposit;
+
 	@Column(name = "rental_price", nullable = false)
 	private Long rentalPrice;
 
@@ -32,13 +35,23 @@ public class Contract extends BaseEntity {
 	@Column(name = "contract_status", nullable = false)
 	private ContractStatus contractStatus;
 
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "room_id")
+	private Room room;
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "tenant_id")
+	private Tenant tenant;
+
 	@Builder
-	private Contract(LocalDate startDate, LocalDate endDate, LocalDate checkOut, Long rentalPrice, ContractStatus contractStatus) {
+	private Contract(LocalDate startDate, LocalDate endDate, LocalDate checkOut, Long deposit, Long rentalPrice, ContractStatus contractStatus, Room room, Tenant tenant) {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.checkOut = checkOut;
+		this.deposit = deposit;
 		this.rentalPrice = rentalPrice;
 		this.contractStatus = contractStatus;
+		this.room = room;
+		this.tenant = tenant;
 	}
-
 }

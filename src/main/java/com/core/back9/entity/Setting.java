@@ -1,9 +1,7 @@
 package com.core.back9.entity;
 
 import com.core.back9.common.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,10 +19,14 @@ public class Setting extends BaseEntity {
 	@Column(name = "message")
 	private String message;
 
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "room_id")
+	private Room room;
+
 	@Builder
-	private Setting(boolean ratingToggle, String message) {
+	public Setting(boolean ratingToggle, String message, Room room) {
 		this.ratingToggle = ratingToggle;
 		this.message = message;
+		this.room = room;
 	}
-
 }

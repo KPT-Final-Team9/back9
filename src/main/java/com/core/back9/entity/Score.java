@@ -20,18 +20,28 @@ public class Score extends BaseEntity {
 	@Column(name = "comment", nullable = false)
 	private String comment;
 
-	@Column(name = "bookmark")
+	@Column(name = "bookmark", nullable = false)
 	private boolean bookmark;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "rating_type")
+	@Column(name = "rating_type", nullable = false)
 	private RatingType ratingType;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "room_id")
+	private Room room;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "tenant_member_id")
+	private Member member;
+
 	@Builder
-	public Score(int score, String comment, boolean bookmark, RatingType ratingType) {
+	private Score(int score, String comment, boolean bookmark, RatingType ratingType, Room room, Member member) {
 		this.score = score;
 		this.comment = comment;
 		this.bookmark = bookmark;
 		this.ratingType = ratingType;
+		this.room = room;
+		this.member = member;
 	}
 }

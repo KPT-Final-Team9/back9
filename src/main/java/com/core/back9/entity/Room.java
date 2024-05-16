@@ -35,13 +35,23 @@ public class Room extends BaseEntity {
 	@Column(name = "rating")
 	private float rating;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "building_id")
+	private Building building;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id")
+	private Member member;
+
 	@Builder
-	public Room(String name, String floor, float area, RoomStatus roomStatus, Usage usage, float rating) {
+	private Room(String name, String floor, float area, RoomStatus roomStatus, Usage usage, float rating, Building building, Member member) {
 		this.name = name;
 		this.floor = floor;
 		this.area = area;
 		this.roomStatus = roomStatus;
 		this.usage = usage;
 		this.rating = rating;
+		this.building = building;
+		this.member = member;
 	}
 }

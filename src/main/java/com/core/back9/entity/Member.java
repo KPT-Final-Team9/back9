@@ -10,6 +10,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
@@ -40,8 +43,15 @@ public class Member extends BaseEntity {
 	@Column(name = "firebase_fcm_token")
 	private String firebaseFcmToken; // 즉시 적용여부가 확실치 않아 nullable = true로 남겨두었음
 
+	@OneToMany(mappedBy = "member") // 양방향 설정
+	private List<Score> scores = new ArrayList<>();
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "tenant_id")
+	private Tenant tenant;
+
 	@Builder
-	private Member(String email, Role role, String phoneNumber, Status status, SignType signType, String firebaseUid, String firebaseFcmToken) {
+	private Member(String email, Role role, String phoneNumber, Status status, SignType signType, String firebaseUid, String firebaseFcmToken, List<Score> scores, Tenant tenant) {
 		this.email = email;
 		this.role = role;
 		this.phoneNumber = phoneNumber;
@@ -49,6 +59,7 @@ public class Member extends BaseEntity {
 		this.signType = signType;
 		this.firebaseUid = firebaseUid;
 		this.firebaseFcmToken = firebaseFcmToken;
+		this.scores = scores;
+		this.tenant = tenant;
 	}
-
 }
