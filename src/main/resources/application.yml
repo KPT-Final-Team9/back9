@@ -1,0 +1,22 @@
+spring:
+  config:
+    import:
+
+  profiles:
+    default:
+    active:
+
+springdoc:
+  api-docs:
+    version: openapi_3_0
+    path: /public-api/api-docs
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  swagger-ui:
+    operations-sorter: alpha
+    tags-sorter: alpha
+    path: /public-api/swagger-ui
+    disable-swagger-default-url: true
+    display-request-duration: true
+  paths-to-match:
+    - /**
