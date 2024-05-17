@@ -38,7 +38,7 @@ if [ "$CURRENT_SERVER" = "8082" -o -z "$IS_DEV1" ];then # dev2운영중 or 첫 �
   sudo docker exec nginx nginx -s reload
 
   echo "5. deploy check new version" # 서버 port 체크
-  if [ "$CURRENT_SERVER_PORT" = "8081" ];then
+  if [ "$CURRENT_SERVER_PORT" = "Connected" ];then
     echo "dev1 서버가 성공적으로 배포되었습니다 ! [ CURRENT_SERVER_PORT ] : $CURRENT_SERVER_PORT"
     /home/ubuntu/app/alarm.sh
   fi
@@ -65,7 +65,7 @@ else # dev2 운영중인 경우
     sleep 3
 
     HEALTH_CHECK_REQUEST=$(bash -c '</dev/tcp/13.124.168.137/8082 >/dev/null && echo "Connected" || true') # dev2로 request
-    if [ -n "$HEALTH_CHECK_REQUEST" ]; then # 서비스 가능하면 health check 중지 (문자열 길이가 0보다 큰지 판단 -n)
+    if [ "$HEALTH_CHECK_REQUEST" = "Connected" ]; then # 서비스 가능하면 health check 중지 (문자열 길이가 0보다 큰지 판단 -n)
       echo "health check 성공 !"
       echo "시도 횟수 : $counter"
       break ;
