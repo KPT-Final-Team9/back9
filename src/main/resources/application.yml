@@ -6,6 +6,10 @@ spring:
     default:
     active:
 
+discord:
+  webhook:
+    url:
+
 springdoc:
   api-docs:
     version: openapi_3_0
