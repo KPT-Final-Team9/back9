@@ -1,0 +1,32 @@
+version: '3'
+services:
+  back9-dev1:
+    container_name: back9-dev1
+    image: woohahalife/back9-backend
+    ports:
+      - "8081:8080"
+    networks:
+      - backend-network
+
+  back9-dev2:
+    container_name: back9-dev2
+    image: woohahalife/back9-backend
+    ports:
+      - "8082:8080"
+    networks:
+      - backend-network
+
+  nginx:
+    container_name: nginx
+    image: nginx
+    volumes:
+      - /home/ubuntu/app/nginx/nginx.green.conf:/etc/nginx/nginx.green.conf
+      - /home/ubuntu/app/nginx/nginx.blue.conf:/etc/nginx/nginx.blue.conf
+    ports:
+      - "80:80"
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+    external: true
