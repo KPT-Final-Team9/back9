@@ -16,13 +16,16 @@ public class RestTemplateConfig {
 
 	@Bean
 	public RestTemplate restTemplate() {
+
 		RestTemplate restTemplate = new RestTemplate();
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
 		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
 		converter.setSupportedMediaTypes(Collections.singletonList(MediaType.APPLICATION_JSON));
 		messageConverters.add(converter);
 		restTemplate.setMessageConverters(messageConverters);
+
 		return restTemplate;
+
 	}
 
 }

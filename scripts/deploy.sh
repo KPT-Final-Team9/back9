@@ -34,8 +34,8 @@ if [ "$CURRENT_SERVER" = "8082" -o -z "$IS_DEV1" ];then # dev2운영중 or 첫 �
   done;
 
   echo "4. reload nginx"
-  sudo docker exec nginx cp /etc/nginx/nginx.green.conf $DEFAULT_CONF
-  sudo docker exec nginx nginx -s reload
+  docker exec nginx cp /etc/nginx/nginx.green.conf $DEFAULT_CONF
+  docker exec nginx nginx -s reload
 
   echo "5. deploy check new version" # 서버 port 체크
   if [ "$CURRENT_SERVER_PORT" = "Connected" ];then
@@ -73,8 +73,8 @@ else # dev2 운영중인 경우
   done;
 
   echo "4. reload nginx"
-  sudo docker exec nginx cp /etc/nginx/nginx.blue.conf $DEFAULT_CONF
-  sudo docker exec nginx nginx -s reload
+  docker exec nginx cp /etc/nginx/nginx.blue.conf $DEFAULT_CONF
+  docker exec nginx nginx -s reload
 
   echo "5. deploy check new version" # 서버 port 체크
   if [ "$CURRENT_SERVER_PORT" = "8082" ];then
