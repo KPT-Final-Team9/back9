@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
 
-    String root = "com.core.test";
+    String root = "com.core.back9.controller";
     String[] paths = {
             root
     };
