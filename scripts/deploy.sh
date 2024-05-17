@@ -1,15 +1,16 @@
 IS_DEV1=$(docker ps | grep back9-dev1)
 IS_DEV2=$(docker ps | grep back9-dev2)
-CURRENT_SERVER_PORT=$(docker exec nginx grep -oP '(?<=proxy_pass http://172.18.0.1:)\d+' /etc/nginx/nginx.conf | head -n1)
+CURRENT_SERVER_PORT=$(docker exec nginx grep -oP '(?<=proxy_pass http://127.0.0.1:)\d+' /etc/nginx/nginx.conf | head -n1)
 DEFAULT_CONF=" /etc/nginx/nginx.conf"
 
-if [ "$CURRENT_SERVER_PORT" = "8082" -o -z "$IS_DEV1" ];then # dev2운영중 or 첫 배포 (환경변수로 설정한 문자열 길이가 0인 경우 -z)
+echo "[ CURRENT_SERVER_PORT ] : $CURRENT_SERVER_PORT"
+if [ "$CURRENT_SERVER" = "8082" -o -z "$IS_DEV1" ];then # dev2운영중 or 첫 배포 (환경변수로 설정한 문자열 길이가 0인 경우 -z)
 
   if [ -n "$IS_DEV1" ];then
     echo "down old container (dev1)"
     sudo docker-compose stop back9-dev1
     sudo docker-compose rm -f back9-dev1 # 신버전 반영 위해 기존 컨테이너 down 처리
-  fido
+  fi
 
   echo "##### dev2 => dev1 #####"
 
