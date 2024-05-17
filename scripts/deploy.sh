@@ -25,7 +25,7 @@ if [ "$CURRENT_SERVER" = "8082" -o -z "$IS_DEV1" ];then # dev2운영중 or 첫 �
   ((counter++))
   sleep 3
 
-  HEALTH_CHECK_REQUEST=$(bash -c '</dev/tcp/13.124.168.137/8081 >/dev/null && echo "Connected" || true') # dev1으로 request
+  HEALTH_CHECK_REQUEST=$(bash -c '</dev/tcp/127.0.0.1/8081 >/dev/null && echo "Connected" || true') # dev1으로 request
     if [ -n "$HEALTH_CHECK_REQUEST" ]; then # 서비스 가능하면 health check 중지 (문자열 길이가 0보다 큰지 판단 -n)
       echo "health check 성공 !"
       echo "시도 횟수 : $counter"
@@ -64,7 +64,7 @@ else # dev2 운영중인 경우
     ((counter++))
     sleep 3
 
-    HEALTH_CHECK_REQUEST=$(bash -c '</dev/tcp/13.124.168.137/8082 >/dev/null && echo "Connected" || true') # dev2로 request
+    HEALTH_CHECK_REQUEST=$(bash -c '</dev/tcp/127.0.0.1/8082 >/dev/null && echo "Connected" || true') # dev2로 request
     if [ "$HEALTH_CHECK_REQUEST" = "Connected" ]; then # 서비스 가능하면 health check 중지 (문자열 길이가 0보다 큰지 판단 -n)
       echo "health check 성공 !"
       echo "시도 횟수 : $counter"
