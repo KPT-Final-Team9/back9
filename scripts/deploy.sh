@@ -1,6 +1,6 @@
 IS_DEV1=$(docker ps | grep back9-dev1)
 IS_DEV2=$(docker ps | grep back9-dev2)
-CURRENT_SERVER_PORT=$(docker exec nginx grep -oP '(?<=proxy_pass http://127.0.0.1:)\d+' /etc/nginx/nginx.conf | head -n1)
+CURRENT_SERVER_PORT=$(docker exec nginx grep -o 'proxy_pass http://[^:]\+:[0-9]\+' /etc/nginx/nginx.conf | awk -F ':' '{print $NF}' | head -n1)
 DEFAULT_CONF=" /etc/nginx/nginx.conf"
 
 echo "[ CURRENT_SERVER_PORT ] : $CURRENT_SERVER_PORT"
