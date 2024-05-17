@@ -7,17 +7,17 @@ if [ "$CURRENT_SERVER" = "8082" -o -z "$IS_DEV1" ];then # dev2운영중 or 첫 �
 
   if [ -n "$IS_DEV1" ];then
     echo "down old container (dev1)"
-    docker-compose stop back9-dev1
-    docker-compose rm -f back9-dev1 # 신버전 반영 위해 기존 컨테이너 down 처리
+    sudo docker-compose stop back9-dev1
+    sudo docker-compose rm -f back9-dev1 # 신버전 반영 위해 기존 컨테이너 down 처리
   fi
 
   echo "##### dev2 => dev1 #####"
 
   echo "1. get update version image"
-  docker-compose pull back9-dev1 # dev1으로 이미지를 내려받아옴
+  sudo docker-compose pull back9-dev1 # dev1으로 이미지를 내려받아옴
 
   echo "2. update version container up"
-  docker-compose up -d back9-dev1 # dev1 컨테이너 실행
+  sudo docker-compose up -d back9-dev1 # dev1 컨테이너 실행
 
   counter=0
   while [ 1 = 1 ]; do
@@ -47,16 +47,16 @@ else # dev2 운영중인 경우
 
   if [ -n "$IS_DEV2" ];then
     echo "down old container (dev2)"
-    docker-compose stop back9-dev2
-    docker-compose rm -f back9-dev2 # 신버전 반영 위해 기존 컨테이너 down 처리
+    sudo docker-compose stop back9-dev2
+    sudo docker-compose rm -f back9-dev2 # 신버전 반영 위해 기존 컨테이너 down 처리
   fi
   echo "### dev1 => dev2 ###"
 
   echo "1. get update version image"
-  docker-compose pull back9-dev2
+  sudo docker-compose pull back9-dev2
 
   echo "2. update version container up"
-  docker-compose up -d back9-dev2
+  sudo docker-compose up -d back9-dev2
 
   counter=0
   while [ 1 = 1 ]; do
