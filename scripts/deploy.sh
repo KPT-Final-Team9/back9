@@ -25,8 +25,8 @@ if [ "$CURRENT_SERVER" = "8082" -o -z "$IS_DEV1" ];then # dev2운영중 or 첫 �
   ((counter++))
   sleep 3
 
-  REQUEST=$(curl http://127.0.0.1:8081) # dev1으로 request
-    if [ -n "$REQUEST" ]; then # 서비스 가능하면 health check 중지 (문자열 길이가 0보다 큰지 판단 -n)
+  HEALTH_CHECK_REQUEST=$(bash -c '</dev/tcp/13.124.168.137/8081 >/dev/null && echo "Connected" || true') # dev1으로 request
+    if [ -n "$HEALTH_CHECK_REQUEST" ]; then # 서비스 가능하면 health check 중지 (문자열 길이가 0보다 큰지 판단 -n)
       echo "health check 성공 !"
       echo "시도 횟수 : $counter"
       break ;
@@ -39,8 +39,8 @@ if [ "$CURRENT_SERVER" = "8082" -o -z "$IS_DEV1" ];then # dev2운영중 or 첫 �
 
   echo "5. deploy check new version" # 서버 port 체크
   if [ "$CURRENT_SERVER_PORT" = "8081" ];then
-    echo "서버가 성공적으로 배포되었습니다 ! [ CURRENT_SERVER_PORT ] : $CURRENT_SERVER_PORT"
-    ~/app/alarm.sh
+    echo "dev1 서버가 성공적으로 배포되었습니다 ! [ CURRENT_SERVER_PORT ] : $CURRENT_SERVER_PORT"
+    /home/ubuntu/app/alarm.sh
   fi
 
 else # dev2 운영중인 경우
@@ -64,8 +64,8 @@ else # dev2 운영중인 경우
     ((counter++))
     sleep 3
 
-    REQUEST=$(curl http://127.0.0.1:8082) # dev2로 request
-    if [ -n "$REQUEST" ]; then # 서비스 가능하면 health check 중지 (문자열 길이가 0보다 큰지 판단 -n)
+    HEALTH_CHECK_REQUEST=$(bash -c '</dev/tcp/13.124.168.137/8082 >/dev/null && echo "Connected" || true') # dev2로 request
+    if [ -n "$HEALTH_CHECK_REQUEST" ]; then # 서비스 가능하면 health check 중지 (문자열 길이가 0보다 큰지 판단 -n)
       echo "health check 성공 !"
       echo "시도 횟수 : $counter"
       break ;
@@ -78,8 +78,8 @@ else # dev2 운영중인 경우
 
   echo "5. deploy check new version" # 서버 port 체크
   if [ "$CURRENT_SERVER_PORT" = "8082" ];then
-    echo "서버가 성공적으로 배포되었습니다 ! [ CURRENT_SERVER_PORT ] : $CURRENT_SERVER_PORT"
-    ~/app/alarm.sh
+    echo "dev2 서버가 성공적으로 배포되었습니다 ! [ CURRENT_SERVER_PORT ] : $CURRENT_SERVER_PORT"
+    /home/ubuntu/app/alarm.sh
   fi
 
 fi
