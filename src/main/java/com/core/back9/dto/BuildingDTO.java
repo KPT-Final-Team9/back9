@@ -13,7 +13,7 @@ public class BuildingDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class RegisterRequest {
+	public static class Request {
 		private String name;
 		private String address;
 		private String zipCode;
@@ -23,7 +23,7 @@ public class BuildingDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class RegisterResponse {
+	public static class Response {
 		private Long id;
 		private String name;
 		private String address;
