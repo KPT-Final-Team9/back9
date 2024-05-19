@@ -4,6 +4,7 @@ import com.core.back9.common.dto.DiscordEmbed;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -16,6 +17,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ public class ApiExceptionHandler {
 	private String discordWebhookUrl;
 
 	private final RestTemplate restTemplate;
+	private final Environment environment;
 
 	@ExceptionHandler(ApiException.class)
 	public ResponseEntity<String> apiExceptionHandler(ApiException exception, WebRequest webRequest) {
@@ -55,30 +58,32 @@ public class ApiExceptionHandler {
 
 	@Async
 	protected void sendDiscordNotification(String message, WebRequest webRequest) {
-		Map<String, Object> discordPayload = new HashMap<>();
-		DiscordEmbed embed = DiscordEmbed.builder()
-		  .title("[에러 정보]")
-		  .description(
-			"### [발생 시각]\n"
-			  + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-			  + "\n"
-			  + "### [요청 URL]\n"
-			  + createRequestFullPath(webRequest)
-			  + "\n"
-			  + "### [Client IP]\n"
-			  + getClientIp(webRequest)
-			  + "\n"
-			  + "### [User-Agent]\n"
-			  + getUserAgent(webRequest)
-			  + "\n"
-			  + "### [에러 메시지]\n"
-			  + message
-		  )
-		  .build();
+		if (Arrays.stream(environment.getActiveProfiles()).noneMatch(profile -> profile.contains("local"))) {
+			Map<String, Object> discordPayload = new HashMap<>();
+			DiscordEmbed embed = DiscordEmbed.builder()
+			  .title("[에러 정보]")
+			  .description(
+				"### [발생 시각]\n"
+				  + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+				  + "\n"
+				  + "### [요청 URL]\n"
+				  + createRequestFullPath(webRequest)
+				  + "\n"
+				  + "### [Client IP]\n"
+				  + getClientIp(webRequest)
+				  + "\n"
+				  + "### [User-Agent]\n"
+				  + getUserAgent(webRequest)
+				  + "\n"
+				  + "### [에러 메시지]\n"
+				  + message
+			  )
+			  .build();
 
-		discordPayload.put("content", "# \uD83D\uDEA8 에러 발생!");
-		discordPayload.put("embeds", List.of(embed));
-		restTemplate.postForEntity(discordWebhookUrl, discordPayload, String.class);
+			discordPayload.put("content", "# \uD83D\uDEA8 에러 발생!");
+			discordPayload.put("embeds", List.of(embed));
+			restTemplate.postForEntity(discordWebhookUrl, discordPayload, String.class);
+		}
 	}
 
 	private String createRequestFullPath(WebRequest webRequest) {
