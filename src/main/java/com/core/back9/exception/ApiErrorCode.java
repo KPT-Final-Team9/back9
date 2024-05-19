@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ApiErrorCode {
 
+	NOT_FOUND_VALID_BUILDING(HttpStatus.NOT_FOUND.value(), "유효한 건물을 찾을 수 없습니다"),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "SERVER ERROR"),
 	;
 
