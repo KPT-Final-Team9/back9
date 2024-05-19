@@ -8,13 +8,14 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(
   componentModel = MappingConstants.ComponentModel.SPRING,
-  unmappedSourcePolicy = ReportingPolicy.IGNORE
+  unmappedSourcePolicy = ReportingPolicy.IGNORE,
+  unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface BuildingMapper {
 
-	Building toEntity(BuildingDTO.RegisterRequest registerRequest);
+	Building toEntity(BuildingDTO.Request request);
 
-	BuildingDTO.RegisterResponse toRegisterResponse(Building building);
+	BuildingDTO.Response toResponse(Building building);
 
 	BuildingDTO.Info toInfo(Building building);
 
