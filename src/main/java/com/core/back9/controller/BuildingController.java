@@ -1,15 +1,53 @@
 package com.core.back9.controller;
 
+import com.core.back9.dto.BuildingDTO;
+import com.core.back9.service.BuildingService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
+@RequestMapping("/api/buildings")
 @RestController
 public class BuildingController {
 
-    @GetMapping("/api/building")
-    public String testController() {
-        return "테스트 성공했다... 고생했다 ㅠㅠ";
-    }
+	private final BuildingService buildingService;
+
+	@PostMapping("")
+	public ResponseEntity<BuildingDTO.Response> register(
+	  @Valid
+	  @RequestBody BuildingDTO.Request request
+	) {
+		return ResponseEntity.ok(buildingService.create(request));
+	}
+
+	@GetMapping("")
+	public ResponseEntity<Page<BuildingDTO.Info>> getAll(Pageable pageable) {
+		return ResponseEntity.ok(buildingService.selectAll(pageable));
+	}
+
+	@GetMapping("/{buildingId}")
+	public ResponseEntity<BuildingDTO.Info> getOne(@PathVariable Long buildingId) {
+		return ResponseEntity.ok(buildingService.selectOne(buildingId));
+	}
+
+	@PatchMapping("/{buildingId}")
+	public ResponseEntity<BuildingDTO.Info> modify(
+	  @PathVariable Long buildingId,
+	  @Valid
+	  @RequestBody BuildingDTO.Request request
+	) {
+		return ResponseEntity.ok(buildingService.update(buildingId, request));
+	}
+
+	@DeleteMapping("/{buildingId}")
+	public ResponseEntity<Boolean> unregister(
+	  @PathVariable Long buildingId
+	) {
+		return ResponseEntity.ok(buildingService.delete(buildingId));
+	}
+
 }
