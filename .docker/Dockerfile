@@ -8,7 +8,7 @@ COPY ./gradle gradle
 COPY ./*.gradle ./
 COPY ./gradlew ./
 COPY ./src src
-RUN ./gradlew build --debug
+RUN ./gradlew build
 
 FROM corretto-jdk${JDK_VERSION} AS corretto-jdk
 ARG JDK_VERSION
