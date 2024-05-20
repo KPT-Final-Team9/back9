@@ -1,9 +1,8 @@
 package com.core.back9.entity;
 
 import com.core.back9.common.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.core.back9.entity.constant.Status;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,10 +20,15 @@ public class Tenant extends BaseEntity {
 	@Column(name = "company_number")
 	private String companyNumber;
 
+	@Enumerated(EnumType.STRING)
+	@Column
+	private Status status;
+
 	@Builder
-	private Tenant(String name, String companyNumber) {
+	private Tenant(String name, String companyNumber, Status status) {
 		this.name = name;
 		this.companyNumber = companyNumber;
+		this.status = status;
 	}
 
 }

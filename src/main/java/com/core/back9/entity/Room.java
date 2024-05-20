@@ -2,6 +2,7 @@ package com.core.back9.entity;
 
 import com.core.back9.common.entity.BaseEntity;
 import com.core.back9.entity.constant.RoomStatus;
+import com.core.back9.entity.constant.Status;
 import com.core.back9.entity.constant.Usage;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -43,8 +44,12 @@ public class Room extends BaseEntity {
 	@JoinColumn(name = "member_id")
 	private Member member;
 
+	@Enumerated(EnumType.STRING)
+	@Column
+	private Status status;
+
 	@Builder
-	private Room(String name, String floor, float area, RoomStatus roomStatus, Usage usage, float rating, Building building, Member member) {
+	private Room(String name, String floor, float area, RoomStatus roomStatus, Usage usage, float rating, Building building, Member member, Status status) {
 		this.name = name;
 		this.floor = floor;
 		this.area = area;
@@ -53,5 +58,6 @@ public class Room extends BaseEntity {
 		this.rating = rating;
 		this.building = building;
 		this.member = member;
+		this.status = status;
 	}
 }

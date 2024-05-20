@@ -2,6 +2,7 @@ package com.core.back9.entity;
 
 import com.core.back9.common.entity.BaseEntity;
 import com.core.back9.entity.constant.ContractStatus;
+import com.core.back9.entity.constant.Status;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -43,8 +44,12 @@ public class Contract extends BaseEntity {
 	@JoinColumn(name = "tenant_id")
 	private Tenant tenant;
 
+	@Enumerated(EnumType.STRING)
+	@Column
+	private Status status;
+
 	@Builder
-	private Contract(LocalDate startDate, LocalDate endDate, LocalDate checkOut, Long deposit, Long rentalPrice, ContractStatus contractStatus, Room room, Tenant tenant) {
+	private Contract(LocalDate startDate, LocalDate endDate, LocalDate checkOut, Long deposit, Long rentalPrice, ContractStatus contractStatus, Room room, Tenant tenant, Status status) {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.checkOut = checkOut;
@@ -53,5 +58,6 @@ public class Contract extends BaseEntity {
 		this.contractStatus = contractStatus;
 		this.room = room;
 		this.tenant = tenant;
+		this.status = status;
 	}
 }
