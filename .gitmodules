@@ -1,0 +1,3 @@
+[submodule "src/main/resources/final-secret"]
+	path = src/main/resources/final-secret
+	url = https://github.com/KPT-Final-Team9/final-secret.git

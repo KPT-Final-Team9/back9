@@ -1,15 +1,12 @@
 spring:
   config:
     import:
-
+      - classpath:/final-secret/application-dev.yml
+      - classpath:/final-secret/application-local.yml
 
   profiles:
-    default:
-    active:
-
-discord:
-  webhook:
-    url:
+    default: dev
+    active: dev
 
 springdoc:
   api-docs:
