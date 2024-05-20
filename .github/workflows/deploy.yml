@@ -10,9 +10,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-#        with:
-#          submodules: true
-#          token: ${{ secrets.PRIVATE_REPO_ACCESS_TOKEN }}
+        with:
+          submodules: true
+          token: ${{ secrets.PRIVATE_REPO_ACCESS_TOKEN }}
 
       - name: Gradle Caching
         uses: actions/cache@v3
