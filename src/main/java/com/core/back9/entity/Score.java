@@ -2,6 +2,7 @@ package com.core.back9.entity;
 
 import com.core.back9.common.entity.BaseEntity;
 import com.core.back9.entity.constant.RatingType;
+import com.core.back9.entity.constant.Status;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -35,13 +36,18 @@ public class Score extends BaseEntity {
 	@JoinColumn(name = "tenant_member_id")
 	private Member member;
 
+	@Enumerated(EnumType.STRING)
+	@Column
+	private Status status;
+
 	@Builder
-	private Score(int score, String comment, boolean bookmark, RatingType ratingType, Room room, Member member) {
+	private Score(int score, String comment, boolean bookmark, RatingType ratingType, Room room, Member member, Status status) {
 		this.score = score;
 		this.comment = comment;
 		this.bookmark = bookmark;
 		this.ratingType = ratingType;
 		this.room = room;
 		this.member = member;
+		this.status = status;
 	}
 }

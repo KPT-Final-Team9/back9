@@ -1,6 +1,7 @@
 package com.core.back9.entity;
 
 import com.core.back9.common.entity.BaseEntity;
+import com.core.back9.entity.constant.Status;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -23,10 +24,15 @@ public class Setting extends BaseEntity {
 	@JoinColumn(name = "room_id")
 	private Room room;
 
+	@Enumerated(EnumType.STRING)
+	@Column
+	private Status status;
+
 	@Builder
-	public Setting(boolean ratingToggle, String message, Room room) {
+	public Setting(boolean ratingToggle, String message, Room room, Status status) {
 		this.ratingToggle = ratingToggle;
 		this.message = message;
 		this.room = room;
+		this.status = status;
 	}
 }
