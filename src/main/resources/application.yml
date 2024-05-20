@@ -1,6 +1,7 @@
 spring:
   config:
     import:
+      -
 
   profiles:
     default:

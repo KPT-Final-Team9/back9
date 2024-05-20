@@ -5,6 +5,8 @@ services:
     image: woohahalife/back9-backend
     ports:
       - "8081:8080"
+    environment:
+      - TZ=Asia/Seoul
     networks:
       - backend-network
 
@@ -13,6 +15,8 @@ services:
     image: woohahalife/back9-backend
     ports:
       - "8082:8080"
+    environment:
+      - TZ=Asia/Seoul
     networks:
       - backend-network
 
@@ -24,6 +28,9 @@ services:
       - /home/ubuntu/app/nginx/nginx.blue.conf:/etc/nginx/nginx.blue.conf
     ports:
       - "80:80"
+    restart: always
+    environment:
+      - TZ=Asia/Seoul
     networks:
       - backend-network
 
