@@ -3,6 +3,7 @@ spring:
     import:
       - classpath:/final-secret/application-dev.yml
       - classpath:/final-secret/application-local.yml
+      - classpath:/final-secret/application-test.yml
 
   profiles:
     default: dev
@@ -22,3 +23,7 @@ springdoc:
     display-request-duration: true
   paths-to-match:
     - /**
+
+discord:
+  webhook:
+    url:
