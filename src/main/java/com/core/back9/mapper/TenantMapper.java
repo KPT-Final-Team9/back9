@@ -2,9 +2,9 @@ package com.core.back9.mapper;
 
 import com.core.back9.dto.TenantDTO;
 import com.core.back9.entity.Tenant;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingConstants;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
+
+import java.util.List;
 
 @Mapper(
   componentModel = MappingConstants.ComponentModel.SPRING,
@@ -18,5 +18,7 @@ public interface TenantMapper {
 	TenantDTO.RegisterResponse toRegisterResponse(Tenant tenant);
 
 	TenantDTO.Info toInfo(Tenant tenant);
+
+	TenantDTO.InfoList toInfoList(Long count, List<TenantDTO.Info> infoList);
 
 }

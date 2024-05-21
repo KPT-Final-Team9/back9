@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class TenantDTO {
 
@@ -39,6 +40,15 @@ public class TenantDTO {
 		private String companyNumber;
 		private LocalDateTime createdAt;
 		private LocalDateTime updatedAt;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class InfoList {
+		private Long count;
+		private List<Info> infoList;
 	}
 
 }
