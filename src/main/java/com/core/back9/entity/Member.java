@@ -22,6 +22,9 @@ public class Member extends BaseEntity {
 	@Column(name = "email")
 	private String email;
 
+	@Column(name = "password")
+	private String password;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role")
 	private Role role;
@@ -51,8 +54,9 @@ public class Member extends BaseEntity {
 	private Tenant tenant;
 
 	@Builder
-	private Member(String email, Role role, String phoneNumber, Status status, SignType signType, String firebaseUid, String firebaseFcmToken, List<Score> scores, Tenant tenant) {
+	private Member(String email, String password, Role role, String phoneNumber, Status status, SignType signType, String firebaseUid, String firebaseFcmToken, List<Score> scores, Tenant tenant) {
 		this.email = email;
+		this.password = password;
 		this.role = role;
 		this.phoneNumber = phoneNumber;
 		this.status = status;
