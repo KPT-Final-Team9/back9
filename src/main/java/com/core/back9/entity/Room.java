@@ -1,7 +1,6 @@
 package com.core.back9.entity;
 
 import com.core.back9.common.entity.BaseEntity;
-import com.core.back9.entity.constant.RoomStatus;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.entity.constant.Usage;
 import jakarta.persistence.*;

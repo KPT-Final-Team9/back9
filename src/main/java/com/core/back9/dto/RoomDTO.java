@@ -1,6 +1,5 @@
 package com.core.back9.dto;
 
-import com.core.back9.entity.constant.RoomStatus;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.entity.constant.Usage;
 import lombok.AllArgsConstructor;
