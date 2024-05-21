@@ -1,6 +1,7 @@
 package com.core.back9.entity;
 
 import com.core.back9.common.entity.BaseEntity;
+import com.core.back9.dto.TenantDTO;
 import com.core.back9.entity.constant.Status;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -25,10 +26,15 @@ public class Tenant extends BaseEntity {
 	private Status status;
 
 	@Builder
-	private Tenant(String name, String companyNumber, Status status) {
+	private Tenant(String name, String companyNumber) {
 		this.name = name;
 		this.companyNumber = companyNumber;
-		this.status = status;
+		this.status = Status.REGISTER;
 	}
 
+	public void update(TenantDTO.RegisterRequest request) {
+		this.name = request.getName();
+		this.companyNumber = request.getCompanyNumber();
+		this.status = Status.REGISTER;
+	}
 }
