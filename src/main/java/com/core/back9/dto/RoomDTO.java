@@ -15,19 +15,18 @@ public class RoomDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class RegisterRequest {
+	public static class Request {
 		private String name;
 		private String floor;
 		private float area;
 		private Usage usage;
-		private Status status;
 	}
 
 	@AllArgsConstructor
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class RegisterResponse {
+	public static class Response {
 		private Long id;
 		private String name;
 		private String floor;

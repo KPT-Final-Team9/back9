@@ -13,9 +13,9 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface RoomMapper {
 
-	Room toEntity(RoomDTO.RegisterRequest registerRequest);
+	Room toEntity(Long buildingId, RoomDTO.Request request);
 
-	RoomDTO.RegisterResponse toRegisterResponse(Room room);
+	RoomDTO.Response toResponse(Room room);
 
 	RoomDTO.Info toInfo(Room room);
 
