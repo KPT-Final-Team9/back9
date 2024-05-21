@@ -1,6 +1,6 @@
 package com.core.back9.dto;
 
-import com.core.back9.entity.constant.RoomStatus;
+import com.core.back9.entity.constant.Status;
 import com.core.back9.entity.constant.Usage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,8 +19,8 @@ public class RoomDTO {
 		private String name;
 		private String floor;
 		private float area;
-		private RoomStatus roomStatus;
 		private Usage usage;
+		private Status status;
 	}
 
 	@AllArgsConstructor
@@ -32,8 +32,8 @@ public class RoomDTO {
 		private String name;
 		private String floor;
 		private float area;
-		private RoomStatus roomStatus;
 		private Usage usage;
+		private Status status;
 		private LocalDateTime createdAt;
 	}
 
@@ -46,8 +46,8 @@ public class RoomDTO {
 		private String name;
 		private String floor;
 		private float area;
-		private RoomStatus roomStatus;
 		private Usage usage;
+		private Status status;
 		private float rating;
 		private LocalDateTime createdAt;
 		private LocalDateTime updatedAt;

@@ -1,7 +1,6 @@
 package com.core.back9.entity;
 
 import com.core.back9.common.entity.BaseEntity;
-import com.core.back9.entity.constant.RoomStatus;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.entity.constant.Usage;
 import jakarta.persistence.*;
@@ -26,12 +25,12 @@ public class Room extends BaseEntity {
 	private float area; // 건물 면적(제곱 미터)
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "room_status")
-	private RoomStatus roomStatus;
-
-	@Enumerated(EnumType.STRING)
 	@Column(name = "usage")
 	private Usage usage; // 호실의 용도를 구분하는 Enum
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status")
+	private Status status;
 
 	@Column(name = "rating")
 	private float rating;
@@ -44,20 +43,15 @@ public class Room extends BaseEntity {
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	@Enumerated(EnumType.STRING)
-	@Column
-	private Status status;
-
 	@Builder
-	private Room(String name, String floor, float area, RoomStatus roomStatus, Usage usage, float rating, Building building, Member member, Status status) {
+	private Room(String name, String floor, float area, Usage usage, Status status, float rating, Building building, Member member) {
 		this.name = name;
 		this.floor = floor;
 		this.area = area;
-		this.roomStatus = roomStatus;
 		this.usage = usage;
+		this.status = status;
 		this.rating = rating;
 		this.building = building;
 		this.member = member;
-		this.status = status;
 	}
 }
