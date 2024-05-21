@@ -113,11 +113,11 @@ class BuildingRepositoryTest {
 	public void givenBuildingIdWhenDeleteBuilding() {
 		Building savedBuilding = buildingRepository.save(building);
 		long savedBuildingId = savedBuilding.getId();
-		savedBuilding.delete();
 
-		Optional<Building> deletedBuilding = buildingRepository.findFirstByIdAndStatus(savedBuildingId, Status.REGISTER);
+		Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(savedBuildingId, Status.REGISTER);
+		validBuilding.delete();
 
-		assertThat(deletedBuilding.isPresent()).isFalse();
+		assertThat(validBuilding.getStatus()).isEqualTo(Status.UNREGISTER);
 	}
 
 }
