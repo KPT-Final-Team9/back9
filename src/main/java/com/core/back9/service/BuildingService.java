@@ -25,11 +25,13 @@ public class BuildingService {
 		return buildingMapper.toResponse(savedBuilding);
 	}
 
+	@Transactional(readOnly = true)
 	public Page<BuildingDTO.Info> selectAll(Pageable pageable) {
 		return buildingRepository.findAllByStatus(Status.REGISTER, pageable)
 		  .map(buildingMapper::toInfo);
 	}
 
+	@Transactional(readOnly = true)
 	public BuildingDTO.Info selectOne(Long buildingId) {
 		Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
 		return buildingMapper.toInfo(validBuilding);

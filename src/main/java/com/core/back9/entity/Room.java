@@ -1,6 +1,7 @@
 package com.core.back9.entity;
 
 import com.core.back9.common.entity.BaseEntity;
+import com.core.back9.dto.RoomDTO;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.entity.constant.Usage;
 import jakarta.persistence.*;
@@ -44,14 +45,26 @@ public class Room extends BaseEntity {
 	private Member member;
 
 	@Builder
-	private Room(String name, String floor, float area, Usage usage, Status status, float rating, Building building, Member member) {
+	private Room(String name, String floor, float area, Usage usage, float rating, Building building, Member member) {
 		this.name = name;
 		this.floor = floor;
 		this.area = area;
 		this.usage = usage;
-		this.status = status;
 		this.rating = rating;
 		this.building = building;
 		this.member = member;
+		this.status = Status.REGISTER;
 	}
+
+	public void update(RoomDTO.Request request) {
+		this.name = request.getName();
+		this.floor = request.getFloor();
+		this.area = request.getArea();
+		this.usage = request.getUsage();
+	}
+
+	public void delete() {
+		this.status = Status.UNREGISTER;
+	}
+
 }
