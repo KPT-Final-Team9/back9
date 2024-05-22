@@ -5,11 +5,13 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
+@Profile(value = {"local"})
 public class MailManager {
 
 	@Value("${spring.mail.username}")
