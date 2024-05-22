@@ -26,7 +26,7 @@ public class Room extends BaseEntity {
 	private float area; // 건물 면적(제곱 미터)
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "usage")
+	@Column(name = "room_usage")
 	private Usage usage; // 호실의 용도를 구분하는 Enum
 
 	@Enumerated(EnumType.STRING)

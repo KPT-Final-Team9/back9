@@ -119,13 +119,13 @@ class RoomControllerTest {
 	public void givenBuildingIdAndRoomIdWhenDeleteRoomThenSuccessResult() throws Exception {
 		long selectedBuildingId = 1L;
 		long deleteRoomId = 1L;
-		given(roomService.delete(anyLong())).willReturn(true);
+		given(roomService.delete(anyLong(), anyLong())).willReturn(true);
 
 		mockMvc.perform(delete("/api/buildings/" + selectedBuildingId + "/rooms/" + deleteRoomId))
 		  .andDo(print())
 		  .andExpect(status().isOk())
 		  .andExpect(content().string("true"));
-		verify(roomService).delete(anyLong());
+		verify(roomService).delete(anyLong(), anyLong());
 	}
 
 	@DisplayName("호실 전체 조회 성공")

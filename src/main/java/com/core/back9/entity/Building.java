@@ -9,6 +9,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
@@ -28,6 +31,13 @@ public class Building extends BaseEntity {
 	@Column
 	private Status status;
 
+	@OneToMany(
+	  cascade = CascadeType.REMOVE,
+	  fetch = FetchType.LAZY,
+	  orphanRemoval = true
+	)
+	private final List<Room> roomList = new ArrayList<>();
+
 	@Builder
 	private Building(String name, String address, String zipCode) {
 		this.name = name;
@@ -44,6 +54,14 @@ public class Building extends BaseEntity {
 
 	public void delete() {
 		this.status = Status.UNREGISTER;
+	}
+
+	public void addRoom(Room room) {
+		this.roomList.add(room);
+	}
+
+	public void removeRoom(Room room) {
+		this.roomList.remove(room);
 	}
 
 }

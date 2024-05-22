@@ -102,7 +102,7 @@ class BuildingServiceTest {
 		Page<Building> buildingPage = new PageImpl<>(List.of(building), pageable, 1);
 		Page<BuildingDTO.Info> buildingInfoPage = new PageImpl<>(List.of(info), pageable, 1);
 		given(buildingRepository.findAllByStatus(Status.REGISTER, pageable)).willReturn(buildingPage);
-		given(buildingMapper.toInfo(building)).willReturn(info);
+		given(buildingMapper.toInfo(building, pageable)).willReturn(info);
 
 		Page<BuildingDTO.Info> result = buildingService.selectAll(pageable);
 

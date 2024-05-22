@@ -43,7 +43,7 @@ public class RoomController {
 	  @PathVariable Long buildingId,
 	  @PathVariable Long roomId
 	) {
-		return ResponseEntity.ok(roomService.delete(roomId));
+		return ResponseEntity.ok(roomService.delete(buildingId, roomId));
 	}
 
 	@GetMapping("")
