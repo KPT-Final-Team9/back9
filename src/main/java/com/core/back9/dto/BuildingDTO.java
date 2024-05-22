@@ -1,9 +1,7 @@
 package com.core.back9.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 
@@ -35,6 +33,7 @@ public class BuildingDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
+	@Setter
 	public static class Info {
 		private Long id;
 		private String name;
@@ -42,6 +41,7 @@ public class BuildingDTO {
 		private String zipCode;
 		private LocalDateTime createdAt;
 		private LocalDateTime updatedAt;
+		private Page<RoomDTO.Info> roomPage;
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.core.back9.service;
 
 import com.core.back9.dto.RoomDTO;
+import com.core.back9.entity.Building;
 import com.core.back9.entity.Room;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.mapper.RoomMapper;
@@ -22,8 +23,10 @@ public class RoomService {
 	private final RoomMapper roomMapper;
 
 	public RoomDTO.Response create(Long buildingId, RoomDTO.Request request) {
-		Room newRoom = roomMapper.toEntity(buildingId, request);
+		Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
+		Room newRoom = roomMapper.toEntity(validBuilding, request);
 		Room savedRoom = roomRepository.save(newRoom);
+		validBuilding.addRoom(savedRoom);
 		return roomMapper.toResponse(savedRoom);
 	}
 
@@ -33,8 +36,10 @@ public class RoomService {
 		return roomMapper.toInfo(validRoom);
 	}
 
-	public boolean delete(Long roomId) {
+	public boolean delete(Long buildingId, Long roomId) {
+		Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
 		Room validRoom = roomRepository.getValidRoomWithIdOrThrow(roomId, Status.REGISTER);
+		validBuilding.removeRoom(validRoom);
 		validRoom.delete();
 		return validRoom.getStatus() == Status.UNREGISTER;
 	}

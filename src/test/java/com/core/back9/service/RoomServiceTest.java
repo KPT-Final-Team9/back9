@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,14 +107,16 @@ class RoomServiceTest {
 		  .area(84F)
 		  .usage(Usage.OFFICES)
 		  .build();
-		given(roomMapper.toEntity(building.getId(), request)).willReturn(room);
+		given(buildingRepository.getValidBuildingWithIdOrThrow(building.getId(), Status.REGISTER)).willReturn(building);
+		given(roomMapper.toEntity(building, request)).willReturn(room);
 		given(roomRepository.save(room)).willReturn(savedRoom);
 		given(roomMapper.toResponse(savedRoom)).willReturn(response);
 
 		RoomDTO.Response result = roomService.create(building.getId(), request);
 
 		assertThat(result).isEqualTo(result);
-		verify(roomMapper).toEntity(building.getId(), request);
+		verify(buildingRepository).getValidBuildingWithIdOrThrow(building.getId(), Status.REGISTER);
+		verify(roomMapper).toEntity(building, request);
 		verify(roomRepository).save(room);
 		verify(roomMapper).toResponse(savedRoom);
 	}
@@ -143,12 +146,15 @@ class RoomServiceTest {
 	@DisplayName("호실 삭제 성공")
 	@Test
 	public void givenRoomIdWhenDeleteRoomThenSuccessResult() {
+		long selectedBuildingId = 1L;
 		long deleteId = 1L;
+		given(buildingRepository.getValidBuildingWithIdOrThrow(selectedBuildingId, Status.REGISTER)).willReturn(building);
 		given(roomRepository.getValidRoomWithIdOrThrow(deleteId, Status.REGISTER)).willReturn(room);
 
-		boolean result = roomService.delete(deleteId);
+		boolean result = roomService.delete(selectedBuildingId, deleteId);
 
 		assertThat(result).isTrue();
+		verify(buildingRepository).getValidBuildingWithIdOrThrow(selectedBuildingId, Status.REGISTER);
 		verify(roomRepository).getValidRoomWithIdOrThrow(deleteId, Status.REGISTER);
 	}
 

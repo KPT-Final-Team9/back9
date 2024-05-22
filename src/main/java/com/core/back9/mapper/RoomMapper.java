@@ -1,10 +1,14 @@
 package com.core.back9.mapper;
 
 import com.core.back9.dto.RoomDTO;
+import com.core.back9.entity.Building;
 import com.core.back9.entity.Room;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingConstants;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 @Mapper(
   componentModel = MappingConstants.ComponentModel.SPRING,
@@ -13,10 +17,21 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface RoomMapper {
 
-	Room toEntity(Long buildingId, RoomDTO.Request request);
+	@Mapping(target = "building", expression = "java(building)")
+	Room toEntity(@Context Building building, RoomDTO.Request request);
 
 	RoomDTO.Response toResponse(Room room);
 
 	RoomDTO.Info toInfo(Room room);
+
+	List<RoomDTO.Info> toInfoList(List<Room> rooms);
+
+	@Named("toInfoPage")
+	default Page<RoomDTO.Info> toInfoPage(List<Room> roomList, Pageable pageable) {
+		int start = (int) pageable.getOffset();
+		int end = Math.min((start + pageable.getPageSize()), roomList.size());
+		List<RoomDTO.Info> dtoList = toInfoList(roomList.subList(start, end));
+		return new PageImpl<>(dtoList, pageable, roomList.size());
+	}
 
 }

@@ -28,7 +28,7 @@ public class BuildingService {
 	@Transactional(readOnly = true)
 	public Page<BuildingDTO.Info> selectAll(Pageable pageable) {
 		return buildingRepository.findAllByStatus(Status.REGISTER, pageable)
-		  .map(buildingMapper::toInfo);
+		  .map(building -> buildingMapper.toInfo(building, pageable));
 	}
 
 	@Transactional(readOnly = true)

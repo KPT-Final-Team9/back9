@@ -1,6 +1,7 @@
 package com.core.back9.controller;
 
 import com.core.back9.dto.BuildingDTO;
+import com.core.back9.dto.RoomDTO;
 import com.core.back9.service.BuildingService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,15 +69,18 @@ class BuildingControllerTest {
 		infoList = List.of(
 		  new BuildingDTO.Info(1L, "building1", "address1", "zipCode1",
 			LocalDateTime.of(2024, 3, 5, 13, 30, 0),
-			LocalDateTime.of(2024, 3, 5, 13, 30, 0)
+			LocalDateTime.of(2024, 3, 5, 13, 30, 0),
+			new PageImpl<>(List.of(RoomDTO.Info.builder().id(1L).name("building1 room1").build()))
 		  ),
 		  new BuildingDTO.Info(2L, "building2", "address2", "zipCode2",
 			LocalDateTime.of(2024, 4, 5, 14, 40, 0),
-			LocalDateTime.of(2024, 4, 5, 14, 40, 0)
+			LocalDateTime.of(2024, 4, 5, 14, 40, 0),
+			null
 		  ),
 		  new BuildingDTO.Info(3L, "building3", "address3", "zipCode3",
 			LocalDateTime.of(2024, 5, 5, 15, 50, 0),
-			LocalDateTime.of(2024, 5, 5, 15, 50, 0)
+			LocalDateTime.of(2024, 5, 5, 15, 50, 0),
+			null
 		  )
 		);
 	}
