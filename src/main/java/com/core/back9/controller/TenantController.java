@@ -4,8 +4,7 @@ import com.core.back9.dto.TenantDTO;
 import com.core.back9.service.TenantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,19 +13,21 @@ import java.net.URI;
 @RequiredArgsConstructor
 @RequestMapping("/api/tenants")
 @RestController
-public class TenantController {
+public class TenantController { // TODO: Member 구현 정도에 따라 관계 재설정 및 추가개선 우선
 
     private final TenantService tenantService;
 
     @PostMapping("")
-    public ResponseEntity<TenantDTO.RegisterResponse> register(
+    public ResponseEntity<TenantDTO.Response> registerTenant(
             @Valid
-            @RequestBody TenantDTO.RegisterRequest request
+            @RequestBody TenantDTO.Request request
     ) {
 
-        TenantDTO.RegisterResponse response = tenantService.register(request);
+        TenantDTO.Response response = tenantService.registerTenant(request);
 
-        return ResponseEntity.created(URI.create("/api/tenants/" + response.getId())).body(response);
+        return ResponseEntity
+                .created(URI.create("/api/tenants/" + response.getId()))
+                .body(response);
 
     }
 
@@ -52,7 +53,7 @@ public class TenantController {
     public ResponseEntity<TenantDTO.Info> modifyTenant(
             @PathVariable(name = "tenantId") Long tenantId,
             @Valid
-            @RequestBody TenantDTO.RegisterRequest request
+            @RequestBody TenantDTO.Request request
     ) {
 
         TenantDTO.Info info = tenantService.modifyTenant(tenantId, request);

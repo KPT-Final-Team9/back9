@@ -13,9 +13,9 @@ import java.util.List;
 )
 public interface TenantMapper {
 
-	Tenant toEntity(TenantDTO.RegisterRequest registerRequest);
+	Tenant toEntity(TenantDTO.Request request);
 
-	TenantDTO.RegisterResponse toRegisterResponse(Tenant tenant);
+	TenantDTO.Response toRegisterResponse(Tenant tenant);
 
 	TenantDTO.Info toInfo(Tenant tenant);
 
