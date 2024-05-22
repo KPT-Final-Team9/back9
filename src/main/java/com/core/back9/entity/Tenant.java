@@ -32,9 +32,10 @@ public class Tenant extends BaseEntity {
 		this.status = Status.REGISTER;
 	}
 
-	public void update(TenantDTO.RegisterRequest request) {
+	public Tenant update(TenantDTO.Request request) {
 		this.name = request.getName();
 		this.companyNumber = request.getCompanyNumber();
 		this.status = Status.REGISTER;
+		return this;
 	}
 }

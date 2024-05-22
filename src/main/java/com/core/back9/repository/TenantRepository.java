@@ -14,13 +14,13 @@ import java.util.Optional;
 
 public interface TenantRepository extends JpaRepository<Tenant, Long> {
 
-
-    @Query("""
+    @Query(value = """
             select t
             from Tenant t
             where t.status=?1
-            """)
-    Page<Tenant> selectAllByStatus(Status status, Pageable pageable);
+            """,
+            countQuery = "select count(t) from Tenant t where t.status=?1")
+    Page<Tenant> selectAllRegisteredTenant(Status status, Pageable pageable);
 
     @Query("""
             select t

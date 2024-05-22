@@ -58,15 +58,15 @@ class TenantRepositoryTest {
         tenantRepository.saveAll(List.of(tenant1, tenant2, tenant3));
 
         // when
-        Page<Tenant> tenants = tenantRepository.selectAllByStatus(Status.REGISTER, pageRequest);
+        Page<Tenant> tenants = tenantRepository.selectAllRegisteredTenant(Status.REGISTER, pageRequest);
 
         // then
         assertThat(tenants)
-                .extracting("name", "companyNumber")
+                .extracting("id", "name", "companyNumber", "status")
                 .containsExactly(
-                        tuple("입주사1", "02-000-0000"),
-                        tuple("입주사2", "02-000-0001"),
-                        tuple("입주사3", "02-000-0002")
+                        tuple(tenants.getContent().get(0).getId(), "입주사1", "02-000-0000", Status.REGISTER),
+                        tuple(tenants.getContent().get(1).getId(), "입주사2", "02-000-0001", Status.REGISTER),
+                        tuple(tenants.getContent().get(2).getId(), "입주사3", "02-000-0002", Status.REGISTER)
                 );
 
     }
@@ -78,7 +78,7 @@ class TenantRepositoryTest {
         PageRequest pageRequest = PageRequest.of(0, 10); // (pageNumber, pageSize)
 
         // when
-        Page<Tenant> tenants = tenantRepository.selectAllByStatus(Status.REGISTER, pageRequest);
+        Page<Tenant> tenants = tenantRepository.selectAllRegisteredTenant(Status.REGISTER, pageRequest);
 
         // then
         assertThat(tenants).isEmpty();
@@ -93,7 +93,7 @@ class TenantRepositoryTest {
         Tenant tenant2 = assumeTenant("입주사2", "02-000-0001");
         Tenant tenant3 = assumeTenant("입주사3", "02-000-0002");
 
-        TenantDTO.RegisterRequest request = TenantDTO.RegisterRequest.builder()
+        TenantDTO.Request request = TenantDTO.Request.builder()
                 .name("입주사4")
                 .companyNumber("02-000-0003")
                 .build();
@@ -102,11 +102,11 @@ class TenantRepositoryTest {
 
         // when
         tenantRepository.getValidOneTenantOrThrow(Status.REGISTER, tenants.get(1).getId());
-        tenant2.update(request);
+        Tenant updatedTenant = tenant2.update(request);
 
         // then
-        assertThat(tenant2).extracting("name", "companyNumber")
-                .contains("입주사4", "02-000-0003");
+        assertThat(updatedTenant).extracting("id", "name", "companyNumber", "status")
+                .contains(tenants.get(1).getId(), "입주사4", "02-000-0003", Status.REGISTER);
 
     }
 

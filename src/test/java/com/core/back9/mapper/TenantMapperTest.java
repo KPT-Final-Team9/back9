@@ -6,28 +6,28 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.groups.Tuple.*;
+import static org.assertj.core.groups.Tuple.tuple;
 
 public class TenantMapperTest {
 
-    TenantMapper tenantMapper = Mappers.getMapper(TenantMapper.class);
+    private final TenantMapper tenantMapper = Mappers.getMapper(TenantMapper.class);
 
     @Test
     @DisplayName("tenant의 request를 entity로 변환할 수 있다.")
     void tenantRequestToEntity() {
         // given
-        TenantDTO.RegisterRequest registerRequest = TenantDTO.RegisterRequest
+        TenantDTO.Request request = TenantDTO.Request
                 .builder()
                 .name("입주사1")
                 .companyNumber("02-000-0000")
                 .build();
 
         // when
-        Tenant tenant = tenantMapper.toEntity(registerRequest);
+        Tenant tenant = tenantMapper.toEntity(request);
 
         // then
         assertThat(tenant)
@@ -43,39 +43,12 @@ public class TenantMapperTest {
         Tenant tenant = assumeTenant("입주사1", "02-000-0000");
 
         // when
-        TenantDTO.RegisterResponse response = tenantMapper.toRegisterResponse(tenant);
+        TenantDTO.Response response = tenantMapper.toRegisterResponse(tenant);
 
         // then
         assertThat(response)
                 .extracting("name", "companyNumber")
                 .containsExactly("입주사1", "02-000-0000");
-
-    }
-
-    @Test
-    @DisplayName("tenantInfo의 List와 Count를 TenantInfoList에 매핑할 수 있다.")
-    void tenantInfoToInfoList() {
-        // given
-        Tenant tenant1 = assumeTenant("입주사1", "02-000-0000");
-        Tenant tenant2 = assumeTenant("입주사2", "02-000-0001");
-        Tenant tenant3 = assumeTenant("입주사3", "02-000-0002");
-
-        List<Tenant> tenantList = List.of(tenant1, tenant2, tenant3);
-
-        List<TenantDTO.Info> tenantInfoList = tenantList.stream()
-                .map(tenantMapper::toInfo)
-                .collect(Collectors.toList());
-
-        // when
-        TenantDTO.InfoList infoList = tenantMapper.toInfoList(3L, tenantInfoList);
-
-        // then
-        assertThat(infoList.getInfoList()).extracting("name", "companyNumber")
-                .containsExactlyInAnyOrder(
-                        tuple("입주사1", "02-000-0000"),
-                        tuple("입주사2", "02-000-0001"),
-                        tuple("입주사3", "02-000-0002")
-                );
 
     }
 
@@ -101,7 +74,7 @@ public class TenantMapperTest {
         Tenant tenant = assumeTenant("입주사1", "02-000-0000");
 
         // when
-        TenantDTO.RegisterResponse response = tenantMapper.toRegisterResponse(tenant);
+        TenantDTO.Response response = tenantMapper.toRegisterResponse(tenant);
 
         // then
         assertThat(response)
@@ -125,11 +98,59 @@ public class TenantMapperTest {
 
     }
 
-    private Tenant assumeTenant(String name, String companyNumber) {
+    @Test
+    @DisplayName("tenant의 info를 infoList로 변환할 수 있다.")
+    void tenantInfoToInfoList() {
+        // given
+        TenantDTO.Info info1 = assumeTenantInfo(1L, "입주사1", "02-000-0000");
+        TenantDTO.Info info2 = assumeTenantInfo(2L, "입주사2", "02-000-0001");
+        TenantDTO.Info info3 = assumeTenantInfo(3L, "입주사3", "02-000-0002");
+
+        List<TenantDTO.Info> infoList = List.of(info1, info2, info3);
+
+        // when
+        TenantDTO.InfoList mapperInfoList = tenantMapper.toInfoList(infoList.stream().count(), infoList);
+
+        // then
+        assertThat(mapperInfoList.getCount()).isEqualTo(3L);
+
+        assertThat(mapperInfoList.getInfoList())
+                .extracting("id", "name", "companyNumber")
+                .containsExactlyInAnyOrder(
+                        tuple(1L, "입주사1", "02-000-0000"),
+                        tuple(2L, "입주사2", "02-000-0001"),
+                        tuple(3L, "입주사3", "02-000-0002")
+                );
+
+    }
+
+    private Tenant assumeTenant(
+            String name
+            , String companyNumber) {
+
         return Tenant.builder()
                 .name(name)
                 .companyNumber(companyNumber)
                 .build();
+
     }
+
+    private TenantDTO.Info assumeTenantInfo(
+            Long id,
+            String name,
+            String companyNumber) {
+
+        return TenantDTO.Info.builder()
+                .id(id)
+                .name(name)
+                .companyNumber(companyNumber)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now().plusDays(1))
+                .build();
+
+    }
+
+
+
 
 }

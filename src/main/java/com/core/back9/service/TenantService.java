@@ -7,7 +7,6 @@ import com.core.back9.exception.ApiErrorCode;
 import com.core.back9.exception.ApiException;
 import com.core.back9.mapper.TenantMapper;
 import com.core.back9.repository.TenantRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,24 +25,23 @@ public class TenantService {
     private final TenantMapper tenantMapper;
 
     @Transactional
-    public TenantDTO.RegisterResponse register(TenantDTO.RegisterRequest request) {
+    public TenantDTO.Response registerTenant(TenantDTO.Request request) {
 
         Tenant tenant = tenantMapper.toEntity(request);
-        Tenant savedTenant = tenantRepository.save(tenant);
 
-        return tenantMapper.toRegisterResponse(savedTenant);
+        return tenantMapper.toRegisterResponse(tenantRepository.save(tenant));
 
     }
 
     public TenantDTO.InfoList getAllTenant(Pageable pageable) {
 
-        Page<Tenant> tenantList = tenantRepository.selectAllByStatus(Status.REGISTER, pageable);
+        Page<Tenant> tenants = tenantRepository.selectAllRegisteredTenant(Status.REGISTER, pageable);
 
-        long count = tenantList.getTotalElements();
+        long count = tenants.getTotalElements();
 
-        List<TenantDTO.Info> tenantInfoList = tenantList.stream()
-                .map(tenantMapper::toInfo).
-                collect(Collectors.toList());
+        List<TenantDTO.Info> tenantInfoList = tenants.stream()
+                .map(tenantMapper::toInfo)
+                .collect(Collectors.toList());
 
         return tenantMapper.toInfoList(count, tenantInfoList);
 
@@ -59,13 +57,13 @@ public class TenantService {
     @Transactional
     public TenantDTO.Info modifyTenant(
             Long tenantId,
-            TenantDTO.RegisterRequest request
+            TenantDTO.Request request
     ) {
 
         Tenant tenant = tenantRepository.getValidOneTenantOrThrow(Status.REGISTER, tenantId);
-        tenant.update(request);
+        Tenant updatedTenant = tenant.update(request);
 
-        return tenantMapper.toInfo(tenant);
+        return tenantMapper.toInfo(updatedTenant);
     }
 
     @Transactional

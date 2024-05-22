@@ -1,5 +1,7 @@
 package com.core.back9.dto;
 
+import com.core.back9.entity.constant.Status;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +16,7 @@ public class TenantDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class RegisterRequest {
+	public static class Request {
 		private String name;
 		private String companyNumber;
 	}
@@ -23,7 +25,7 @@ public class TenantDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class RegisterResponse {
+	public static class Response {
 		private Long id;
 		private String name;
 		private String companyNumber;
