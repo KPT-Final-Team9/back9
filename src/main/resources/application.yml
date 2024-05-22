@@ -10,6 +10,7 @@ spring:
     active: dev
 
 springdoc:
+  use-fqn: true
   api-docs:
     version: openapi_3_0
     path: /public-api/api-docs
