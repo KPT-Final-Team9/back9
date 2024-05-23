@@ -107,7 +107,7 @@ class RoomRepositoryTest {
 		Room savedRoom = roomRepository.save(room);
 		long savedRoomId = savedRoom.getId();
 
-		Room validRoom = roomRepository.getValidRoomWithIdOrThrow(savedRoomId, Status.REGISTER);
+		Room validRoom = roomRepository.getValidRoomWithIdOrThrow(building.getId(), savedRoomId, Status.REGISTER);
 
 		assertThat(savedRoom).isNotNull();
 		assertThat(savedRoomId).isEqualTo(savedRoomId);
@@ -130,7 +130,7 @@ class RoomRepositoryTest {
 		Room savedRoom = roomRepository.save(room);
 		long savedRoomId = savedRoom.getId();
 
-		Room validRoom = roomRepository.getValidRoomWithIdOrThrow(savedRoomId, Status.REGISTER);
+		Room validRoom = roomRepository.getValidRoomWithIdOrThrow(building.getId(), savedRoomId, Status.REGISTER);
 		validRoom.update(request);
 
 		assertThat(validRoom).isNotNull();
@@ -144,7 +144,7 @@ class RoomRepositoryTest {
 		Room savedRoom = roomRepository.save(room);
 		long savedRoomId = savedRoom.getId();
 
-		Room validRoom = roomRepository.getValidRoomWithIdOrThrow(savedRoomId, Status.REGISTER);
+		Room validRoom = roomRepository.getValidRoomWithIdOrThrow(building.getId(), savedRoomId, Status.REGISTER);
 		validRoom.delete();
 
 		assertThat(validRoom.getStatus()).isEqualTo(Status.UNREGISTER);

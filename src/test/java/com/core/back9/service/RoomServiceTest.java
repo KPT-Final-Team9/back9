@@ -3,11 +3,13 @@ package com.core.back9.service;
 import com.core.back9.dto.RoomDTO;
 import com.core.back9.entity.Building;
 import com.core.back9.entity.Room;
+import com.core.back9.entity.Setting;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.entity.constant.Usage;
 import com.core.back9.mapper.RoomMapper;
 import com.core.back9.repository.BuildingRepository;
 import com.core.back9.repository.RoomRepository;
+import com.core.back9.repository.SettingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,6 +47,9 @@ class RoomServiceTest {
 	@Mock
 	private BuildingRepository buildingRepository;
 
+	@Mock
+	private SettingRepository settingRepository;
+
 	@InjectMocks
 	private RoomService roomService;
 
@@ -53,10 +58,13 @@ class RoomServiceTest {
 	private RoomDTO.Request request;
 	private RoomDTO.Response response;
 	private RoomDTO.Info info;
+	private Setting setting;
+	private Long selectedBuildingId = 1L;
 
 	@BeforeEach
 	public void initSetting() {
-		roomService = new RoomService(buildingRepository, roomRepository, roomMapper);
+		roomService = new RoomService(buildingRepository, roomRepository, roomMapper, settingRepository);
+		setting = roomService.createSetting();
 		building = Building.builder()
 		  .name("building name")
 		  .address("building address")
@@ -108,7 +116,7 @@ class RoomServiceTest {
 		  .usage(Usage.OFFICES)
 		  .build();
 		given(buildingRepository.getValidBuildingWithIdOrThrow(building.getId(), Status.REGISTER)).willReturn(building);
-		given(roomMapper.toEntity(building, request)).willReturn(room);
+		given(roomMapper.toEntity(building, request, setting)).willReturn(room);
 		given(roomRepository.save(room)).willReturn(savedRoom);
 		given(roomMapper.toResponse(savedRoom)).willReturn(response);
 
@@ -116,7 +124,7 @@ class RoomServiceTest {
 
 		assertThat(result).isEqualTo(result);
 		verify(buildingRepository).getValidBuildingWithIdOrThrow(building.getId(), Status.REGISTER);
-		verify(roomMapper).toEntity(building, request);
+		verify(roomMapper).toEntity(building, request, setting);
 		verify(roomRepository).save(room);
 		verify(roomMapper).toResponse(savedRoom);
 	}
@@ -133,13 +141,13 @@ class RoomServiceTest {
 		  .name("updated room name")
 		  .floor("updated room floor")
 		  .build();
-		given(roomRepository.getValidRoomWithIdOrThrow(updateId, Status.REGISTER)).willReturn(room);
+		given(roomRepository.getValidRoomWithIdOrThrow(selectedBuildingId, updateId, Status.REGISTER)).willReturn(room);
 		given(roomMapper.toInfo(room)).willReturn(updateInfo);
 
-		RoomDTO.Info result = roomService.update(updateId, updateRequest);
+		RoomDTO.Info result = roomService.update(selectedBuildingId, updateId, updateRequest);
 
 		assertThat(result).isEqualTo(updateInfo);
-		verify(roomRepository).getValidRoomWithIdOrThrow(updateId, Status.REGISTER);
+		verify(roomRepository).getValidRoomWithIdOrThrow(selectedBuildingId, updateId, Status.REGISTER);
 		verify(roomMapper).toInfo(room);
 	}
 
@@ -149,13 +157,13 @@ class RoomServiceTest {
 		long selectedBuildingId = 1L;
 		long deleteId = 1L;
 		given(buildingRepository.getValidBuildingWithIdOrThrow(selectedBuildingId, Status.REGISTER)).willReturn(building);
-		given(roomRepository.getValidRoomWithIdOrThrow(deleteId, Status.REGISTER)).willReturn(room);
+		given(roomRepository.getValidRoomWithIdOrThrow(selectedBuildingId, deleteId, Status.REGISTER)).willReturn(room);
 
 		boolean result = roomService.delete(selectedBuildingId, deleteId);
 
 		assertThat(result).isTrue();
 		verify(buildingRepository).getValidBuildingWithIdOrThrow(selectedBuildingId, Status.REGISTER);
-		verify(roomRepository).getValidRoomWithIdOrThrow(deleteId, Status.REGISTER);
+		verify(roomRepository).getValidRoomWithIdOrThrow(selectedBuildingId, deleteId, Status.REGISTER);
 	}
 
 	@DisplayName("전체 호실 조회 성공")
@@ -180,12 +188,12 @@ class RoomServiceTest {
 	@Test
 	public void givenRoomIdWhenSelectOneRoomThenRoomInfo() {
 		long selectedRoomId = 1L;
-		given(roomRepository.getValidRoomWithIdOrThrow(selectedRoomId, Status.REGISTER)).willReturn(room);
+		given(roomRepository.getValidRoomWithIdOrThrow(selectedBuildingId, selectedRoomId, Status.REGISTER)).willReturn(room);
 		given(roomMapper.toInfo(room)).willReturn(info);
 
-		RoomDTO.Info result = roomService.selectOne(selectedRoomId);
+		RoomDTO.Info result = roomService.selectOne(selectedBuildingId, selectedRoomId);
 		assertThat(result).isEqualTo(info);
-		verify(roomRepository).getValidRoomWithIdOrThrow(selectedRoomId, Status.REGISTER);
+		verify(roomRepository).getValidRoomWithIdOrThrow(selectedBuildingId, selectedRoomId, Status.REGISTER);
 		verify(roomMapper).toInfo(room);
 	}
 

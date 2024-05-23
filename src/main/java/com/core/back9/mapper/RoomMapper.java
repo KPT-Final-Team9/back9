@@ -3,6 +3,7 @@ package com.core.back9.mapper;
 import com.core.back9.dto.RoomDTO;
 import com.core.back9.entity.Building;
 import com.core.back9.entity.Room;
+import com.core.back9.entity.Setting;
 import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,7 +19,8 @@ import java.util.List;
 public interface RoomMapper {
 
 	@Mapping(target = "building", expression = "java(building)")
-	Room toEntity(@Context Building building, RoomDTO.Request request);
+	@Mapping(target = "setting", expression = "java(setting)")
+	Room toEntity(@Context Building building, RoomDTO.Request request, @Context Setting setting);
 
 	RoomDTO.Response toResponse(Room room);
 
