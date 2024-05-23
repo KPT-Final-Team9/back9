@@ -26,8 +26,6 @@ public interface BuildingMapper {
 
 	BuildingDTO.Response toResponse(Building building);
 
-	BuildingDTO.Info toInfo(Building building);
-
 	@Mapping(
 	  target = "roomPage",
 	  expression = "java(toRoomPage(building.getRoomList(), pageable))"

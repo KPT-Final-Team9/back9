@@ -32,15 +32,15 @@ public class BuildingService {
 	}
 
 	@Transactional(readOnly = true)
-	public BuildingDTO.Info selectOne(Long buildingId) {
+	public BuildingDTO.Info selectOne(Long buildingId, Pageable pageable) {
 		Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
-		return buildingMapper.toInfo(validBuilding);
+		return buildingMapper.toInfo(validBuilding, pageable);
 	}
 
-	public BuildingDTO.Info update(Long buildingId, BuildingDTO.Request request) {
+	public BuildingDTO.Info update(Long buildingId, BuildingDTO.Request request, Pageable pageable) {
 		Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
 		validBuilding.update(request);
-		return buildingMapper.toInfo(validBuilding);
+		return buildingMapper.toInfo(validBuilding, pageable);
 	}
 
 	public boolean delete(Long buildingId) {
