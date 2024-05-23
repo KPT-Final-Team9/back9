@@ -1,0 +1,14 @@
+ALTER TABLE rooms
+    ADD setting_id BIGINT NULL;
+
+ALTER TABLE rooms
+    ADD CONSTRAINT uc_rooms_setting UNIQUE (setting_id);
+
+ALTER TABLE rooms
+    ADD CONSTRAINT FK_ROOMS_ON_SETTING FOREIGN KEY (setting_id) REFERENCES settings (id);
+
+ALTER TABLE settings
+DROP FOREIGN KEY FK_SETTINGS_ON_ROOM;
+
+ALTER TABLE settings
+DROP COLUMN room_id;

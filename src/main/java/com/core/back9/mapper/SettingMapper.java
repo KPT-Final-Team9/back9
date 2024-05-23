@@ -13,10 +13,6 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface SettingMapper {
 
-	Setting toEntity(SettingDTO.RegisterRequest registerRequest);
-
-	SettingDTO.RegisterResponse toRegisterResponse(Setting setting);
-
 	SettingDTO.Info toInfo(Setting setting);
 
 }

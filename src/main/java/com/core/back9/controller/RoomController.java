@@ -34,7 +34,7 @@ public class RoomController {
 	  @Valid
 	  @RequestBody RoomDTO.Request request
 	) {
-		return ResponseEntity.ok(roomService.update(roomId, request));
+		return ResponseEntity.ok(roomService.update(buildingId, roomId, request));
 	}
 
 	@DeleteMapping("/{roomId}")
@@ -61,7 +61,35 @@ public class RoomController {
 	  @PathVariable Long buildingId,
 	  @PathVariable Long roomId
 	) {
-		return ResponseEntity.ok(roomService.selectOne(roomId));
+		return ResponseEntity.ok(roomService.selectOne(buildingId, roomId));
+	}
+
+	@PostMapping("/{roomId}/setting-on")
+	public ResponseEntity<RoomDTO.Info> turnOn(
+	  /* TODO Member 추가 */
+	  @PathVariable Long buildingId,
+	  @PathVariable Long roomId
+	) {
+		return ResponseEntity.ok(roomService.updateSwitch(buildingId, roomId, true));
+	}
+
+	@PostMapping("/{roomId}/setting-off")
+	public ResponseEntity<RoomDTO.Info> turnOff(
+	  /* TODO Member 추가 */
+	  @PathVariable Long buildingId,
+	  @PathVariable Long roomId
+	) {
+		return ResponseEntity.ok(roomService.updateSwitch(buildingId, roomId, false));
+	}
+
+	@PatchMapping("/{roomId}/modify-encourage-message")
+	public ResponseEntity<RoomDTO.Info> modify(
+	  /* TODO Member 추가 */
+	  @PathVariable Long buildingId,
+	  @PathVariable Long roomId,
+	  @RequestBody String encourageMessage
+	) {
+		return ResponseEntity.ok(roomService.updateEncourageMessage(buildingId, roomId, encourageMessage));
 	}
 
 }

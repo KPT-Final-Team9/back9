@@ -146,7 +146,7 @@ class BuildingControllerTest {
 	public void givenBuildingIdWhenSelectOneBuildingThenBuildingInfo() throws Exception {
 		long selectId = 1L;
 
-		given(buildingService.selectOne(anyLong())).willReturn(infoList.get(0));
+		given(buildingService.selectOne(anyLong(), any(Pageable.class))).willReturn(infoList.get(0));
 
 		mockMvc.perform(get("/api/buildings/" + selectId))
 		  .andDo(print())
@@ -157,7 +157,7 @@ class BuildingControllerTest {
 		  .andExpect(jsonPath("$.zip_code").value(infoList.get(0).getZipCode()))
 		  .andExpect(jsonPath("$.created_at").value("2024-03-05 13:30:00"))
 		  .andExpect(jsonPath("$.updated_at").value("2024-03-05 13:30:00"));
-		verify(buildingService).selectOne(anyLong());
+		verify(buildingService).selectOne(anyLong(), any(Pageable.class));
 	}
 
 	@DisplayName("빌딩 정보 수정 성공")
@@ -175,7 +175,7 @@ class BuildingControllerTest {
 		  .zipCode("updated zipCode")
 		  .build();
 
-		given(buildingService.update(anyLong(), any(BuildingDTO.Request.class))).willReturn(updatedInfo);
+		given(buildingService.update(anyLong(), any(BuildingDTO.Request.class), any(Pageable.class))).willReturn(updatedInfo);
 
 		mockMvc.perform(
 			patch("/api/buildings/" + updateId)
@@ -187,7 +187,7 @@ class BuildingControllerTest {
 		  .andExpect(jsonPath("$.name").value(updateRequest.getName()))
 		  .andExpect(jsonPath("$.address").value(updateRequest.getAddress()))
 		  .andExpect(jsonPath("$.zip_code").value(updateRequest.getZipCode()));
-		verify(buildingService).update(anyLong(), any(BuildingDTO.Request.class));
+		verify(buildingService).update(anyLong(), any(BuildingDTO.Request.class), any(Pageable.class));
 	}
 
 	@DisplayName("빌딩 삭제 성공")

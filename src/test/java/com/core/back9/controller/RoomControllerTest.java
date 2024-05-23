@@ -100,7 +100,7 @@ class RoomControllerTest {
 		  .name("updated name")
 		  .floor("updated floor")
 		  .build();
-		given(roomService.update(anyLong(), any(RoomDTO.Request.class))).willReturn(updatedInfo);
+		given(roomService.update(anyLong(), anyLong(), any(RoomDTO.Request.class))).willReturn(updatedInfo);
 
 		mockMvc.perform(
 			patch("/api/buildings/" + selectedBuildingId + "/rooms/" + updateRoomId)
@@ -111,7 +111,7 @@ class RoomControllerTest {
 		  .andExpect(status().isOk())
 		  .andExpect(jsonPath("$.name").value(updateRequest.getName()))
 		  .andExpect(jsonPath("$.floor").value(updateRequest.getFloor()));
-		verify(roomService).update(anyLong(), any(RoomDTO.Request.class));
+		verify(roomService).update(anyLong(), anyLong(), any(RoomDTO.Request.class));
 	}
 
 	@DisplayName("호실 삭제 성공")
@@ -168,14 +168,14 @@ class RoomControllerTest {
 		  .floor("selected room floor")
 		  .build();
 
-		given(roomService.selectOne(anyLong())).willReturn(selectedInfo);
+		given(roomService.selectOne(anyLong(), anyLong())).willReturn(selectedInfo);
 
 		mockMvc.perform(get("/api/buildings/" + selectedBuildingId + "/rooms/" + selectRoomId))
 		  .andDo(print())
 		  .andExpect(status().isOk())
 		  .andExpect(jsonPath("$.name").value(selectedInfo.getName()))
 		  .andExpect(jsonPath("$.floor").value(selectedInfo.getFloor()));
-		verify(roomService).selectOne(anyLong());
+		verify(roomService).selectOne(anyLong(), anyLong());
 	}
 
 }

@@ -43,9 +43,11 @@ class BuildingServiceTest {
 	private Building building;
 	private BuildingDTO.Request request;
 	private BuildingDTO.Info info;
+	private Pageable pageable;
 
 	@BeforeEach
 	public void initSetting() {
+		pageable = PageRequest.of(0, 10);
 		buildingService = new BuildingService(buildingRepository, buildingMapper);
 		building = Building.builder()
 		  .name("building name")
@@ -116,13 +118,13 @@ class BuildingServiceTest {
 		long buildingId = 1L;
 		given(buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER))
 		  .willReturn(building);
-		given(buildingMapper.toInfo(building)).willReturn(info);
+		given(buildingMapper.toInfo(building, pageable)).willReturn(info);
 
-		BuildingDTO.Info result = buildingService.selectOne(buildingId);
+		BuildingDTO.Info result = buildingService.selectOne(buildingId, pageable);
 
 		assertThat(result).isEqualTo(info);
 		verify(buildingRepository).getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
-		verify(buildingMapper).toInfo(building);
+		verify(buildingMapper).toInfo(building, pageable);
 	}
 
 	@DisplayName("빌딩 정보 수정 성공")
@@ -140,15 +142,15 @@ class BuildingServiceTest {
 		  .address(updateRequest.getAddress())
 		  .build();
 		given(buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER)).willReturn(building);
-		given(buildingMapper.toInfo(building)).willReturn(updatedInfo);
+		given(buildingMapper.toInfo(building, pageable)).willReturn(updatedInfo);
 
-		BuildingDTO.Info result = buildingService.update(buildingId, updateRequest);
+		BuildingDTO.Info result = buildingService.update(buildingId, updateRequest, pageable);
 
 		assertThat(result).isEqualTo(updatedInfo);
 		assertThat(building.getName()).isEqualTo(updateRequest.getName());
 		assertThat(building.getAddress()).isEqualTo(updateRequest.getAddress());
 		verify(buildingRepository).getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
-		verify(buildingMapper).toInfo(building);
+		verify(buildingMapper).toInfo(building, pageable);
 	}
 
 	@DisplayName("빌딩 삭제 성공")

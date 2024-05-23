@@ -14,10 +14,10 @@ import java.util.Optional;
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long> {
 
-	Optional<Room> findFirstByIdAndStatus(Long roomId, Status status);
+	Optional<Room> findFirstByBuildingIdAndIdAndStatus(Long buildingId, Long roomId, Status status);
 
-	default Room getValidRoomWithIdOrThrow(Long roomId, Status status) {
-		return findFirstByIdAndStatus(roomId, status)
+	default Room getValidRoomWithIdOrThrow(Long buildingId, Long roomId, Status status) {
+		return findFirstByBuildingIdAndIdAndStatus(buildingId, roomId, status)
 		  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
 	}
 

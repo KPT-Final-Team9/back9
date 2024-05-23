@@ -14,10 +14,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "settings")
 public class Setting extends BaseEntity {
 
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "room_id")
-	private Room room;
-
 	@Column(name = "rating_toggle")
 	private boolean ratingToggle;
 
@@ -29,10 +25,20 @@ public class Setting extends BaseEntity {
 	private Status status;
 
 	@Builder
-	public Setting(Room room, boolean ratingToggle, String encourageMessage, Status status) {
-		this.room = room;
-		this.ratingToggle = ratingToggle;
-		this.encourageMessage = encourageMessage;
-		this.status = status;
+	public Setting(String encourageMessage) {
+		this.ratingToggle = true;
+		this.encourageMessage = encourageMessage == null
+		  ? "안녕하세요\n\n평가를 통해\n오피스에서 함께하는 시간을\n더 즐겁고, 더 편리하게 만들어보아요!"
+		  : encourageMessage;
+		this.status = Status.REGISTER;
 	}
+
+	public void updateToggle(boolean value) {
+		this.ratingToggle = value;
+	}
+
+	public void updateEncourageMessage(String encourageMessage) {
+		this.encourageMessage = encourageMessage;
+	}
+
 }

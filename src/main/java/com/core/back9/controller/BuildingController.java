@@ -30,17 +30,21 @@ public class BuildingController {
 	}
 
 	@GetMapping("/{buildingId}")
-	public ResponseEntity<BuildingDTO.Info> getOne(@PathVariable Long buildingId) {
-		return ResponseEntity.ok(buildingService.selectOne(buildingId));
+	public ResponseEntity<BuildingDTO.Info> getOne(
+	  @PathVariable Long buildingId,
+	  Pageable pageable
+	) {
+		return ResponseEntity.ok(buildingService.selectOne(buildingId, pageable));
 	}
 
 	@PatchMapping("/{buildingId}")
 	public ResponseEntity<BuildingDTO.Info> modify(
 	  @PathVariable Long buildingId,
 	  @Valid
-	  @RequestBody BuildingDTO.Request request
+	  @RequestBody BuildingDTO.Request request,
+	  Pageable pageable
 	) {
-		return ResponseEntity.ok(buildingService.update(buildingId, request));
+		return ResponseEntity.ok(buildingService.update(buildingId, request, pageable));
 	}
 
 	@DeleteMapping("/{buildingId}")
