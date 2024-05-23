@@ -48,6 +48,7 @@ public class RoomDTO {
 		private Usage usage;
 		private Status status;
 		private float rating;
+		private SettingDTO.Info setting;
 		private LocalDateTime createdAt;
 		private LocalDateTime updatedAt;
 	}

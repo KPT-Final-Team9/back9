@@ -47,8 +47,14 @@ public class Room extends BaseEntity {
 	@OneToOne
 	private Contract contract;
 
+	@OneToOne(
+	  cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
+	  orphanRemoval = true
+	)
+	private Setting setting;
+
 	@Builder
-	private Room(String name, String floor, float area, Usage usage, float rating, Building building, Member member) {
+	private Room(String name, String floor, float area, Usage usage, float rating, Building building, Member member, Setting setting) {
 		this.name = name;
 		this.floor = floor;
 		this.area = area;
@@ -57,6 +63,7 @@ public class Room extends BaseEntity {
 		this.building = building;
 		this.member = member;
 		this.status = Status.REGISTER;
+		this.setting = setting;
 	}
 
 	public void update(RoomDTO.Request request) {
