@@ -44,6 +44,9 @@ public class Room extends BaseEntity {
 	@JoinColumn(name = "member_id")
 	private Member member;
 
+	@OneToOne
+	private Contract contract;
+
 	@Builder
 	private Room(String name, String floor, float area, Usage usage, float rating, Building building, Member member) {
 		this.name = name;

@@ -1,0 +1,5 @@
+ALTER TABLE rooms
+    ADD contract_id BIGINT NULL;
+
+ALTER TABLE rooms
+    ADD CONSTRAINT FK_ROOMS_ON_CONTRACT FOREIGN KEY (contract_id) REFERENCES contracts (id);

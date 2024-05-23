@@ -14,25 +14,25 @@ import lombok.NoArgsConstructor;
 @Table(name = "settings")
 public class Setting extends BaseEntity {
 
-	@Column(name = "rating_toggle")
-	private boolean ratingToggle;
-
-	@Column(name = "message")
-	private String message;
-
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "room_id")
 	private Room room;
+
+	@Column(name = "rating_toggle")
+	private boolean ratingToggle;
+
+	@Column(name = "encourage_message")
+	private String encourageMessage;
 
 	@Enumerated(EnumType.STRING)
 	@Column
 	private Status status;
 
 	@Builder
-	public Setting(boolean ratingToggle, String message, Room room, Status status) {
-		this.ratingToggle = ratingToggle;
-		this.message = message;
+	public Setting(Room room, boolean ratingToggle, String encourageMessage, Status status) {
 		this.room = room;
+		this.ratingToggle = ratingToggle;
+		this.encourageMessage = encourageMessage;
 		this.status = status;
 	}
 }
