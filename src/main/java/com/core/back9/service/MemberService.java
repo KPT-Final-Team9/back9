@@ -88,7 +88,7 @@ public class MemberService {
 
     public MemberDTO.Info getCurrenMemberInfo() {
         String currentUsername = SecurityUtil.getCurrentUsername()
-                .orElseThrow(() -> new ApiException(ApiErrorCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_AUTHENTICATED_USER));
 
         return memberMapper.toInfo(
                 memberRepository.findByEmailAndStatus(currentUsername, Status.REGISTER)
