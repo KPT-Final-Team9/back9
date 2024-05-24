@@ -2,7 +2,10 @@ package com.core.back9.mapper;
 
 import com.core.back9.dto.ContractDTO;
 import com.core.back9.entity.Contract;
+import com.core.back9.entity.Room;
+import com.core.back9.entity.Tenant;
 import com.core.back9.entity.constant.ContractStatus;
+import com.core.back9.entity.constant.Usage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -66,7 +69,35 @@ public class ContractMapperTest {
                         200000L);
     }
 
+    @Test
+    @DisplayName("contract의 registerRequest를 entity로 변환 및 연관관계 매핑을 할 수 있다.")
+    void contractRegisterRequestToEntityWithRoomAndTenant() {
+        // given
+        Room room = Room.builder()
+                .name("호실1")
+                .usage(Usage.OFFICES)
+                .build();
 
+        Tenant tenant = Tenant.builder()
+                .name("입주사1")
+                .companyNumber("02-000-0000")
+                .build();
+
+        ContractDTO.RegisterRequest request = ContractDTO.RegisterRequest.builder()
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(1))
+                .deposit(100000000L)
+                .rentalPrice(200000L)
+                .build();
+
+        // when
+        Contract contract = contractMapper.toEntity(request, tenant, room);
+
+        // then
+        assertThat(contract)
+                .extracting("room.name", "room.usage", "tenant.name", "tenant.companyNumber")
+                .contains("호실1", Usage.OFFICES, "입주사1", "02-000-0000");
+    }
 
     @Test
     @DisplayName("contract의 entity를 response로 변환할 수 있다.")
