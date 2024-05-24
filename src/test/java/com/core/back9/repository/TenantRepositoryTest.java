@@ -38,7 +38,7 @@ class TenantRepositoryTest {
         List<Tenant> tenants = tenantRepository.saveAll(List.of(tenant1, tenant2, tenant3));
 
         // when
-        Tenant tenant = tenantRepository.getValidOneTenantOrThrow(Status.REGISTER, tenants.get(1).getId());
+        Tenant tenant = tenantRepository.getValidOneTenantOrThrow(tenants.get(1).getId());
 
         // then
         assertThat(tenant.getId()).isEqualTo(tenants.get(1).getId());
@@ -101,7 +101,7 @@ class TenantRepositoryTest {
         List<Tenant> tenants = tenantRepository.saveAll(List.of(tenant1, tenant2, tenant3));
 
         // when
-        tenantRepository.getValidOneTenantOrThrow(Status.REGISTER, tenants.get(1).getId());
+        tenantRepository.getValidOneTenantOrThrow(tenants.get(1).getId());
         Tenant updatedTenant = tenant2.update(request);
 
         // then

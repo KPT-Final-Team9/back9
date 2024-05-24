@@ -1,6 +1,7 @@
 package com.core.back9.repository;
 
 import com.core.back9.entity.Contract;
+import com.core.back9.entity.constant.ContractType;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.exception.ApiErrorCode;
 import com.core.back9.exception.ApiException;
@@ -19,20 +20,22 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
     @Query(value = """
             select c
             from Contract c
-            where c.status=?1
+            where c.status=?2 and c.room.id=?1
             """,
-    countQuery = "select count(c) from Contract c where c.status=?1")
-    Page<Contract> selectAllRegisteredContract(Status status, Pageable pageable);
+    countQuery = "select count(c) from Contract c where c.room.id=?1 and c.status=?2")
+    Page<Contract> selectAllRegisteredContract(Long roomId, Status status, Pageable pageable);
 
     @Query("""
             select c
             from Contract c
-            where c.id=?2 and c.status=?1
+            where c.room.id=?1
+            and c.id=?2
+            and c.status='REGISTER'
             """)
-    Optional<Contract> getOneTenant(Status status, Long contractId);
+    Optional<Contract> getOneTenant(Long roomId, Long contractId);
 
-    default Contract getValidOneContractOrThrow(Status status, Long contractId) {
-        return getOneTenant(status, contractId)
+    default Contract getValidOneContractOrThrow(Long roomId, Long contractId) {
+        return getOneTenant(roomId, contractId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_CONTRACT));
     }
 
@@ -40,7 +43,27 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
     @Query("""
             update Contract c
             set c.status=?1
-            where c.id=?2 and c.status='REGISTER'
+            where c.id=?3
+            and c.room.id=?2
+            and c.status='REGISTER'
             """)
-    Optional<Integer> deleteRegisteredContract(Status status, Long contractId);
+    Optional<Integer> deleteRegisteredContract(Status status, Long roomId, Long contractId);
+
+    @Query("""
+            select c
+            from Contract c
+            where c.room.id=?1
+            and c.tenant.id=?2
+            and c.status='REGISTER'
+            and c.contractType=?3
+            """)
+    Optional<Contract> findByContractRoomIdAndTenantId(Long roomId, Long tenantId, ContractType initial);
+
+    @Query("""
+            select c
+            from Contract c
+            where c.id=?1
+            and c.contractType=?2
+            """)
+    Optional<Contract> findByContractInitial(Long contractId, ContractType contractType);
 }

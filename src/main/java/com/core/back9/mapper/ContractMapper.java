@@ -2,6 +2,8 @@ package com.core.back9.mapper;
 
 import com.core.back9.dto.ContractDTO;
 import com.core.back9.entity.Contract;
+import com.core.back9.entity.Room;
+import com.core.back9.entity.Tenant;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
@@ -16,6 +18,8 @@ import java.util.List;
 public interface ContractMapper {
 
     Contract toEntity(ContractDTO.RegisterRequest registerRequest);
+
+    Contract toEntity(ContractDTO.RegisterRequest request, Tenant tenant, Room room);
 
     Contract toEntity(ContractDTO.UpdateRequest request);
 

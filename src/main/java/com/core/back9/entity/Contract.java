@@ -3,6 +3,7 @@ package com.core.back9.entity;
 import com.core.back9.common.entity.BaseEntity;
 import com.core.back9.dto.ContractDTO;
 import com.core.back9.entity.constant.ContractStatus;
+import com.core.back9.entity.constant.ContractType;
 import com.core.back9.entity.constant.Status;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -37,11 +38,15 @@ public class Contract extends BaseEntity {
 	@Column(name = "contract_status", nullable = false)
 	private ContractStatus contractStatus; // 계약의 상태
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@Enumerated(EnumType.STRING)
+	@Column(name = "contract_type")
+	private ContractType contractType;
+
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "room_id")
 	private Room room;
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "tenant_id")
 	private Tenant tenant;
 
@@ -57,6 +62,7 @@ public class Contract extends BaseEntity {
 		this.deposit = deposit;
 		this.rentalPrice = rentalPrice;
 		this.contractStatus = ContractStatus.PENDING; // 초기 생성시 ContractStatus == PENDING
+		this.contractType = ContractType.INITIAL; // 초기 생성시 ContractStatus == INITIAL
 		this.room = room;
 		this.tenant = tenant;
 		this.status = Status.REGISTER;

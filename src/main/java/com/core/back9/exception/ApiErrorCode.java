@@ -12,6 +12,7 @@ public enum ApiErrorCode {
 	NOT_FOUND_VALID_ROOM(HttpStatus.NOT_FOUND.value(), "유효한 호실을 찾을 수 없습니다"),
     NOT_FOUND_VALID_TENANT(HttpStatus.NOT_FOUND.value(), "유효한 입주사를 찾을 수 없습니다"),
 	NOT_FOUND_VALID_CONTRACT(HttpStatus.NOT_FOUND.value(), "유효한 계약을 찾을 수 없습니다."),
+	ROOM_ALREADY_ASSIGNED(HttpStatus.BAD_REQUEST.value(), "이미 계약된 호실이 존재합니다."),
 	NOT_FOUND_VALID_MEMBER(HttpStatus.NOT_FOUND.value(), "유효한 사용자를 찾을 수 없습니다."),
 
 	DELETE_FAIL(HttpStatus.BAD_REQUEST.value(), "삭제가 완료되지 않았습니다."),

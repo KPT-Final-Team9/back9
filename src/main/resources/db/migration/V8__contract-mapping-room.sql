@@ -1,0 +1,8 @@
+ALTER TABLE rooms
+    DROP FOREIGN KEY FK_ROOMS_ON_CONTRACT;
+
+ALTER TABLE contracts
+    ADD contract_type VARCHAR(255) NULL;
+
+ALTER TABLE rooms
+    DROP COLUMN contract_id;

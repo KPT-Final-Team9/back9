@@ -25,12 +25,12 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
     @Query("""
             select t
             from Tenant t
-            where t.id=?2 and t.status=?1
+            where t.id=?1 and t.status='REGISTER'
             """)
-    Optional<Tenant> getOneTenant(Status status, Long tenantId);
+    Optional<Tenant> getOneTenant(Long tenantId);
 
-    default Tenant getValidOneTenantOrThrow(Status status, Long tenantId) {
-        return getOneTenant(status, tenantId)
+    default Tenant getValidOneTenantOrThrow(Long tenantId) {
+        return getOneTenant(tenantId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_TENANT));
     }
 
