@@ -10,6 +10,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
@@ -44,8 +47,8 @@ public class Room extends BaseEntity {
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	@OneToOne
-	private Contract contract;
+	@OneToMany(mappedBy = "room", cascade = CascadeType.REMOVE)
+	private List<Contract> contracts = new ArrayList<>();
 
 	@OneToOne(
 	  cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
@@ -54,7 +57,7 @@ public class Room extends BaseEntity {
 	private Setting setting;
 
 	@Builder
-	private Room(String name, String floor, float area, Usage usage, float rating, Building building, Member member, Setting setting) {
+	private Room(String name, String floor, float area, Usage usage, float rating, Building building, Member member, List<Contract> contracts, Setting setting) {
 		this.name = name;
 		this.floor = floor;
 		this.area = area;
@@ -62,6 +65,7 @@ public class Room extends BaseEntity {
 		this.rating = rating;
 		this.building = building;
 		this.member = member;
+		this.contracts = contracts;
 		this.status = Status.REGISTER;
 		this.setting = setting;
 	}
