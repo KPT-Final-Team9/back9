@@ -49,7 +49,7 @@ public class TenantService {
 
     public TenantDTO.Info getOneTenant(Long tenantId) {
 
-        Tenant tenant = tenantRepository.getValidOneTenantOrThrow(Status.REGISTER, tenantId);
+        Tenant tenant = tenantRepository.getValidOneTenantOrThrow(tenantId);
 
         return tenantMapper.toInfo(tenant);
     }
@@ -60,7 +60,7 @@ public class TenantService {
             TenantDTO.Request request
     ) {
 
-        Tenant tenant = tenantRepository.getValidOneTenantOrThrow(Status.REGISTER, tenantId);
+        Tenant tenant = tenantRepository.getValidOneTenantOrThrow(tenantId);
         Tenant updatedTenant = tenant.update(request);
 
         return tenantMapper.toInfo(updatedTenant);
