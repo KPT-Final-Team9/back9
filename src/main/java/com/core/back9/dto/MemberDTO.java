@@ -1,8 +1,9 @@
 package com.core.back9.dto;
 
+import com.core.back9.entity.Tenant;
 import com.core.back9.entity.constant.Role;
-import com.core.back9.entity.constant.SignType;
 import com.core.back9.entity.constant.Status;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,52 +13,72 @@ import java.time.LocalDateTime;
 
 public class MemberDTO {
 
-	@AllArgsConstructor
-	@NoArgsConstructor
-	@Builder
-	@Getter
-	public static class RegisterRequest {
-		private String email;
-		private String password;
-		private Role role;
-		private String phoneNumber;
-		private Status status;
-		private SignType signType;
-		private String firebaseUid;
-		private String firebaseFcmToken;
-	}
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    public static class RegisterRequest {
+        private String email;
+        private String password;
+        private String phoneNumber;
+        private Tenant tenant;
+//		private SignType signType;
+//		private String firebaseUid;
+//		private String firebaseFcmToken;
+    }
 
-	@AllArgsConstructor
-	@NoArgsConstructor
-	@Builder
-	@Getter
-	public static class RegisterResponse {
-		private Long id;
-		private String email;
-		private Role role;
-		private String phoneNumber;
-		private Status status;
-		private SignType signType;
-		private String firebaseUid;
-		private String firebaseFcmToken;
-		private LocalDateTime createdAt;
-	}
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Builder
+    @Getter
+    public static class RegisterResponse {
+        private Long id;
+        private String email;
+        private Role role;
+        private String phoneNumber;
+        private Status status;
+        private Tenant tenant;
+//		private SignType signType;
+//		private String firebaseUid;
+//		private String firebaseFcmToken;
+        private LocalDateTime createdAt;
+    }
 
-	@AllArgsConstructor
-	@NoArgsConstructor
-	@Builder
-	@Getter
-	public static class Info {
-		private Long id;
-		private String email;
-		private Role role;
-		private String phoneNumber;
-		private Status status;
-		private SignType signType;
-		private String firebaseUid;
-		private String firebaseFcmToken;
-		private LocalDateTime createdAt;
-		private LocalDateTime updatedAt;
-	}
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    public static class LoginRequest {
+        private String email;
+        private String password;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    public static class LoginResponse {
+        private String email;
+        private Role role;
+        private String token;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    public static class Info {
+        private Long id;
+        private String email;
+        private Role role;
+        private String phoneNumber;
+        private Status status;
+//		private SignType signType;
+//		private String firebaseUid;
+//		private String firebaseFcmToken;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+    }
 
 }
