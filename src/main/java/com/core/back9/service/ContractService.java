@@ -48,9 +48,10 @@ public class ContractService {
                     throw new ApiException(ApiErrorCode.ROOM_ALREADY_ASSIGNED);
                 }); // 중복 데이터 검증(최초 계약이라는 정합성을 지켜야함!)
 
-        Contract validcontract = contractMapper.toEntity(request, tenant, room); // 연결 관계 매핑
+        Contract validcontract = contractMapper.toEntity(request, tenant, room, ContractType.INITIAL); // 연결 관계 매핑
 
         return contractMapper.toRegisterResponse(contractRepository.save(validcontract));
+
     }
 
     public ContractDTO.Info renewContract(
@@ -69,7 +70,7 @@ public class ContractService {
         // TODO : 최초 계약의 기간에 따라 재계약 일자를 검증 & 설정하는 비즈니스 로직 필요, 현재는 재계약의 동작 여부를 확인하기 위한 정도만 구현함
 
 
-        Contract validContract = contractMapper.toEntity(request, tenant, room); // 엔티티 매핑
+        Contract validContract = contractMapper.toEntity(request, tenant, room, ContractType.RENEWAL); // 엔티티 매핑
 
         return contractMapper.toInfo(validContract);
 
@@ -104,6 +105,7 @@ public class ContractService {
         Contract contract = contractRepository.getValidOneContractOrThrow(room.getId(), contractId);
 
         return contractMapper.toInfo(contract);
+
     }
 
     @Transactional
