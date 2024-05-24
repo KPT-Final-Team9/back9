@@ -29,16 +29,12 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
         ContractDTO.RegisterResponse response = contractService.registerContract(buildingId, roomId, tenantId, request);
 
         return ResponseEntity
-                .created(URI.create("/api/contracts" + response.getId()))
+                .created(URI.create("/api/buildings/"+ buildingId + "/rooms/" + roomId + "/contracts/" + response.getId()))
                 .body(response);
 
     }
 
-    /**
-     * 재계약을 담당하는 메서드
-     * @return
-     */
-    @PostMapping("/{contractId}tenant/{tenantId}")
+    @PostMapping("/{contractId}/tenant/{tenantId}")
     public ResponseEntity<ContractDTO.Info> renewContract(
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
@@ -49,7 +45,9 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
         ContractDTO.Info info = contractService.renewContract(buildingId, roomId, contractId, tenantId, request);
 
-        return ResponseEntity.ok(info);
+        return ResponseEntity
+                .created(URI.create("/api/buildings/"+ buildingId + "/rooms/" + roomId + "/contracts/" + info.getId()))
+                .body(info);
 
     }
 

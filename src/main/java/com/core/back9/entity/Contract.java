@@ -55,14 +55,14 @@ public class Contract extends BaseEntity {
 	private Status status;
 
 	@Builder
-	private Contract(LocalDate startDate, LocalDate endDate, Long deposit, Long rentalPrice, Room room, Tenant tenant) {
+	private Contract(LocalDate startDate, LocalDate endDate, Long deposit, Long rentalPrice, Room room, Tenant tenant, ContractType contractType) {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.checkOut = endDate; // 초기 생성시 checkOut == endDate
 		this.deposit = deposit;
 		this.rentalPrice = rentalPrice;
 		this.contractStatus = ContractStatus.PENDING; // 초기 생성시 ContractStatus == PENDING
-		this.contractType = ContractType.INITIAL; // 초기 생성시 ContractStatus == INITIAL
+		this.contractType = contractType; // 초기 생성시 ContractStatus == INITIAL
 		this.room = room;
 		this.tenant = tenant;
 		this.status = Status.REGISTER;

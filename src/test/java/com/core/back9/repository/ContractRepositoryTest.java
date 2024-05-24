@@ -41,18 +41,19 @@ class ContractRepositoryTest extends ContractFixture {
                 LocalDate.now().plusDays(1),
                 100000000L,
                 200000L,
+                ContractType.INITIAL,
                 room1,
                 tenant1
         );
-        contractRepository.save(contract);
 
         // when
-        Optional<Contract> mappedContract = contractRepository.findByContractRoomIdAndTenantId(
-                room1.getId(),
-                tenant1.getId(), ContractType.INITIAL);
+        Contract savedContract = contractRepository.save(contract);
+
 
         // then
-        assertThat(mappedContract.get().getRoom().getId()).isEqualTo(1L);
+        assertThat(savedContract)
+                .extracting("id", "room.id", "tenant.id")
+                .contains(1L, 1L, 1L);
 
     }
 
@@ -67,6 +68,7 @@ class ContractRepositoryTest extends ContractFixture {
                 LocalDate.now().plusDays(1),
                 100000000L,
                 200000L,
+                ContractType.INITIAL,
                 room1,
                 tenant1
         );
@@ -77,6 +79,7 @@ class ContractRepositoryTest extends ContractFixture {
                 LocalDate.now().plusDays(1),
                 110000000L,
                 300000L,
+                ContractType.INITIAL,
                 room1,
                 tenant1
         );
@@ -87,6 +90,7 @@ class ContractRepositoryTest extends ContractFixture {
                 LocalDate.now().plusDays(1),
                 120000000L,
                 400000L,
+                ContractType.INITIAL,
                 room1,
                 tenant1
         );
@@ -99,21 +103,24 @@ class ContractRepositoryTest extends ContractFixture {
         assertThat(pageContracts)
                 .extracting("id", "startDate", "endDate", "checkOut", "deposit", "rentalPrice", "contractStatus")
                 .containsExactlyInAnyOrder(
-                        tuple(1L,
+                        tuple(
+                                1L,
                                 LocalDate.now(),
                                 LocalDate.now().plusDays(1),
                                 LocalDate.now().plusDays(1),
                                 100000000L,
                                 200000L,
                                 ContractStatus.PENDING),
-                        tuple(2L,
+                        tuple(
+                                2L,
                                 LocalDate.now(),
                                 LocalDate.now().plusDays(1),
                                 LocalDate.now().plusDays(1),
                                 110000000L,
                                 300000L,
                                 ContractStatus.PENDING),
-                        tuple(3L,
+                        tuple(
+                                3L,
                                 LocalDate.now(),
                                 LocalDate.now().plusDays(1),
                                 LocalDate.now().plusDays(1),
@@ -134,6 +141,7 @@ class ContractRepositoryTest extends ContractFixture {
                 LocalDate.now().plusDays(1),
                 100000000L,
                 200000L,
+                ContractType.INITIAL,
                 room1,
                 tenant1
         );
@@ -142,6 +150,7 @@ class ContractRepositoryTest extends ContractFixture {
                 LocalDate.now().plusDays(1),
                 100000000L,
                 200000L,
+                ContractType.RENEWAL,
                 room1,
                 tenant1
         );
@@ -150,6 +159,7 @@ class ContractRepositoryTest extends ContractFixture {
                 LocalDate.now().plusDays(1),
                 100000000L,
                 200000L,
+                ContractType.RENEWAL,
                 room1,
                 tenant1
         );
@@ -161,19 +171,20 @@ class ContractRepositoryTest extends ContractFixture {
 
         // then
         assertThat(contract)
-                .extracting("id", "status", "contractStatus")
-                .contains(2L, Status.REGISTER, ContractStatus.PENDING);
+                .extracting("id", "status", "contractStatus", "contractType")
+                .contains(2L, Status.REGISTER, ContractStatus.PENDING, ContractType.RENEWAL);
     }
 
     @Test
     @DisplayName("Contract의 매핑 관계를 확인할 수 있다.")
-    void test() {
+    void contractMappedRoomAndTenant() {
         // given
         Contract contract = assumeContract(
                 LocalDate.now(),
                 LocalDate.now().plusDays(1),
                 100000000L,
                 200000L,
+                ContractType.INITIAL,
                 room1,
                 tenant1
         );
@@ -185,8 +196,8 @@ class ContractRepositoryTest extends ContractFixture {
 
         // then
         assertThat(contract)
-                .extracting("id", "status", "contractStatus")
-                .contains(1L, Status.REGISTER, ContractStatus.PENDING);
+                .extracting("id", "status", "contractStatus", "contractType")
+                .contains(1L, Status.REGISTER, ContractStatus.PENDING, ContractType.INITIAL);
 
         assertThat(selectedContract)
                 .extracting("room.id", "room.name", "room.floor", "room.area", "room.usage", "room.status")
@@ -212,6 +223,7 @@ class ContractRepositoryTest extends ContractFixture {
             LocalDate endDate,
             Long deposit,
             Long rentalPrice,
+            ContractType contractType,
             Room room,
             Tenant tenant) {
 
@@ -221,6 +233,7 @@ class ContractRepositoryTest extends ContractFixture {
                 .deposit(deposit)
                 .rentalPrice(rentalPrice)
                 .room(room)
+                .contractType(contractType)
                 .tenant(tenant)
                 .build();
 

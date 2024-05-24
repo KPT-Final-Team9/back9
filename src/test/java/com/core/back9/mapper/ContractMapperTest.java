@@ -5,6 +5,7 @@ import com.core.back9.entity.Contract;
 import com.core.back9.entity.Room;
 import com.core.back9.entity.Tenant;
 import com.core.back9.entity.constant.ContractStatus;
+import com.core.back9.entity.constant.ContractType;
 import com.core.back9.entity.constant.Usage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -91,12 +92,12 @@ public class ContractMapperTest {
                 .build();
 
         // when
-        Contract contract = contractMapper.toEntity(request, tenant, room);
+        Contract contract = contractMapper.toEntity(request, tenant, room, ContractType.INITIAL);
 
         // then
         assertThat(contract)
-                .extracting("room.name", "room.usage", "tenant.name", "tenant.companyNumber")
-                .contains("호실1", Usage.OFFICES, "입주사1", "02-000-0000");
+                .extracting("room.name", "room.usage", "tenant.name", "tenant.companyNumber", "contractType")
+                .contains("호실1", Usage.OFFICES, "입주사1", "02-000-0000", ContractType.INITIAL);
     }
 
     @Test
