@@ -32,7 +32,7 @@ public class MemberService {
     public MemberDTO.RegisterResponse userSignup(MemberDTO.RegisterRequest request) {
         memberRepository.findByEmail(request.getEmail())
                 .ifPresent(member -> {
-                    throw new ApiException(ApiErrorCode.INTERNAL_SERVER_ERROR);
+                    throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
                 });
 
         Member member = memberMapper.toEntity(request, Role.USER, Status.REGISTER);
@@ -45,7 +45,7 @@ public class MemberService {
     public MemberDTO.RegisterResponse ownerSignup(MemberDTO.RegisterRequest request) {
         memberRepository.findByEmail(request.getEmail())
                 .ifPresent(member -> {
-                    throw new ApiException(ApiErrorCode.INTERNAL_SERVER_ERROR);
+                    throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
                 });
 
         Member member = memberMapper.toEntity(request, Role.OWNER, Status.REGISTER);
@@ -58,7 +58,7 @@ public class MemberService {
     public MemberDTO.RegisterResponse adminSignup(MemberDTO.RegisterRequest request) {
         memberRepository.findByEmail(request.getEmail())
                 .ifPresent(member -> {
-                    throw new ApiException(ApiErrorCode.INTERNAL_SERVER_ERROR);
+                    throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
                 });
 
         Member member = memberMapper.toEntity(request, Role.ADMIN, Status.REGISTER);
@@ -70,12 +70,20 @@ public class MemberService {
     @Transactional
     public MemberDTO.LoginResponse login(MemberDTO.LoginRequest request) {
         Member member = memberRepository.findByEmailAndStatus(request.getEmail(), Status.REGISTER)
-                .filter(entity -> passwordEncoder.matches(request.getPassword(), entity.getPassword()))
-                .orElseThrow(() -> new ApiException(ApiErrorCode.INTERNAL_SERVER_ERROR)); // TODO 나중에 예외 추가해서 수정하기
+                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER));
+
+        String requestPassword = request.getPassword();
+        validatePassword(requestPassword, member);
 
         TokenDTO token = jwtProvider.createToken(member);
 
         return memberMapper.toLoginResponse(member, token);
+    }
+
+    private void validatePassword(String requestPassword, Member member) {
+        if (!passwordEncoder.matches(requestPassword, member.getPassword())) {
+            throw new ApiException(ApiErrorCode.INVALID_PASSWORD);
+        }
     }
 
     public MemberDTO.Info getCurrenMemberInfo() {
@@ -84,13 +92,13 @@ public class MemberService {
 
         return memberMapper.toInfo(
                 memberRepository.findByEmailAndStatus(currentUsername, Status.REGISTER)
-                        .orElseThrow(() -> new ApiException(ApiErrorCode.INTERNAL_SERVER_ERROR))
+                        .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER))
         );
     }
 
     public MemberDTO.Info getMemberInfo(String email) {
         return memberMapper.toInfo(memberRepository.findByEmailAndStatus(email, Status.REGISTER)
-                .orElse(null));
+                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER)));
     }
 
 }
