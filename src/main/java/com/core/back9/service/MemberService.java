@@ -4,6 +4,7 @@ import com.core.back9.common.util.SecurityUtil;
 import com.core.back9.dto.MemberDTO;
 import com.core.back9.dto.TokenDTO;
 import com.core.back9.entity.Member;
+import com.core.back9.entity.Tenant;
 import com.core.back9.entity.constant.Role;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.exception.ApiErrorCode;
@@ -11,6 +12,7 @@ import com.core.back9.exception.ApiException;
 import com.core.back9.jwt.JwtProvider;
 import com.core.back9.mapper.MemberMapper;
 import com.core.back9.repository.MemberRepository;
+import com.core.back9.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final TenantRepository tenantRepository;
     private final MemberMapper memberMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
@@ -35,7 +38,9 @@ public class MemberService {
                     throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
                 });
 
-        Member member = memberMapper.toEntity(request, Role.USER, Status.REGISTER);
+        Tenant tenant = tenantRepository.getValidOneTenantOrThrow(request.getTenantId());
+
+        Member member = memberMapper.toEntity(request, tenant, Role.USER, Status.REGISTER);
         Member savedMember = memberRepository.save(member);
 
         return memberMapper.toUserRegisterResponse(savedMember);
@@ -48,7 +53,9 @@ public class MemberService {
                     throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
                 });
 
-        Member member = memberMapper.toEntity(request, Role.OWNER, Status.REGISTER);
+        Tenant tenant = tenantRepository.getValidOneTenantOrThrow(request.getTenantId());
+
+        Member member = memberMapper.toEntity(request, tenant, Role.OWNER, Status.REGISTER);
         Member savedMember = memberRepository.save(member);
 
         return memberMapper.toOwnerRegisterResponse(savedMember);
@@ -61,7 +68,9 @@ public class MemberService {
                     throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
                 });
 
-        Member member = memberMapper.toEntity(request, Role.ADMIN, Status.REGISTER);
+        Tenant tenant = tenantRepository.getValidOneTenantOrThrow(request.getTenantId());
+
+        Member member = memberMapper.toEntity(request, tenant, Role.ADMIN, Status.REGISTER);
         Member savedMember = memberRepository.save(member);
 
         return memberMapper.toAdminRegisterResponse(savedMember);
