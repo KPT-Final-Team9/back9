@@ -33,15 +33,8 @@ public class MemberService {
 
     @Transactional
     public MemberDTO.RegisterResponse userSignup(MemberDTO.RegisterRequest request) {
-        memberRepository.findByEmailAndStatus(request.getEmail(), Status.REGISTER)
-                .ifPresent(member -> {
-                    throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
-                });
-
-        memberRepository.findByPhoneNumberAndStatus(request.getPhoneNumber(), Status.REGISTER)
-                .ifPresent(member -> {
-                    throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
-                });
+        validateEmail(request.getEmail());
+        validatePhoneNumber(request.getPhoneNumber());
 
         Tenant tenant = tenantRepository.getValidOneTenantOrThrow(request.getTenantId());
 
@@ -53,15 +46,8 @@ public class MemberService {
 
     @Transactional
     public MemberDTO.RegisterResponse ownerSignup(MemberDTO.RegisterRequest request) {
-        memberRepository.findByEmailAndStatus(request.getEmail(), Status.REGISTER)
-                .ifPresent(member -> {
-                    throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
-                });
-
-        memberRepository.findByPhoneNumberAndStatus(request.getPhoneNumber(), Status.REGISTER)
-                .ifPresent(member -> {
-                    throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
-                });
+        validateEmail(request.getEmail());
+        validatePhoneNumber(request.getPhoneNumber());
 
         Member member = memberMapper.toEntity(request, Role.OWNER, Status.REGISTER);
         Member savedMember = memberRepository.save(member);
@@ -71,20 +57,27 @@ public class MemberService {
 
     @Transactional
     public MemberDTO.RegisterResponse adminSignup(MemberDTO.RegisterRequest request) {
-        memberRepository.findByEmailAndStatus(request.getEmail(), Status.REGISTER)
-                .ifPresent(member -> {
-                    throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
-                });
-
-        memberRepository.findByPhoneNumberAndStatus(request.getPhoneNumber(), Status.REGISTER)
-                .ifPresent(member -> {
-                    throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
-                });
+        validateEmail(request.getEmail());
+        validatePhoneNumber(request.getPhoneNumber());
 
         Member member = memberMapper.toEntity(request, Role.ADMIN, Status.REGISTER);
         Member savedMember = memberRepository.save(member);
 
         return memberMapper.toAdminRegisterResponse(savedMember);
+    }
+
+    private void validateEmail(String email) {
+        memberRepository.findByEmailAndStatus(email, Status.REGISTER)
+                .ifPresent(member -> {
+                    throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
+                });
+    }
+
+    private void validatePhoneNumber(String phoneNumber) {
+        memberRepository.findByPhoneNumberAndStatus(phoneNumber, Status.REGISTER)
+                .ifPresent(member -> {
+                    throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
+                });
     }
 
     @Transactional
