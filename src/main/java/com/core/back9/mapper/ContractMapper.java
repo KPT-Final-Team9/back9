@@ -24,6 +24,8 @@ public interface ContractMapper {
 
     Contract toEntity(ContractDTO.UpdateRequest request);
 
+    Contract toEntity(ContractDTO.StatusChangeRequest request);
+
     ContractDTO.RegisterResponse toRegisterResponse(Contract contract);
 
     ContractDTO.Info toInfo(Contract contract);
