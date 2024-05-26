@@ -2,6 +2,8 @@ package com.core.back9.security;
 
 import com.core.back9.entity.Member;
 import com.core.back9.entity.constant.Status;
+import com.core.back9.exception.ApiErrorCode;
+import com.core.back9.exception.ApiException;
 import com.core.back9.repository.MemberRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,15 +27,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Transactional
     @Override
-    public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {
-        return createUser(memberRepository.findByEmailAndStatus(email, Status.REGISTER)
-                .orElseThrow(() -> new UsernameNotFoundException("회원 정보가 없습니다.")));
-    }
-
-    private User createUser(Member member) {
-        List<GrantedAuthority> grantedAuthorities = List.of(new SimpleGrantedAuthority(member.getRole().toString()));
-
-        return new User(member.getEmail(), member.getPassword(), grantedAuthorities);
+    public UserDetails loadUserByUsername(final String email) {
+        return memberRepository.findByEmailAndStatus(email, Status.REGISTER)
+                .map(CustomUserDetails::new)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER));
     }
 
 }
