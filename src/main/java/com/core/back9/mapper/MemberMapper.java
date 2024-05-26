@@ -20,6 +20,9 @@ public interface MemberMapper {
     @Mapping(target = "tenant", expression = "java(tenant)")
     Member toEntity(MemberDTO.RegisterRequest registerRequest, @Context Tenant tenant, Role role, Status status);
 
+    @Mapping(source = "registerRequest.password", target = "password", qualifiedByName = "encryptedPassword")
+    Member toEntity(MemberDTO.RegisterRequest registerRequest, Role role, Status status);
+
     Member toEntity(MemberDTO.LoginRequest loginRequest);
 
     @Named("encryptedPassword")

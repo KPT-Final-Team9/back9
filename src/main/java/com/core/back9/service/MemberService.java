@@ -63,9 +63,7 @@ public class MemberService {
                     throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
                 });
 
-        Tenant tenant = tenantRepository.getValidOneTenantOrThrow(request.getTenantId());
-
-        Member member = memberMapper.toEntity(request, tenant, Role.OWNER, Status.REGISTER);
+        Member member = memberMapper.toEntity(request, Role.OWNER, Status.REGISTER);
         Member savedMember = memberRepository.save(member);
 
         return memberMapper.toOwnerRegisterResponse(savedMember);
@@ -83,9 +81,7 @@ public class MemberService {
                     throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
                 });
 
-        Tenant tenant = tenantRepository.getValidOneTenantOrThrow(request.getTenantId());
-
-        Member member = memberMapper.toEntity(request, tenant, Role.ADMIN, Status.REGISTER);
+        Member member = memberMapper.toEntity(request, Role.ADMIN, Status.REGISTER);
         Member savedMember = memberRepository.save(member);
 
         return memberMapper.toAdminRegisterResponse(savedMember);
