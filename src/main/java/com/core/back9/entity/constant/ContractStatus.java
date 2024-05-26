@@ -14,7 +14,7 @@ public enum ContractStatus {
     // 이행, 만료의 경우 배치 처리로 전환 가능
     PENDING("계약 대기"),
     COMPLETED("계약 완료"),
-    CANCELED("계약 취소"),
+    CANCELED("계약 취소"), // 계약 등록(대기) 상태 이후 실제 계약 시작 일자까지 완료처리 하지 않으면 취소처리됨 or 이행 전 취소를 원할 시 취소처리
     IN_PROGRESS("계약 이행"),
     TERMINATED("계약 파기"),
     EXPIRED("계약 만료");

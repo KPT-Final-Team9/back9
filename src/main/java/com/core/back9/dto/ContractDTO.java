@@ -31,9 +31,16 @@ public class ContractDTO {
 	public static class UpdateRequest {
 		private LocalDate startDate;
 		private LocalDate endDate;
-		private LocalDate checkOut;
 		private Long deposit;
 		private Long rentalPrice;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class StatusChangeRequest {
+		private LocalDate checkOut;
 	}
 
 	@AllArgsConstructor
