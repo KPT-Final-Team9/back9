@@ -1,5 +1,6 @@
 package com.core.back9.repository;
 
+import com.core.back9.dto.ContractDTO;
 import com.core.back9.entity.Contract;
 import com.core.back9.entity.Room;
 import com.core.back9.entity.Tenant;
@@ -19,7 +20,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -72,7 +72,6 @@ class ContractRepositoryTest extends ContractFixture {
                 room1,
                 tenant1
         );
-        contractRepository.save(contract1);
 
         Contract contract2 = assumeContract(
                 LocalDate.now(),
@@ -83,7 +82,6 @@ class ContractRepositoryTest extends ContractFixture {
                 room1,
                 tenant1
         );
-        contractRepository.save(contract2);
 
         Contract contract3 = assumeContract(
                 LocalDate.now(),
@@ -94,7 +92,8 @@ class ContractRepositoryTest extends ContractFixture {
                 room1,
                 tenant1
         );
-        contractRepository.save(contract3);
+
+        contractRepository.saveAll(List.of(contract1, contract2, contract3));
 
         // when
         Page<Contract> pageContracts = contractRepository.selectAllRegisteredContract(room1.getId(), Status.REGISTER, pageRequest);
@@ -129,6 +128,20 @@ class ContractRepositoryTest extends ContractFixture {
                                 ContractStatus.PENDING)
 
                 );
+
+    }
+
+    @Test
+    @DisplayName("계약 리스트가 존재하지 않는 경우 empty 객체를 반환한다.")
+    void selectAllRegisteredContractIsEmpty() {
+        // given
+        PageRequest pageRequest = PageRequest.of(0, 4);
+
+        // when
+        Page<Contract> pageContracts = contractRepository.selectAllRegisteredContract(room1.getId(), Status.REGISTER, pageRequest);
+
+        // then
+        assertThat(pageContracts).isEmpty();
 
     }
 
@@ -215,6 +228,48 @@ class ContractRepositoryTest extends ContractFixture {
                         "입주사1",
                         "02-000-0000",
                         Status.REGISTER);
+
+    }
+
+    @Test
+    @DisplayName("원하는 contract의 내용을 수정할 수 있다.")
+    void UpdateContractInfo() {
+        // given
+        Contract contract = assumeContract(
+                LocalDate.now(),
+                LocalDate.now().plusDays(1),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract savedContract = contractRepository.save(contract);
+
+        ContractDTO.UpdateRequest request = ContractDTO.UpdateRequest.builder()
+                .startDate(LocalDate.now().plusDays(1))
+                .endDate(LocalDate.now().plusDays(2))
+                .deposit(200000000L)
+                .rentalPrice(400000L)
+                .build();
+
+        // when
+        Contract updatedContract = savedContract.infoUpdate(request);
+
+        // then
+        assertThat(updatedContract)
+                .extracting("id", "startDate", "checkOut", "deposit", "rentalPrice", "status", "contractStatus", "contractType")
+                .contains(1L,
+                        LocalDate.now().plusDays(1),
+                        LocalDate.now().plusDays(1),
+                        LocalDate.now().plusDays(2),
+                        200000000L,
+                        400000L,
+                        Status.REGISTER,
+                        ContractStatus.PENDING,
+                        ContractType.INITIAL
+                );
 
     }
 

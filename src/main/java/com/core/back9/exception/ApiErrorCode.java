@@ -20,13 +20,14 @@ public enum ApiErrorCode {
 	INCORRECT_EMAIL_FORMAT(HttpStatus.BAD_REQUEST.value(), "잘못된 이메일 형식입니다."),
 	INVALID_PASSWORD(HttpStatus.BAD_REQUEST.value(), "잘못된 비밀번호입니다."),
 	NOT_AUTHENTICATED_USER(HttpStatus.BAD_REQUEST.value(), "인증된 사용자가 아닙니다."),
+	INVALID_CHANGE(HttpStatus.BAD_REQUEST.value(), "잘못된 변경 내용입니다."),
+	CONTRACT_NOT_IN_PROGRESS(HttpStatus.BAD_REQUEST.value(), "계약이 이행 중인 상태가 아닙니다."),
 
 	THREAD_POOL_REJECTED(HttpStatus.REQUEST_TIMEOUT.value(), "더 이상 요청을 처리 할 수 없습니다"),
 
 	DO_NOT_HAVE_PERMISSION(HttpStatus.UNAUTHORIZED.value(), "권한이 없습니다"),
 
-	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "SERVER ERROR"),
-	;
+	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "SERVER ERROR");
 
 	private final Integer errorCode;
 	private final String errorMessage;
