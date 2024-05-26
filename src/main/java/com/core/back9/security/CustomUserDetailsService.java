@@ -1,4 +1,4 @@
-package com.core.back9.service;
+package com.core.back9.security;
 
 import com.core.back9.entity.Member;
 import com.core.back9.entity.constant.Status;
