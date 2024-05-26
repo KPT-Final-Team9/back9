@@ -33,12 +33,12 @@ public class MemberService {
 
     @Transactional
     public MemberDTO.RegisterResponse userSignup(MemberDTO.RegisterRequest request) {
-        memberRepository.findByEmail(request.getEmail())
+        memberRepository.findByEmailAndStatus(request.getEmail(), Status.REGISTER)
                 .ifPresent(member -> {
                     throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
                 });
 
-        memberRepository.findByPhoneNumber(request.getPhoneNumber())
+        memberRepository.findByPhoneNumberAndStatus(request.getPhoneNumber(), Status.REGISTER)
                 .ifPresent(member -> {
                     throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
                 });
@@ -53,12 +53,12 @@ public class MemberService {
 
     @Transactional
     public MemberDTO.RegisterResponse ownerSignup(MemberDTO.RegisterRequest request) {
-        memberRepository.findByEmail(request.getEmail())
+        memberRepository.findByEmailAndStatus(request.getEmail(), Status.REGISTER)
                 .ifPresent(member -> {
                     throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
                 });
 
-        memberRepository.findByPhoneNumber(request.getPhoneNumber())
+        memberRepository.findByPhoneNumberAndStatus(request.getPhoneNumber(), Status.REGISTER)
                 .ifPresent(member -> {
                     throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
                 });
@@ -71,12 +71,12 @@ public class MemberService {
 
     @Transactional
     public MemberDTO.RegisterResponse adminSignup(MemberDTO.RegisterRequest request) {
-        memberRepository.findByEmail(request.getEmail())
+        memberRepository.findByEmailAndStatus(request.getEmail(), Status.REGISTER)
                 .ifPresent(member -> {
                     throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
                 });
 
-        memberRepository.findByPhoneNumber(request.getPhoneNumber())
+        memberRepository.findByPhoneNumberAndStatus(request.getPhoneNumber(), Status.REGISTER)
                 .ifPresent(member -> {
                     throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
                 });
