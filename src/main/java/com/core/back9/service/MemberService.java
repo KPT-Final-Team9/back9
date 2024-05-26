@@ -38,6 +38,11 @@ public class MemberService {
                     throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
                 });
 
+        memberRepository.findByPhoneNumber(request.getPhoneNumber())
+                .ifPresent(member -> {
+                    throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
+                });
+
         Tenant tenant = tenantRepository.getValidOneTenantOrThrow(request.getTenantId());
 
         Member member = memberMapper.toEntity(request, tenant, Role.USER, Status.REGISTER);
@@ -53,6 +58,11 @@ public class MemberService {
                     throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
                 });
 
+        memberRepository.findByPhoneNumber(request.getPhoneNumber())
+                .ifPresent(member -> {
+                    throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
+                });
+
         Tenant tenant = tenantRepository.getValidOneTenantOrThrow(request.getTenantId());
 
         Member member = memberMapper.toEntity(request, tenant, Role.OWNER, Status.REGISTER);
@@ -66,6 +76,11 @@ public class MemberService {
         memberRepository.findByEmail(request.getEmail())
                 .ifPresent(member -> {
                     throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
+                });
+
+        memberRepository.findByPhoneNumber(request.getPhoneNumber())
+                .ifPresent(member -> {
+                    throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
                 });
 
         Tenant tenant = tenantRepository.getValidOneTenantOrThrow(request.getTenantId());
