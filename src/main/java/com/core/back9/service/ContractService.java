@@ -18,11 +18,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 @Service
 public class ContractService {
 
@@ -31,7 +32,6 @@ public class ContractService {
     private final ContractRepository contractRepository;
     private final ContractMapper contractMapper;
 
-    @Transactional
     public ContractDTO.RegisterResponse registerContract(
             Long buildingId,
             Long roomId,
@@ -76,6 +76,7 @@ public class ContractService {
 
     }
 
+    @Transactional(readOnly = true)
     public ContractDTO.InfoList getAllContract(
             Long buildingId,
             Long roomId,
@@ -95,6 +96,7 @@ public class ContractService {
 
     }
 
+    @Transactional(readOnly = true)
     public ContractDTO.Info getOneContract(
             Long buildingId,
             Long roomId,
@@ -108,7 +110,6 @@ public class ContractService {
 
     }
 
-    @Transactional
     public ContractDTO.Info modifyContract(
             Long buildingId,
             Long roomId,
@@ -124,7 +125,6 @@ public class ContractService {
 
     }
 
-    @Transactional
     public Integer deleteContract(
             Long buildingId,
             Long roomId,
@@ -138,4 +138,91 @@ public class ContractService {
 
     }
 
+    public ContractDTO.statusInfo completeContract(Long buildingId, Long roomId, Long contractId, LocalDate startDate) {
+
+        Contract contract = getValidRoomAndContract(buildingId, roomId, contractId);
+
+        if (startDate.isAfter(contract.getStartDate())) {
+            throw new ApiException(ApiErrorCode.INVALID_CHANGE, "계약 완료처리가 가능한 일자가 이미 경과했습니다.");
+        }
+
+        Contract contractCompleted = contract.contractComplete();
+
+        return contractMapper.toStatusInfo(contractCompleted);
+
+    }
+
+    public ContractDTO.statusInfo cancelContract(Long buildingId, Long roomId, Long contractId, LocalDate startDate) {
+
+        Contract contract = getValidRoomAndContract(buildingId, roomId, contractId);
+
+        if (startDate.isAfter(contract.getStartDate())) {
+            throw new ApiException(ApiErrorCode.INVALID_CHANGE, "취소 가능한 일자가 경과했습니다.");
+        }
+
+        Contract contractCanceled = contract.contractCancelMissedStartDate();
+
+        return contractMapper.toStatusInfo(contractCanceled);
+
+    }
+
+    public ContractDTO.statusInfo progressContract(Long buildingId, Long roomId, Long contractId, LocalDate startDate) {
+
+        Contract contract = getValidRoomAndContract(buildingId, roomId, contractId);
+
+        if (!startDate.isEqual(contract.getStartDate())) {
+            throw new ApiException(ApiErrorCode.INVALID_CHANGE, "계약 이행 가능 일자가 아닙니다.");
+        }
+
+        Contract contractProgressed = contract.contractInProgress();
+
+        return contractMapper.toStatusInfo(contractProgressed);
+    }
+
+    public ContractDTO.statusInfo expireContract(Long buildingId, Long roomId, Long contractId, LocalDate endDate) {
+
+        Contract contract = getValidRoomAndContract(buildingId, roomId, contractId);
+
+        if (endDate.isBefore(contract.getEndDate())) { // 원하는 일자가 실제 만료일의 이전 일자인 경우(이후 일자인지의 여부는 상관 X -> 실제 만료일 이후라도 만료 처리 가능 고려함)
+            throw new ApiException(ApiErrorCode.INVALID_CHANGE,
+                    """
+                            만료 상태로 변경을 원하는 일자가
+                            정해진 만료 일자보다 이전 일자인 경우
+                            계약 만료 상태로 변경할 수 없습니다.
+                            """);
+        }
+
+        Contract contractExpired = contract.contractExpire();
+
+        return contractMapper.toStatusInfo(contractExpired);
+
+    }
+
+    public ContractDTO.statusInfo terminateContract(Long buildingId, Long roomId, Long contractId, LocalDate checkOut) {
+
+        Contract contract = getValidRoomAndContract(buildingId, roomId, contractId);
+
+        if (checkOut.isAfter(contract.getEndDate()) ||
+            checkOut.isEqual(contract.getCheckOut())) {
+            throw new ApiException(ApiErrorCode.INVALID_CHANGE,
+                    """
+                            원하는 퇴실 일자가 기존 퇴실 일자와 같거나
+                            계약 종료 일자 보다 이후의 일자인 경우
+                            계약 파기 상태로 변경할 수 없습니다.
+                            """);
+        }
+
+        Contract contractTerminated = contract.contractTerminate(checkOut);
+
+        return contractMapper.toStatusInfo(contractTerminated);
+
+    }
+
+    private Contract getValidRoomAndContract(Long buildingId, Long roomId, Long contractId) {
+
+        Room room = roomRepository.getValidRoomWithIdOrThrow(buildingId, roomId, Status.REGISTER);
+
+        return contractRepository.getValidOneContractOrThrow(room.getId(), contractId);
+
+    }
 }
