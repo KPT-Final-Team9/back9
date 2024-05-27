@@ -18,16 +18,16 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @PreAuthorize("hasAnyAuthority('USER', 'OWNER','ADMIN')")
-    @GetMapping("/info")
-    public ResponseEntity<MemberDTO.Info> getCurrentMemberInfo(HttpServletRequest request) {
-        return ResponseEntity.ok(memberService.getCurrenMemberInfo());
-    }
-
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
-    @GetMapping("/info/{email}")
-    public ResponseEntity<MemberDTO.Info> getMemberInfo(@PathVariable String email) {
-        return ResponseEntity.ok(memberService.getMemberInfo(email));
-    }
+//    @PreAuthorize("hasAnyAuthority('USER', 'OWNER','ADMIN')")
+//    @GetMapping("/info")
+//    public ResponseEntity<MemberDTO.Info> getCurrentMemberInfo(HttpServletRequest request) {
+//        return ResponseEntity.ok(memberService.getCurrenMemberInfo());
+//    }
+//
+//    @PreAuthorize("hasAnyAuthority('ADMIN')")
+//    @GetMapping("/info/{email}")
+//    public ResponseEntity<MemberDTO.Info> getMemberInfo(@PathVariable String email) {
+//        return ResponseEntity.ok(memberService.getMemberInfo(email));
+//    }
 
 }

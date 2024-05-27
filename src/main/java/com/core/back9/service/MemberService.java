@@ -33,8 +33,8 @@ public class MemberService {
 
     @Transactional
     public MemberDTO.RegisterResponse userSignup(MemberDTO.RegisterRequest request) {
-        validateEmail(request.getEmail());
-        validatePhoneNumber(request.getPhoneNumber());
+        validateEmail(request.getEmail(), Role.USER);
+        validatePhoneNumber(request.getPhoneNumber(), Role.USER);
 
         Tenant tenant = tenantRepository.getValidOneTenantOrThrow(request.getTenantId());
 
@@ -46,8 +46,8 @@ public class MemberService {
 
     @Transactional
     public MemberDTO.RegisterResponse ownerSignup(MemberDTO.RegisterRequest request) {
-        validateEmail(request.getEmail());
-        validatePhoneNumber(request.getPhoneNumber());
+        validateEmail(request.getEmail(), Role.OWNER);
+        validatePhoneNumber(request.getPhoneNumber(), Role.OWNER);
 
         Member member = memberMapper.toEntity(request, Role.OWNER, Status.REGISTER);
         Member savedMember = memberRepository.save(member);
@@ -57,8 +57,8 @@ public class MemberService {
 
     @Transactional
     public MemberDTO.RegisterResponse adminSignup(MemberDTO.RegisterRequest request) {
-        validateEmail(request.getEmail());
-        validatePhoneNumber(request.getPhoneNumber());
+        validateEmail(request.getEmail(), Role.ADMIN);
+        validatePhoneNumber(request.getPhoneNumber(), Role.ADMIN);
 
         Member member = memberMapper.toEntity(request, Role.ADMIN, Status.REGISTER);
         Member savedMember = memberRepository.save(member);
@@ -66,23 +66,56 @@ public class MemberService {
         return memberMapper.toAdminRegisterResponse(savedMember);
     }
 
-    private void validateEmail(String email) {
-        memberRepository.findByEmailAndStatus(email, Status.REGISTER)
+    private void validateEmail(String email, Role role) {
+        memberRepository.findByEmailAndRoleAndStatus(email, role, Status.REGISTER)
                 .ifPresent(member -> {
                     throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
                 });
     }
 
-    private void validatePhoneNumber(String phoneNumber) {
-        memberRepository.findByPhoneNumberAndStatus(phoneNumber, Status.REGISTER)
+    private void validatePhoneNumber(String phoneNumber, Role role) {
+        memberRepository.findByPhoneNumberAndRoleAndStatus(phoneNumber, role, Status.REGISTER)
                 .ifPresent(member -> {
                     throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
                 });
     }
 
+//    private void validateMember(String email, String phoneNumber, Role role, Status status) {
+//        memberRepository.findByEmailAndPhoneNumberAndRoleAndStatus(email, phoneNumber, role, status)
+//                .ifPresent(member -> {
+//                    throw new ApiException(ApiErrorCode.DUPLICATE_MEMBER);
+//                });
+//    }
+
     @Transactional
-    public MemberDTO.LoginResponse login(MemberDTO.LoginRequest request) {
-        Member member = memberRepository.findByEmailAndStatus(request.getEmail(), Status.REGISTER)
+    public MemberDTO.LoginResponse userLogin(MemberDTO.LoginRequest request) {
+        Member member = memberRepository.findUserByEmailAndStatus(request.getEmail(), Role.USER, Status.REGISTER)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER));
+
+        String requestPassword = request.getPassword();
+        validatePassword(requestPassword, member);
+
+        TokenDTO token = jwtProvider.createToken(member);
+
+        return memberMapper.toLoginResponse(member, token);
+    }
+
+    @Transactional
+    public MemberDTO.LoginResponse ownerLogin(MemberDTO.LoginRequest request) {
+        Member member = memberRepository.findByEmailAndRoleAndStatus(request.getEmail(), Role.OWNER, Status.REGISTER)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER));
+
+        String requestPassword = request.getPassword();
+        validatePassword(requestPassword, member);
+
+        TokenDTO token = jwtProvider.createToken(member);
+
+        return memberMapper.toLoginResponse(member, token);
+    }
+
+    @Transactional
+    public MemberDTO.LoginResponse adminLogin(MemberDTO.LoginRequest request) {
+        Member member = memberRepository.findByEmailAndRoleAndStatus(request.getEmail(), Role.ADMIN, Status.REGISTER)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER));
 
         String requestPassword = request.getPassword();
@@ -99,19 +132,19 @@ public class MemberService {
         }
     }
 
-    public MemberDTO.Info getCurrenMemberInfo() {
-        String currentUsername = SecurityUtil.getCurrentUsername()
-                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_AUTHENTICATED_USER));
-
-        return memberMapper.toInfo(
-                memberRepository.findByEmailAndStatus(currentUsername, Status.REGISTER)
-                        .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER))
-        );
-    }
-
-    public MemberDTO.Info getMemberInfo(String email) {
-        return memberMapper.toInfo(memberRepository.findByEmailAndStatus(email, Status.REGISTER)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER)));
-    }
+//    public MemberDTO.Info getCurrenMemberInfo() {
+//        String currentUsername = SecurityUtil.getCurrentUsername()
+//                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_AUTHENTICATED_USER));
+//
+//        return memberMapper.toInfo(
+//                memberRepository.findByEmailAndStatus(currentUsername, Status.REGISTER)
+//                        .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER))
+//        );
+//    }
+//
+//    public MemberDTO.Info getMemberInfo(String email) {
+//        return memberMapper.toInfo(memberRepository.findByEmailAndStatus(email, Status.REGISTER)
+//                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER)));
+//    }
 
 }

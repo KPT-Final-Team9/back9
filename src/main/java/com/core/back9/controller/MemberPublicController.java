@@ -41,12 +41,28 @@ public class MemberPublicController {
         return ResponseEntity.ok(memberService.adminSignup(request));
     }
 
-    @PostMapping("/sign-in")
-    public ResponseEntity<MemberDTO.LoginResponse> login(
+    @PostMapping("/sign-in/user")
+    public ResponseEntity<MemberDTO.LoginResponse> userLogin(
             @Valid
             @RequestBody MemberDTO.LoginRequest request
     ) {
-        return ResponseEntity.ok(memberService.login(request));
+        return ResponseEntity.ok(memberService.userLogin(request));
+    }
+
+    @PostMapping("/sign-in/owner")
+    public ResponseEntity<MemberDTO.LoginResponse> ownerLogin(
+            @Valid
+            @RequestBody MemberDTO.LoginRequest request
+    ) {
+        return ResponseEntity.ok(memberService.ownerLogin(request));
+    }
+
+    @PostMapping("/sign-in/admin")
+    public ResponseEntity<MemberDTO.LoginResponse> adminLogin(
+            @Valid
+            @RequestBody MemberDTO.LoginRequest request
+    ) {
+        return ResponseEntity.ok(memberService.adminLogin(request));
     }
 
 }
