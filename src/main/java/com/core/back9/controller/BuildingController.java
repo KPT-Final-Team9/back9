@@ -1,6 +1,8 @@
 package com.core.back9.controller;
 
 import com.core.back9.dto.BuildingDTO;
+import com.core.back9.dto.MemberDTO;
+import com.core.back9.security.AuthMember;
 import com.core.back9.service.BuildingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,14 +20,17 @@ public class BuildingController {
 
 	@PostMapping("")
 	public ResponseEntity<BuildingDTO.Response> register(
+	  @AuthMember MemberDTO.Info member,
 	  @Valid
 	  @RequestBody BuildingDTO.Request request
 	) {
-		return ResponseEntity.ok(buildingService.create(request));
+		return ResponseEntity.ok(buildingService.create(member, request));
 	}
 
 	@GetMapping("")
-	public ResponseEntity<Page<BuildingDTO.Info>> getAll(Pageable pageable) {
+	public ResponseEntity<Page<BuildingDTO.Info>> getAll(
+	  Pageable pageable
+	) {
 		return ResponseEntity.ok(buildingService.selectAll(pageable));
 	}
 
@@ -39,19 +44,21 @@ public class BuildingController {
 
 	@PatchMapping("/{buildingId}")
 	public ResponseEntity<BuildingDTO.Info> modify(
+	  @AuthMember MemberDTO.Info member,
 	  @PathVariable Long buildingId,
 	  @Valid
 	  @RequestBody BuildingDTO.Request request,
 	  Pageable pageable
 	) {
-		return ResponseEntity.ok(buildingService.update(buildingId, request, pageable));
+		return ResponseEntity.ok(buildingService.update(member, buildingId, request, pageable));
 	}
 
 	@DeleteMapping("/{buildingId}")
 	public ResponseEntity<Boolean> unregister(
+	  @AuthMember MemberDTO.Info member,
 	  @PathVariable Long buildingId
 	) {
-		return ResponseEntity.ok(buildingService.delete(buildingId));
+		return ResponseEntity.ok(buildingService.delete(member, buildingId));
 	}
 
 }

@@ -1,8 +1,12 @@
 package com.core.back9.service;
 
 import com.core.back9.dto.BuildingDTO;
+import com.core.back9.dto.MemberDTO;
 import com.core.back9.entity.Building;
+import com.core.back9.entity.constant.Role;
 import com.core.back9.entity.constant.Status;
+import com.core.back9.exception.ApiErrorCode;
+import com.core.back9.exception.ApiException;
 import com.core.back9.mapper.BuildingMapper;
 import com.core.back9.repository.BuildingRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +23,13 @@ public class BuildingService {
 	private final BuildingRepository buildingRepository;
 	private final BuildingMapper buildingMapper;
 
-	public BuildingDTO.Response create(BuildingDTO.Request request) {
-		Building requestBuilding = buildingMapper.toEntity(request);
-		Building savedBuilding = buildingRepository.save(requestBuilding);
-		return buildingMapper.toResponse(savedBuilding);
+	public BuildingDTO.Response create(MemberDTO.Info member, BuildingDTO.Request request) {
+		if (member.getRole() == Role.ADMIN) {
+			Building requestBuilding = buildingMapper.toEntity(request);
+			Building savedBuilding = buildingRepository.save(requestBuilding);
+			return buildingMapper.toResponse(savedBuilding);
+		}
+		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
 	}
 
 	@Transactional(readOnly = true)
@@ -37,16 +44,22 @@ public class BuildingService {
 		return buildingMapper.toInfo(validBuilding, pageable);
 	}
 
-	public BuildingDTO.Info update(Long buildingId, BuildingDTO.Request request, Pageable pageable) {
-		Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
-		validBuilding.update(request);
-		return buildingMapper.toInfo(validBuilding, pageable);
+	public BuildingDTO.Info update(MemberDTO.Info member, Long buildingId, BuildingDTO.Request request, Pageable pageable) {
+		if (member.getRole() == Role.ADMIN) {
+			Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
+			validBuilding.update(request);
+			return buildingMapper.toInfo(validBuilding, pageable);
+		}
+		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
 	}
 
-	public boolean delete(Long buildingId) {
-		Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
-		validBuilding.delete();
-		return validBuilding.getStatus() == Status.UNREGISTER;
+	public boolean delete(MemberDTO.Info member, Long buildingId) {
+		if (member.getRole() == Role.ADMIN) {
+			Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
+			validBuilding.delete();
+			return validBuilding.getStatus() == Status.UNREGISTER;
+		}
+		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
 	}
 
 }
