@@ -39,14 +39,6 @@ public class ContractDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class StatusChangeRequest {
-		private LocalDate checkOut;
-	}
-
-	@AllArgsConstructor
-	@NoArgsConstructor
-	@Builder
-	@Getter
 	public static class RegisterResponse {
 		private Long id;
 		private LocalDate startDate;
@@ -71,6 +63,19 @@ public class ContractDTO {
 		private Long rentalPrice;
 		private ContractStatus contractStatus;
 		private LocalDateTime createdAt;
+		private LocalDateTime updatedAt;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class statusInfo {
+		private Long id;
+		private LocalDate startDate;
+		private LocalDate endDate;
+		private LocalDate checkOut;
+		private ContractStatus contractStatus;
 		private LocalDateTime updatedAt;
 	}
 

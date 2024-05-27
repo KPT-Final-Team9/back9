@@ -20,7 +20,7 @@ import java.util.List;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
 @DataJpaTest
-public class ContractFixture {
+public class ContractRepositoryFixture {
 
     @PersistenceContext
     private EntityManager em;

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDate;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/buildings/{buildingId}/rooms/{roomId}/contracts")
@@ -29,7 +30,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
         ContractDTO.RegisterResponse response = contractService.registerContract(buildingId, roomId, tenantId, request);
 
         return ResponseEntity
-                .created(URI.create("/api/buildings/"+ buildingId + "/rooms/" + roomId + "/contracts/" + response.getId()))
+                .created(URI.create("/api/buildings/" + buildingId + "/rooms/" + roomId + "/contracts/" + response.getId()))
                 .body(response);
 
     }
@@ -46,7 +47,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
         ContractDTO.Info info = contractService.renewContract(buildingId, roomId, contractId, tenantId, request);
 
         return ResponseEntity
-                .created(URI.create("/api/buildings/"+ buildingId + "/rooms/" + roomId + "/contracts/" + info.getId()))
+                .created(URI.create("/api/buildings/" + buildingId + "/rooms/" + roomId + "/contracts/" + info.getId()))
                 .body(info);
 
     }
@@ -58,7 +59,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
             Pageable pageable
     ) {
 
-       ContractDTO.InfoList infoList = contractService.getAllContract(buildingId, roomId, pageable);
+        ContractDTO.InfoList infoList = contractService.getAllContract(buildingId, roomId, pageable);
 
         return ResponseEntity.ok(infoList);
 
@@ -89,6 +90,80 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
         ContractDTO.Info info = contractService.modifyContract(buildingId, roomId, contractId, request);
 
         return ResponseEntity.ok(info);
+
+    }
+
+    @PatchMapping("/{contractId}/complete")
+    public ResponseEntity<ContractDTO.statusInfo> completeContract(
+            @PathVariable(name = "buildingId") Long buildingId,
+            @PathVariable(name = "roomId") Long roomId,
+            @PathVariable(name = "contractId") Long contractId
+    ) {
+
+        LocalDate startDate = LocalDate.now();
+
+        ContractDTO.statusInfo statusInfo = contractService.completeContract(buildingId, roomId, contractId, startDate);
+
+        return ResponseEntity.ok(statusInfo);
+
+    }
+
+    @PatchMapping("/{contractId}/cancel")
+    public ResponseEntity<ContractDTO.statusInfo> cancelContract(
+            @PathVariable(name = "buildingId") Long buildingId,
+            @PathVariable(name = "roomId") Long roomId,
+            @PathVariable(name = "contractId") Long contractId
+    ) {
+
+        LocalDate startDate = LocalDate.now();
+
+        ContractDTO.statusInfo statusInfo = contractService.cancelContract(buildingId, roomId, contractId, startDate);
+
+        return ResponseEntity.ok(statusInfo);
+
+    }
+
+    @PatchMapping("/{contractId}/progress")
+    public ResponseEntity<ContractDTO.statusInfo> progressContract(
+            @PathVariable(name = "buildingId") Long buildingId,
+            @PathVariable(name = "roomId") Long roomId,
+            @PathVariable(name = "contractId") Long contractId
+    ) {
+
+        LocalDate startDate = LocalDate.now();
+
+        ContractDTO.statusInfo statusInfo = contractService.progressContract(buildingId, roomId, contractId, startDate);
+
+        return ResponseEntity.ok(statusInfo);
+
+    }
+
+    @PatchMapping("/{contractId}/expire")
+    public ResponseEntity<ContractDTO.statusInfo> expireContract(
+            @PathVariable(name = "buildingId") Long buildingId,
+            @PathVariable(name = "roomId") Long roomId,
+            @PathVariable(name = "contractId") Long contractId
+    ) {
+
+        LocalDate endDate = LocalDate.now();
+
+        ContractDTO.statusInfo statusInfo = contractService.expireContract(buildingId, roomId, contractId, endDate);
+
+        return ResponseEntity.ok(statusInfo);
+
+    }
+
+    @PatchMapping("/{contractId}/terminate")
+    public ResponseEntity<ContractDTO.statusInfo> terminateContract(
+            @PathVariable(name = "buildingId") Long buildingId,
+            @PathVariable(name = "roomId") Long roomId,
+            @PathVariable(name = "contractId") Long contractId,
+            @RequestParam(name = "checkOut", required = true) LocalDate checkOut // 더 적합한 방법으로 일자를 받을 방법 고민 중
+    ) {
+
+        ContractDTO.statusInfo statusInfo = contractService.terminateContract(buildingId, roomId, contractId, checkOut);
+
+        return ResponseEntity.ok(statusInfo);
 
     }
 

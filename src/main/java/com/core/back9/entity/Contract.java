@@ -84,61 +84,50 @@ public class Contract extends BaseEntity {
     }
 
     // 계약 완료 상태 지정
-    public ContractStatus contractCompleted(LocalDate startDate) { // 계약 대기 -> 완료 상태로 변경
+    public Contract contractComplete() { // 계약 대기 -> 완료 상태로 변경
 
         if (this.contractStatus != ContractStatus.PENDING) {
             throw new ApiException(ApiErrorCode.INVALID_CHANGE, "계약 대기 상태가 아닙니다.");
         }
 
-        if (startDate.isAfter(this.startDate)) {
-            throw new ApiException(ApiErrorCode.INVALID_CHANGE, "계약에 명시된 시작 일자가 이미 지났습니다.");
-        }
+        this.contractStatus = ContractStatus.COMPLETED;
 
-        return this.contractStatus = ContractStatus.COMPLETED;
+        return this;
 
     }
 
     // 계약 취소 상태 지정
-    public ContractStatus contractCanceledMissedStartDate() {
+    public Contract contractCancelMissedStartDate() {
 
         if (!(this.contractStatus == ContractStatus.PENDING ||
               this.contractStatus == ContractStatus.COMPLETED)) { // 대기 & 완료 상태가 아닌 경우
             throw new ApiException(ApiErrorCode.INVALID_CHANGE, "계약을 취소할 수 있는 상태가 아닙니다.");
         }
 
-        return this.contractStatus = ContractStatus.CANCELED;
+        this.contractStatus = ContractStatus.CANCELED;
+
+        return this;
 
     }
 
     // 계약 이행 상태 지정
-    public ContractStatus contractInProgress(LocalDate startDate) { // 계약 완료 상태이면서 계약 시작 일자가 현재일과 같아야함
+    public Contract contractInProgress() {
 
         if (this.contractStatus != ContractStatus.COMPLETED) {
             throw new ApiException(ApiErrorCode.INVALID_CHANGE, "계약 완료 상태가 아닙니다.");
         }
 
-        if (!startDate.isEqual(this.startDate)) {
-            throw new ApiException(ApiErrorCode.INVALID_CHANGE, "계약 이행 일자가 아닙니다.");
-        }
+        this.contractStatus = ContractStatus.IN_PROGRESS;
 
-        return this.contractStatus = ContractStatus.IN_PROGRESS;
+        return this;
 
     }
 
     // 계약 만료 상태 지정
-    public Contract contractExpire(LocalDate endDate) {
+    public Contract contractExpire() {
 
         if(this.contractStatus != ContractStatus.IN_PROGRESS) {
             throw new ApiException(ApiErrorCode.INVALID_CHANGE, "계약 이행 상태가 아닙니다.");
-        }
-
-        if (endDate.isBefore(this.endDate)) { // 원하는 일자가 실제 만료일의 이전 일자인 경우
-            throw new ApiException(ApiErrorCode.INVALID_CHANGE,
-                    """
-                            만료 상태로 변경을 원하는 일자가
-                            정해진 만료 일자보다 이전 일자인 경우
-                            계약 만료 상태로 변경할 수 없습니다.
-                            """);
         }
 
         this.contractStatus = ContractStatus.EXPIRED;
@@ -148,23 +137,13 @@ public class Contract extends BaseEntity {
     }
 
     // 계약 파기 상태 지정 (실제 퇴실 일자 변경과 함께 계약 파기 상태로 변경)
-    public Contract contractTerminate(ContractDTO.StatusChangeRequest request) {
-
-        if (request.getCheckOut().isAfter(this.endDate) ||
-            request.getCheckOut().isEqual(this.checkOut)) {
-            throw new ApiException(ApiErrorCode.INVALID_CHANGE,
-                    """
-                            원하는 퇴실 일자가 기존 퇴실 일자와 같거나
-                            계약 종료 일자 보다 이후의 일자라면
-                            계약 파기 상태로 변경할 수 없습니다.
-                            """);
-        }
+    public Contract contractTerminate(LocalDate checkOut) {
 
         if (this.contractStatus != ContractStatus.IN_PROGRESS) {
             throw new ApiException(ApiErrorCode.CONTRACT_NOT_IN_PROGRESS);
         }
 
-        this.checkOut = request.getCheckOut();
+        this.checkOut = checkOut;
         this.contractStatus = ContractStatus.TERMINATED;
 
         return this;
