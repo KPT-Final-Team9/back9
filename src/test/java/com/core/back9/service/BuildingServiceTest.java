@@ -1,7 +1,9 @@
 package com.core.back9.service;
 
 import com.core.back9.dto.BuildingDTO;
+import com.core.back9.dto.MemberDTO;
 import com.core.back9.entity.Building;
+import com.core.back9.entity.constant.Role;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.mapper.BuildingMapper;
 import com.core.back9.repository.BuildingRepository;
@@ -44,9 +46,15 @@ class BuildingServiceTest {
 	private BuildingDTO.Request request;
 	private BuildingDTO.Info info;
 	private Pageable pageable;
+	private MemberDTO.Info admin;
+	private MemberDTO.Info owner;
+	private MemberDTO.Info user;
 
 	@BeforeEach
 	public void initSetting() {
+		admin = MemberDTO.Info.builder().role(Role.ADMIN).build();
+		owner = MemberDTO.Info.builder().role(Role.OWNER).build();
+		user = MemberDTO.Info.builder().role(Role.USER).build();
 		pageable = PageRequest.of(0, 10);
 		buildingService = new BuildingService(buildingRepository, buildingMapper);
 		building = Building.builder()
@@ -89,7 +97,7 @@ class BuildingServiceTest {
 		given(buildingRepository.save(building)).willReturn(savedBuilding);
 		given(buildingMapper.toResponse(savedBuilding)).willReturn(response);
 
-		BuildingDTO.Response result = buildingService.create(request);
+		BuildingDTO.Response result = buildingService.create(admin, request);
 
 		assertThat(result).isEqualTo(response);
 		verify(buildingMapper).toEntity(request);
@@ -144,7 +152,7 @@ class BuildingServiceTest {
 		given(buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER)).willReturn(building);
 		given(buildingMapper.toInfo(building, pageable)).willReturn(updatedInfo);
 
-		BuildingDTO.Info result = buildingService.update(buildingId, updateRequest, pageable);
+		BuildingDTO.Info result = buildingService.update(admin, buildingId, updateRequest, pageable);
 
 		assertThat(result).isEqualTo(updatedInfo);
 		assertThat(building.getName()).isEqualTo(updateRequest.getName());
@@ -159,7 +167,7 @@ class BuildingServiceTest {
 		long buildingId = 1L;
 		given(buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER)).willReturn(building);
 
-		boolean result = buildingService.delete(buildingId);
+		boolean result = buildingService.delete(admin, buildingId);
 
 		assertThat(result).isTrue();
 		assertThat(building.getStatus()).isEqualTo(Status.UNREGISTER);
