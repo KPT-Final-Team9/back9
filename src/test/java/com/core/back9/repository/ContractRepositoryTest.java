@@ -8,15 +8,12 @@ import com.core.back9.entity.constant.ContractStatus;
 import com.core.back9.entity.constant.ContractType;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.entity.constant.Usage;
-import com.core.back9.repository.fixture.ContractFixture;
+import com.core.back9.repository.fixture.ContractRepositoryFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,10 +21,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("test")
-@DataJpaTest
-class ContractRepositoryTest extends ContractFixture {
+class ContractRepositoryTest extends ContractRepositoryFixture {
 
     @Autowired
     private ContractRepository contractRepository;
