@@ -4,6 +4,7 @@ import com.core.back9.common.util.SecurityUtil;
 import com.core.back9.dto.MemberDTO;
 import com.core.back9.dto.TokenDTO;
 import com.core.back9.entity.Member;
+import com.core.back9.entity.Tenant;
 import com.core.back9.entity.constant.Role;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.exception.ApiErrorCode;
@@ -11,6 +12,7 @@ import com.core.back9.exception.ApiException;
 import com.core.back9.jwt.JwtProvider;
 import com.core.back9.mapper.MemberMapper;
 import com.core.back9.repository.MemberRepository;
+import com.core.back9.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,18 +26,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final TenantRepository tenantRepository;
     private final MemberMapper memberMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
     @Transactional
     public MemberDTO.RegisterResponse userSignup(MemberDTO.RegisterRequest request) {
-        memberRepository.findByEmail(request.getEmail())
-                .ifPresent(member -> {
-                    throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
-                });
+        validateEmail(request.getEmail());
+        validatePhoneNumber(request.getPhoneNumber());
 
-        Member member = memberMapper.toEntity(request, Role.USER, Status.REGISTER);
+        Tenant tenant = tenantRepository.getValidOneTenantOrThrow(request.getTenantId());
+
+        Member member = memberMapper.toEntity(request, tenant, Role.USER, Status.REGISTER);
         Member savedMember = memberRepository.save(member);
 
         return memberMapper.toUserRegisterResponse(savedMember);
@@ -43,10 +46,8 @@ public class MemberService {
 
     @Transactional
     public MemberDTO.RegisterResponse ownerSignup(MemberDTO.RegisterRequest request) {
-        memberRepository.findByEmail(request.getEmail())
-                .ifPresent(member -> {
-                    throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
-                });
+        validateEmail(request.getEmail());
+        validatePhoneNumber(request.getPhoneNumber());
 
         Member member = memberMapper.toEntity(request, Role.OWNER, Status.REGISTER);
         Member savedMember = memberRepository.save(member);
@@ -56,15 +57,27 @@ public class MemberService {
 
     @Transactional
     public MemberDTO.RegisterResponse adminSignup(MemberDTO.RegisterRequest request) {
-        memberRepository.findByEmail(request.getEmail())
-                .ifPresent(member -> {
-                    throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
-                });
+        validateEmail(request.getEmail());
+        validatePhoneNumber(request.getPhoneNumber());
 
         Member member = memberMapper.toEntity(request, Role.ADMIN, Status.REGISTER);
         Member savedMember = memberRepository.save(member);
 
         return memberMapper.toAdminRegisterResponse(savedMember);
+    }
+
+    private void validateEmail(String email) {
+        memberRepository.findByEmailAndStatus(email, Status.REGISTER)
+                .ifPresent(member -> {
+                    throw new ApiException(ApiErrorCode.DUPLICATE_EMAIL);
+                });
+    }
+
+    private void validatePhoneNumber(String phoneNumber) {
+        memberRepository.findByPhoneNumberAndStatus(phoneNumber, Status.REGISTER)
+                .ifPresent(member -> {
+                    throw new ApiException(ApiErrorCode.DUPLICATE_PHONE_NUMBER);
+                });
     }
 
     @Transactional

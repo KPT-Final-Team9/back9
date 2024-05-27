@@ -2,27 +2,30 @@ package com.core.back9.jwt;
 
 import com.core.back9.dto.TokenDTO;
 import com.core.back9.entity.Member;
+import com.core.back9.entity.constant.Role;
+import com.core.back9.exception.ApiErrorCode;
+import com.core.back9.exception.ApiException;
+import com.core.back9.security.CustomUserDetails;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecurityException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @Slf4j
 public class JwtProvider implements InitializingBean {
 
-    private static final String AUTHORITIES_KEY = "auth";
     private final String secret;
     private final long tokenValidity;
     private Key key;
@@ -44,7 +47,7 @@ public class JwtProvider implements InitializingBean {
     public TokenDTO createToken(Member member) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("email", member.getEmail());
-        claims.put(AUTHORITIES_KEY, member.getRole());
+        claims.put("role", member.getRole());
 
         long now = (new Date()).getTime();
         Date expiration = new Date(now + tokenValidity);
@@ -68,13 +71,13 @@ public class JwtProvider implements InitializingBean {
                 .parseClaimsJws(jwt)
                 .getBody();
 
-        Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-                .map(SimpleGrantedAuthority::new)
-                .toList();
+        CustomUserDetails principal = new CustomUserDetails(Member.builder()
+                .email(claims.get("email", String.class))
+                .password("")
+                .role(Role.valueOf(claims.get("role", String.class)))
+                .build());
 
-        User principal = new User(claims.get("email", String.class), "", authorities);
-
-        return new UsernamePasswordAuthenticationToken(principal, jwt, authorities);
+        return new UsernamePasswordAuthenticationToken(principal, jwt, principal.getAuthorities());
     }
 
     public boolean validateToken(String jwt) {
@@ -82,17 +85,11 @@ public class JwtProvider implements InitializingBean {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt);
 
             return true;
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.");
+        } catch (SecurityException | MalformedJwtException | IllegalArgumentException e) {
+            throw new ApiException(ApiErrorCode.INVALID_TOKEN);
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT입니다.");
-        } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT입니다.");
-        } catch (IllegalArgumentException e) {
-            log.info("잘못된 JWT입니다.");
+            throw new ApiException(ApiErrorCode.EXPIRED_TOKEN);
         }
-
-        return false;
     }
 
 }

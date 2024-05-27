@@ -1,6 +1,5 @@
 package com.core.back9.dto;
 
-import com.core.back9.entity.Tenant;
 import com.core.back9.entity.constant.Role;
 import com.core.back9.entity.constant.Status;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -21,7 +20,7 @@ public class MemberDTO {
         private String email;
         private String password;
         private String phoneNumber;
-        private Tenant tenant;
+        private Long tenantId;
 //		private SignType signType;
 //		private String firebaseUid;
 //		private String firebaseFcmToken;
@@ -38,8 +37,8 @@ public class MemberDTO {
         private Role role;
         private String phoneNumber;
         private Status status;
-        private Tenant tenant;
-//		private SignType signType;
+        private TenantDTO.Response tenant;
+        //		private SignType signType;
 //		private String firebaseUid;
 //		private String firebaseFcmToken;
         private LocalDateTime createdAt;
@@ -66,6 +65,7 @@ public class MemberDTO {
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Builder
     @Getter
     public static class Info {
@@ -74,7 +74,8 @@ public class MemberDTO {
         private Role role;
         private String phoneNumber;
         private Status status;
-//		private SignType signType;
+        private TenantDTO.Info tenant;
+        //		private SignType signType;
 //		private String firebaseUid;
 //		private String firebaseFcmToken;
         private LocalDateTime createdAt;
