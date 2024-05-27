@@ -13,6 +13,7 @@ public enum ApiErrorCode {
     NOT_FOUND_VALID_TENANT(HttpStatus.NOT_FOUND.value(), "유효한 입주사를 찾을 수 없습니다"),
     NOT_FOUND_VALID_CONTRACT(HttpStatus.NOT_FOUND.value(), "유효한 계약을 찾을 수 없습니다."),
     NOT_FOUND_VALID_MEMBER(HttpStatus.NOT_FOUND.value(), "유효한 사용자를 찾을 수 없습니다."),
+    NOT_FOUND_VALID_PRINCIPAL(HttpStatus.NOT_FOUND.value(), "유효한 주체를 찾을 수 없습니다."),
 
     ROOM_ALREADY_ASSIGNED(HttpStatus.BAD_REQUEST.value(), "이미 계약된 호실이 존재합니다."),
     DELETE_FAIL(HttpStatus.BAD_REQUEST.value(), "삭제가 완료되지 않았습니다."),
@@ -21,6 +22,10 @@ public enum ApiErrorCode {
     INCORRECT_EMAIL_FORMAT(HttpStatus.BAD_REQUEST.value(), "잘못된 이메일 형식입니다."),
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST.value(), "잘못된 비밀번호입니다."),
     NOT_AUTHENTICATED_USER(HttpStatus.BAD_REQUEST.value(), "인증된 사용자가 아닙니다."),
+    EMPTY_TOKEN(HttpStatus.BAD_REQUEST.value(), "토큰이 비어 있습니다."),
+    NOT_BEARER_TOKEN(HttpStatus.BAD_REQUEST.value(), "BEARER 토큰이 아닙니다."),
+    INVALID_TOKEN(HttpStatus.BAD_REQUEST.value(), "잘못된 JWT입니다."),
+    EXPIRED_TOKEN(HttpStatus.BAD_REQUEST.value(), "만료된 JWT입니다."),
 
     THREAD_POOL_REJECTED(HttpStatus.REQUEST_TIMEOUT.value(), "더 이상 요청을 처리 할 수 없습니다"),
 
