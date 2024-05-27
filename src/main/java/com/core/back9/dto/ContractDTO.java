@@ -31,7 +31,6 @@ public class ContractDTO {
 	public static class UpdateRequest {
 		private LocalDate startDate;
 		private LocalDate endDate;
-		private LocalDate checkOut;
 		private Long deposit;
 		private Long rentalPrice;
 	}
@@ -64,6 +63,19 @@ public class ContractDTO {
 		private Long rentalPrice;
 		private ContractStatus contractStatus;
 		private LocalDateTime createdAt;
+		private LocalDateTime updatedAt;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class statusInfo {
+		private Long id;
+		private LocalDate startDate;
+		private LocalDate endDate;
+		private LocalDate checkOut;
+		private ContractStatus contractStatus;
 		private LocalDateTime updatedAt;
 	}
 

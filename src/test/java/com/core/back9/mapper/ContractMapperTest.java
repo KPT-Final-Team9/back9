@@ -52,7 +52,6 @@ public class ContractMapperTest {
         ContractDTO.UpdateRequest request = ContractDTO.UpdateRequest.builder()
                 .startDate(LocalDate.now())
                 .endDate(LocalDate.now().plusDays(1))
-                .checkOut(LocalDate.now().plusDays(1))
                 .deposit(100000000L)
                 .rentalPrice(200000L)
                 .build();

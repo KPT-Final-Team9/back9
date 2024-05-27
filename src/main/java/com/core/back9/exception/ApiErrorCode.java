@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ApiErrorCode {
 
-    NOT_FOUND_VALID_BUILDING(HttpStatus.NOT_FOUND.value(), "유효한 건물을 찾을 수 없습니다"),
-    NOT_FOUND_VALID_ROOM(HttpStatus.NOT_FOUND.value(), "유효한 호실을 찾을 수 없습니다"),
+	NOT_FOUND_VALID_BUILDING(HttpStatus.NOT_FOUND.value(), "유효한 건물을 찾을 수 없습니다"),
+	NOT_FOUND_VALID_ROOM(HttpStatus.NOT_FOUND.value(), "유효한 호실을 찾을 수 없습니다"),
     NOT_FOUND_VALID_TENANT(HttpStatus.NOT_FOUND.value(), "유효한 입주사를 찾을 수 없습니다"),
     NOT_FOUND_VALID_CONTRACT(HttpStatus.NOT_FOUND.value(), "유효한 계약을 찾을 수 없습니다."),
     NOT_FOUND_VALID_MEMBER(HttpStatus.NOT_FOUND.value(), "유효한 사용자를 찾을 수 없습니다."),
@@ -27,14 +27,13 @@ public enum ApiErrorCode {
     INVALID_TOKEN(HttpStatus.BAD_REQUEST.value(), "잘못된 JWT입니다."),
     EXPIRED_TOKEN(HttpStatus.BAD_REQUEST.value(), "만료된 JWT입니다."),
 
-    THREAD_POOL_REJECTED(HttpStatus.REQUEST_TIMEOUT.value(), "더 이상 요청을 처리 할 수 없습니다"),
+	THREAD_POOL_REJECTED(HttpStatus.REQUEST_TIMEOUT.value(), "더 이상 요청을 처리 할 수 없습니다"),
 
-    DO_NOT_HAVE_PERMISSION(HttpStatus.UNAUTHORIZED.value(), "권한이 없습니다"),
+	DO_NOT_HAVE_PERMISSION(HttpStatus.UNAUTHORIZED.value(), "권한이 없습니다"),
 
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "SERVER ERROR"),
-    ;
+	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "SERVER ERROR");
 
-    private final Integer errorCode;
-    private final String errorMessage;
+	private final Integer errorCode;
+	private final String errorMessage;
 
 }

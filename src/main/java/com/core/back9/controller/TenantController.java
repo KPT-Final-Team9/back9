@@ -31,24 +31,6 @@ public class TenantController { // TODO: Member 구현 정도에 따라 관계 �
 
     }
 
-    @GetMapping("")
-    public ResponseEntity<TenantDTO.InfoList> getAllTenant(Pageable pageable) {
-
-        TenantDTO.InfoList infoList = tenantService.getAllTenant(pageable);
-
-        return ResponseEntity.ok(infoList);
-
-    }
-
-    @GetMapping("/{tenantId}")
-    public ResponseEntity<TenantDTO.Info> getOneTenant(@PathVariable(name = "tenantId") Long tenantId) {
-
-        TenantDTO.Info info = tenantService.getOneTenant(tenantId);
-
-        return ResponseEntity.ok(info);
-
-    }
-
     @PatchMapping("/{tenantId}")
     public ResponseEntity<TenantDTO.Info> modifyTenant(
             @PathVariable(name = "tenantId") Long tenantId,

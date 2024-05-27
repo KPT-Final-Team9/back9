@@ -24,10 +24,14 @@ public interface ContractMapper {
 
     Contract toEntity(ContractDTO.UpdateRequest request);
 
+
+
     ContractDTO.RegisterResponse toRegisterResponse(Contract contract);
 
     ContractDTO.Info toInfo(Contract contract);
 
     ContractDTO.InfoList toInfoList(Long count, List<ContractDTO.Info> infoList);
+
+    ContractDTO.statusInfo toStatusInfo(Contract contract);
 
 }
