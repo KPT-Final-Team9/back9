@@ -1,6 +1,8 @@
 package com.core.back9.controller;
 
 import com.core.back9.dto.ContractDTO;
+import com.core.back9.dto.MemberDTO;
+import com.core.back9.security.AuthMember;
 import com.core.back9.service.ContractService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     @PostMapping("/{tenantId}") // TODO : Member 붙이면 tenantId 캐치 방법 재고려해야함
     public ResponseEntity<ContractDTO.RegisterResponse> registerContract(
+            @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
             @PathVariable(name = "tenantId") Long tenantId,
@@ -27,7 +30,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
             @RequestBody ContractDTO.RegisterRequest request
     ) {
 
-        ContractDTO.RegisterResponse response = contractService.registerContract(buildingId, roomId, tenantId, request);
+        ContractDTO.RegisterResponse response = contractService.registerContract(member, buildingId, roomId, tenantId, request);
 
         return ResponseEntity
                 .created(URI.create("/api/buildings/" + buildingId + "/rooms/" + roomId + "/contracts/" + response.getId()))
@@ -37,14 +40,15 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     @PostMapping("/{contractId}/tenant/{tenantId}")
     public ResponseEntity<ContractDTO.Info> renewContract(
+            @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
             @PathVariable(name = "contractId") Long contractId,
             @PathVariable(name = "tenantId") Long tenantId,
-            @RequestBody ContractDTO.RegisterRequest request
+            @RequestBody ContractDTO.RenewRequest request
     ) {
 
-        ContractDTO.Info info = contractService.renewContract(buildingId, roomId, contractId, tenantId, request);
+        ContractDTO.Info info = contractService.renewContract(member, buildingId, roomId, contractId, tenantId, request);
 
         return ResponseEntity
                 .created(URI.create("/api/buildings/" + buildingId + "/rooms/" + roomId + "/contracts/" + info.getId()))
@@ -54,12 +58,13 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     @GetMapping("")
     public ResponseEntity<ContractDTO.InfoList> getAllContract(
+            @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
             Pageable pageable
     ) {
 
-        ContractDTO.InfoList infoList = contractService.getAllContract(buildingId, roomId, pageable);
+        ContractDTO.InfoList infoList = contractService.getAllContract(member, buildingId, roomId, pageable);
 
         return ResponseEntity.ok(infoList);
 
@@ -67,12 +72,13 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     @GetMapping("/{contractId}")
     public ResponseEntity<ContractDTO.Info> getOneContract(
+            @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
             @PathVariable(name = "contractId") Long contractId
     ) {
 
-        ContractDTO.Info info = contractService.getOneContract(buildingId, roomId, contractId);
+        ContractDTO.Info info = contractService.getOneContract(member, buildingId, roomId, contractId);
 
         return ResponseEntity.ok(info);
 
@@ -80,6 +86,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     @PatchMapping("/{contractId}")
     public ResponseEntity<ContractDTO.Info> modifyContract(
+            @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
             @PathVariable(name = "contractId") Long contractId,
@@ -87,7 +94,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
             @RequestBody ContractDTO.UpdateRequest request
     ) {
 
-        ContractDTO.Info info = contractService.modifyContract(buildingId, roomId, contractId, request);
+        ContractDTO.Info info = contractService.modifyContract(member, buildingId, roomId, contractId, request);
 
         return ResponseEntity.ok(info);
 
@@ -95,6 +102,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     @PatchMapping("/{contractId}/complete")
     public ResponseEntity<ContractDTO.statusInfo> completeContract(
+            @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
             @PathVariable(name = "contractId") Long contractId
@@ -102,7 +110,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
         LocalDate startDate = LocalDate.now();
 
-        ContractDTO.statusInfo statusInfo = contractService.completeContract(buildingId, roomId, contractId, startDate);
+        ContractDTO.statusInfo statusInfo = contractService.completeContract(member, buildingId, roomId, contractId, startDate);
 
         return ResponseEntity.ok(statusInfo);
 
@@ -110,6 +118,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     @PatchMapping("/{contractId}/cancel")
     public ResponseEntity<ContractDTO.statusInfo> cancelContract(
+            @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
             @PathVariable(name = "contractId") Long contractId
@@ -117,7 +126,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
         LocalDate startDate = LocalDate.now();
 
-        ContractDTO.statusInfo statusInfo = contractService.cancelContract(buildingId, roomId, contractId, startDate);
+        ContractDTO.statusInfo statusInfo = contractService.cancelContract(member, buildingId, roomId, contractId, startDate);
 
         return ResponseEntity.ok(statusInfo);
 
@@ -125,6 +134,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     @PatchMapping("/{contractId}/progress")
     public ResponseEntity<ContractDTO.statusInfo> progressContract(
+            @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
             @PathVariable(name = "contractId") Long contractId
@@ -132,7 +142,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
         LocalDate startDate = LocalDate.now();
 
-        ContractDTO.statusInfo statusInfo = contractService.progressContract(buildingId, roomId, contractId, startDate);
+        ContractDTO.statusInfo statusInfo = contractService.progressContract(member, buildingId, roomId, contractId, startDate);
 
         return ResponseEntity.ok(statusInfo);
 
@@ -140,6 +150,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     @PatchMapping("/{contractId}/expire")
     public ResponseEntity<ContractDTO.statusInfo> expireContract(
+            @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
             @PathVariable(name = "contractId") Long contractId
@@ -147,7 +158,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
         LocalDate endDate = LocalDate.now();
 
-        ContractDTO.statusInfo statusInfo = contractService.expireContract(buildingId, roomId, contractId, endDate);
+        ContractDTO.statusInfo statusInfo = contractService.expireContract(member, buildingId, roomId, contractId, endDate);
 
         return ResponseEntity.ok(statusInfo);
 
@@ -155,13 +166,14 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     @PatchMapping("/{contractId}/terminate")
     public ResponseEntity<ContractDTO.statusInfo> terminateContract(
+            @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
             @PathVariable(name = "contractId") Long contractId,
-            @RequestParam(name = "checkOut", required = true) LocalDate checkOut // 더 적합한 방법으로 일자를 받을 방법 고민 중
+            @RequestParam(name = "checkOut") LocalDate checkOut // 더 적합한 방법으로 일자를 받을 방법 고민 중
     ) {
 
-        ContractDTO.statusInfo statusInfo = contractService.terminateContract(buildingId, roomId, contractId, checkOut);
+        ContractDTO.statusInfo statusInfo = contractService.terminateContract(member, buildingId, roomId, contractId, checkOut);
 
         return ResponseEntity.ok(statusInfo);
 
@@ -169,12 +181,13 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     @DeleteMapping("/{contractId}")
     public ResponseEntity<Integer> deleteContract(
+            @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
             @PathVariable(name = "contractId") Long contractId
     ) {
 
-        Integer result = contractService.deleteContract(buildingId, roomId, contractId);
+        Integer result = contractService.deleteContract(member, buildingId, roomId, contractId);
 
         return ResponseEntity.ok(result);
 
