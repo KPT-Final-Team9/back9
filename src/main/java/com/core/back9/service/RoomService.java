@@ -1,12 +1,18 @@
 package com.core.back9.service;
 
+import com.core.back9.dto.MemberDTO;
 import com.core.back9.dto.RoomDTO;
 import com.core.back9.entity.Building;
+import com.core.back9.entity.Member;
 import com.core.back9.entity.Room;
 import com.core.back9.entity.Setting;
+import com.core.back9.entity.constant.Role;
 import com.core.back9.entity.constant.Status;
+import com.core.back9.exception.ApiErrorCode;
+import com.core.back9.exception.ApiException;
 import com.core.back9.mapper.RoomMapper;
 import com.core.back9.repository.BuildingRepository;
+import com.core.back9.repository.MemberRepository;
 import com.core.back9.repository.RoomRepository;
 import com.core.back9.repository.SettingRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,27 +30,50 @@ public class RoomService {
 	private final RoomRepository roomRepository;
 	private final RoomMapper roomMapper;
 	private final SettingRepository settingRepository;
+	private final MemberRepository memberRepository;
 
-	public RoomDTO.Response create(Long buildingId, RoomDTO.Request request) {
-		Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
-		Room newRoom = roomMapper.toEntity(validBuilding, request, createSetting());
-		Room savedRoom = roomRepository.save(newRoom);
-		validBuilding.addRoom(savedRoom);
-		return roomMapper.toResponse(savedRoom);
+	public RoomDTO.Response create(
+	  MemberDTO.Info member,
+	  Long buildingId,
+	  RoomDTO.Request request
+	) {
+		if (member.getRole() == Role.ADMIN) {
+			Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
+			Room newRoom = roomMapper.toEntity(validBuilding, request, createSetting());
+			Room savedRoom = roomRepository.save(newRoom);
+			validBuilding.addRoom(savedRoom);
+			return roomMapper.toResponse(savedRoom);
+		}
+		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
 	}
 
-	public RoomDTO.Info update(Long buildingId, Long roomId, RoomDTO.Request request) {
-		Room validRoom = currentRoom(buildingId, roomId);
-		validRoom.update(request);
-		return roomMapper.toInfo(validRoom);
+	public RoomDTO.Info update(
+	  MemberDTO.Info member,
+	  Long buildingId,
+	  Long roomId,
+	  RoomDTO.Request request
+	) {
+		if (member.getRole() == Role.ADMIN) {
+			Room validRoom = currentRoom(buildingId, roomId);
+			validRoom.update(request);
+			return roomMapper.toInfo(validRoom);
+		}
+		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
 	}
 
-	public boolean delete(Long buildingId, Long roomId) {
-		Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
-		Room validRoom = currentRoom(buildingId, roomId);
-		validBuilding.removeRoom(validRoom);
-		validRoom.delete();
-		return validRoom.getStatus() == Status.UNREGISTER;
+	public boolean delete(
+	  MemberDTO.Info member,
+	  Long buildingId,
+	  Long roomId
+	) {
+		if (member.getRole() == Role.ADMIN) {
+			Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
+			Room validRoom = currentRoom(buildingId, roomId);
+			validBuilding.removeRoom(validRoom);
+			validRoom.delete();
+			return validRoom.getStatus() == Status.UNREGISTER;
+		}
+		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
 	}
 
 	@Transactional(readOnly = true)
@@ -59,18 +88,49 @@ public class RoomService {
 		return roomMapper.toInfo(validRoom);
 	}
 
-	public RoomDTO.Info updateSwitch(Long buildingId, Long roomId, boolean value) {
-		Room validRoom = currentRoom(buildingId, roomId);
-		Setting currentSetting = validRoom.getSetting();
-		currentSetting.updateToggle(value);
-		return roomMapper.toInfo(validRoom);
+	public RoomDTO.Info updateSwitch(
+	  MemberDTO.Info member,
+	  Long buildingId,
+	  Long roomId,
+	  boolean value
+	) {
+		if (member.getRole() == Role.OWNER) {
+			Room validRoom = currentRoom(buildingId, roomId);
+			Setting currentSetting = validRoom.getSetting();
+			currentSetting.updateToggle(value);
+			return roomMapper.toInfo(validRoom);
+		}
+		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
 	}
 
-	public RoomDTO.Info updateEncourageMessage(Long buildingId, Long roomId, String encourageMessage) {
-		Room validRoom = currentRoom(buildingId, roomId);
-		Setting currentSetting = validRoom.getSetting();
-		currentSetting.updateEncourageMessage(encourageMessage);
-		return roomMapper.toInfo(validRoom);
+	public RoomDTO.Info updateEncourageMessage(
+	  MemberDTO.Info member,
+	  Long buildingId,
+	  Long roomId,
+	  String encourageMessage
+	) {
+		if (member.getRole() == Role.OWNER) {
+			Room validRoom = currentRoom(buildingId, roomId);
+			Setting currentSetting = validRoom.getSetting();
+			currentSetting.updateEncourageMessage(encourageMessage);
+			return roomMapper.toInfo(validRoom);
+		}
+		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
+	}
+
+	public RoomDTO.InfoWithOwner settingOwner(
+	  MemberDTO.Info member,
+	  Long buildingId,
+	  Long roomId,
+	  Long ownerId
+	) {
+		if (member.getRole() == Role.ADMIN) {    // 소유자의 방 배정은 관리자만 할 수 있다 (초대 개념)
+			Member validOwner = memberRepository.getValidMemberWithIdAndRole(ownerId, Role.OWNER, Status.REGISTER);
+			Room validRoom = roomRepository.getValidRoomWithIdOrThrow(buildingId, roomId, Status.REGISTER);
+			validRoom.setOwner(validOwner);
+			return roomMapper.toInfoWithOwner(validRoom, validOwner);
+		}
+		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
 	}
 
 	private Room currentRoom(Long buildingId, Long roomId) {
@@ -81,7 +141,5 @@ public class RoomService {
 		Setting newSetting = Setting.builder().build();
 		return settingRepository.save(newSetting);
 	}
-
-	// 소유자 추가하기
 
 }

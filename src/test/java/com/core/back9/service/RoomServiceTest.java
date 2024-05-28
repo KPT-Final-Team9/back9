@@ -1,13 +1,17 @@
 package com.core.back9.service;
 
+import com.core.back9.dto.MemberDTO;
 import com.core.back9.dto.RoomDTO;
 import com.core.back9.entity.Building;
+import com.core.back9.entity.Member;
 import com.core.back9.entity.Room;
 import com.core.back9.entity.Setting;
+import com.core.back9.entity.constant.Role;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.entity.constant.Usage;
 import com.core.back9.mapper.RoomMapper;
 import com.core.back9.repository.BuildingRepository;
+import com.core.back9.repository.MemberRepository;
 import com.core.back9.repository.RoomRepository;
 import com.core.back9.repository.SettingRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +25,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +53,9 @@ class RoomServiceTest {
 	@Mock
 	private SettingRepository settingRepository;
 
+	@Mock
+	private MemberRepository memberRepository;
+
 	@InjectMocks
 	private RoomService roomService;
 
@@ -60,10 +66,14 @@ class RoomServiceTest {
 	private RoomDTO.Info info;
 	private Setting setting;
 	private Long selectedBuildingId = 1L;
+	private MemberDTO.Info admin;
+	private MemberDTO.Info owner;
+	private MemberDTO.Info user;
 
 	@BeforeEach
 	public void initSetting() {
-		roomService = new RoomService(buildingRepository, roomRepository, roomMapper, settingRepository);
+		roomService = new RoomService(buildingRepository, roomRepository,
+		  roomMapper, settingRepository, memberRepository);
 		setting = roomService.createSetting();
 		building = Building.builder()
 		  .name("building name")
@@ -103,6 +113,9 @@ class RoomServiceTest {
 			LocalDateTime.of(2024, 5, 5, 15, 55, 55)
 		  )
 		  .build();
+		admin = MemberDTO.Info.builder().role(Role.ADMIN).build();
+		owner = MemberDTO.Info.builder().role(Role.OWNER).build();
+		user = MemberDTO.Info.builder().role(Role.USER).build();
 	}
 
 	@DisplayName("호실 등록 성공")
@@ -120,7 +133,7 @@ class RoomServiceTest {
 		given(roomRepository.save(room)).willReturn(savedRoom);
 		given(roomMapper.toResponse(savedRoom)).willReturn(response);
 
-		RoomDTO.Response result = roomService.create(building.getId(), request);
+		RoomDTO.Response result = roomService.create(admin, building.getId(), request);
 
 		assertThat(result).isEqualTo(result);
 		verify(buildingRepository).getValidBuildingWithIdOrThrow(building.getId(), Status.REGISTER);
@@ -144,7 +157,7 @@ class RoomServiceTest {
 		given(roomRepository.getValidRoomWithIdOrThrow(selectedBuildingId, updateId, Status.REGISTER)).willReturn(room);
 		given(roomMapper.toInfo(room)).willReturn(updateInfo);
 
-		RoomDTO.Info result = roomService.update(selectedBuildingId, updateId, updateRequest);
+		RoomDTO.Info result = roomService.update(admin, selectedBuildingId, updateId, updateRequest);
 
 		assertThat(result).isEqualTo(updateInfo);
 		verify(roomRepository).getValidRoomWithIdOrThrow(selectedBuildingId, updateId, Status.REGISTER);
@@ -159,7 +172,7 @@ class RoomServiceTest {
 		given(buildingRepository.getValidBuildingWithIdOrThrow(selectedBuildingId, Status.REGISTER)).willReturn(building);
 		given(roomRepository.getValidRoomWithIdOrThrow(selectedBuildingId, deleteId, Status.REGISTER)).willReturn(room);
 
-		boolean result = roomService.delete(selectedBuildingId, deleteId);
+		boolean result = roomService.delete(admin, selectedBuildingId, deleteId);
 
 		assertThat(result).isTrue();
 		verify(buildingRepository).getValidBuildingWithIdOrThrow(selectedBuildingId, Status.REGISTER);
@@ -195,6 +208,22 @@ class RoomServiceTest {
 		assertThat(result).isEqualTo(info);
 		verify(roomRepository).getValidRoomWithIdOrThrow(selectedBuildingId, selectedRoomId, Status.REGISTER);
 		verify(roomMapper).toInfo(room);
+	}
+
+	@DisplayName("호실 소유자 지정")
+	@Test
+	public void givenBuildingIdAndRoomIdAndOwnerMemberIdWhenSettingRoomThenRoomInfoWithOwner() {
+		long selectedRoomId = 1L;
+		Member ownerEntity = Member.builder().email("owner@gmail.com").role(Role.OWNER).status(Status.REGISTER).build();
+
+		given(memberRepository.getValidMemberWithIdAndRole(owner.getId(), Role.OWNER, Status.REGISTER)).willReturn(ownerEntity);
+		given(roomRepository.getValidRoomWithIdOrThrow(selectedBuildingId, selectedRoomId, Status.REGISTER)).willReturn(room);
+
+		roomService.settingOwner(admin, selectedBuildingId, selectedRoomId, owner.getId());
+
+		assertThat(room.getMember()).isEqualTo(ownerEntity);
+		verify(memberRepository).getValidMemberWithIdAndRole(owner.getId(), Role.OWNER, Status.REGISTER);
+		verify(roomRepository).getValidRoomWithIdOrThrow(selectedBuildingId, selectedRoomId, Status.REGISTER);
 	}
 
 }

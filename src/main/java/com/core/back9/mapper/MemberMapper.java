@@ -40,4 +40,6 @@ public interface MemberMapper {
 
     MemberDTO.Info toInfo(Member member);
 
+    MemberDTO.OwnerInfo toOwnerInfo(Member member);
+
 }
