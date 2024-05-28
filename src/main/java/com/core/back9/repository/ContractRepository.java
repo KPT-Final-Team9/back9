@@ -1,6 +1,7 @@
 package com.core.back9.repository;
 
 import com.core.back9.entity.Contract;
+import com.core.back9.entity.constant.ContractStatus;
 import com.core.back9.entity.constant.ContractType;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.exception.ApiErrorCode;
@@ -12,6 +13,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -53,17 +56,16 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             select c
             from Contract c
             where c.room.id=?1
-            and c.tenant.id=?2
-            and c.status='REGISTER'
-            and c.contractType=?3
+            and c.contractStatus IN (?2)
+            and c.endDate>?3
             """)
-    Optional<Contract> findByContractRoomIdAndTenantId(Long roomId, Long tenantId, ContractType initial);
+    Optional<List<Contract>> findByContract(Long roomId, List<ContractStatus> statusList, LocalDate startDate);
 
     @Query("""
             select c
             from Contract c
             where c.id=?1
-            and c.contractType=?2
             """)
-    Optional<Contract> findByContractInitial(Long contractId, ContractType contractType);
+    Optional<Contract> findByContractId(Long contractId);
+
 }
