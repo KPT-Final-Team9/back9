@@ -53,4 +53,14 @@ public class TenantDTO {
 		private List<Info> infoList;
 	}
 
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class SimpleInfo {
+		private Long tenantId;
+		private String tenantName;
+		private String companyNumber;
+	}
+
 }

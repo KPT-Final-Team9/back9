@@ -63,6 +63,8 @@ public class ContractService {
 
         Contract completedContract = savedContract.contractComplete(); // 계약 무조건 완료처리 (계약 등록과 동시에 실행되는 완료처리라 기간 검증 필요X)
 
+        room.addContract(completedContract);
+
         return contractMapper.toRegisterResponse(completedContract);
 
     }
@@ -88,6 +90,8 @@ public class ContractService {
         Contract savedContract = contractRepository.save(validContract);
 
         Contract completedContract = savedContract.contractComplete();
+
+        room.addContract(completedContract);
 
         return contractMapper.toInfo(completedContract);
 

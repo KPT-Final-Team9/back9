@@ -77,6 +77,7 @@ public class ContractDTO {
 	@Getter
 	public static class Info {
 		private Long id;
+		private TenantDTO.SimpleInfo tenant;
 		private LocalDate startDate;
 		private LocalDate endDate;
 		private LocalDate checkOut;
