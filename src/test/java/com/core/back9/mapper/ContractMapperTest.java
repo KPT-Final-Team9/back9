@@ -70,7 +70,31 @@ public class ContractMapperTest {
     }
 
     @Test
-    @DisplayName("contract의 registerRequest를 entity로 변환 및 연관관계 매핑을 할 수 있다.")
+    @DisplayName("contract의 renewRequest를 renewDto로 매핑할 수 있다.")
+    void contractRenewRequestToRenewDto() {
+        // given
+        ContractDTO.RenewRequest request = ContractDTO.RenewRequest.builder()
+                .endDate(LocalDate.now().plusDays(40))
+                .deposit(100000000L)
+                .rentalPrice(200000L)
+                .build();
+
+        LocalDate renewalDate = LocalDate.now().plusDays(21); // 갱신 시작 일자
+
+        // when
+        ContractDTO.RenewDto renewDto = contractMapper.toDto(request, renewalDate);
+
+        // then
+        assertThat(renewDto)
+                .extracting("startDate", "endDate", "deposit", "rentalPrice")
+                .contains(LocalDate.now().plusDays(21),
+                        LocalDate.now().plusDays(40),
+                        100000000L,
+                        200000L);
+    }
+
+    @Test
+    @DisplayName("contract의 renewDto를 entity로 변환 및 연관관계 매핑을 할 수 있다.")
     void contractRegisterRequestToEntityWithRoomAndTenant() {
         // given
         Room room = Room.builder()
@@ -83,9 +107,9 @@ public class ContractMapperTest {
                 .companyNumber("02-000-0000")
                 .build();
 
-        ContractDTO.RegisterRequest request = ContractDTO.RegisterRequest.builder()
-                .startDate(LocalDate.now())
-                .endDate(LocalDate.now().plusDays(1))
+        ContractDTO.RenewDto request = ContractDTO.RenewDto.builder()
+                .startDate(LocalDate.now().plusDays(21))
+                .endDate(LocalDate.now().plusDays(40))
                 .deposit(100000000L)
                 .rentalPrice(200000L)
                 .build();
@@ -94,6 +118,10 @@ public class ContractMapperTest {
         Contract contract = contractMapper.toEntity(request, tenant, room, ContractType.INITIAL);
 
         // then
+        assertThat(contract)
+                .extracting("startDate", "endDate", "deposit", "rentalPrice", "contractType")
+                .contains(LocalDate.now().plusDays(21), LocalDate.now().plusDays(40), 100000000L, 200000L, ContractType.INITIAL);
+
         assertThat(contract)
                 .extracting("room.name", "room.usage", "tenant.name", "tenant.companyNumber", "contractType")
                 .contains("호실1", Usage.OFFICES, "입주사1", "02-000-0000", ContractType.INITIAL);
