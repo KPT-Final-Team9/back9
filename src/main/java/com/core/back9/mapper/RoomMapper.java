@@ -1,11 +1,9 @@
 package com.core.back9.mapper;
 
+import com.core.back9.dto.ContractDTO;
 import com.core.back9.dto.MemberDTO;
 import com.core.back9.dto.RoomDTO;
-import com.core.back9.entity.Building;
-import com.core.back9.entity.Member;
-import com.core.back9.entity.Room;
-import com.core.back9.entity.Setting;
+import com.core.back9.entity.*;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,12 +16,15 @@ import java.util.List;
   componentModel = MappingConstants.ComponentModel.SPRING,
   unmappedSourcePolicy = ReportingPolicy.IGNORE,
   unmappedTargetPolicy = ReportingPolicy.IGNORE,
-  uses = MemberMapper.class
+  uses = {MemberMapper.class, ContractMapper.class}
 )
 public interface RoomMapper {
 
 	@Autowired
 	MemberMapper memberMapper = new MemberMapperImpl();
+
+	@Autowired
+	ContractMapper contractMapper = new ContractMapperImpl();
 
 	@Mapping(target = "building", expression = "java(building)")
 	@Mapping(target = "setting", expression = "java(setting)")
@@ -31,6 +32,8 @@ public interface RoomMapper {
 
 	RoomDTO.Response toResponse(Room room);
 
+
+	@Mapping(target = "contracts", expression = "java(toContractInfoList(room.getContractList()))")
 	RoomDTO.Info toInfo(Room room);
 
 	List<RoomDTO.Info> toInfoList(List<Room> rooms);
@@ -55,6 +58,12 @@ public interface RoomMapper {
 	@Named("toOwnerInfo")
 	default MemberDTO.OwnerInfo toOwnerInfo(Member member) {
 		return memberMapper.toOwnerInfo(member);
+	}
+
+	@Named("toContractInfoList")
+	default ContractDTO.InfoList toContractInfoList(List<Contract> contracts) {
+		List<ContractDTO.Info> list = contracts.stream().map(contractMapper::toInfo).toList();
+		return ContractDTO.InfoList.builder().count((long) list.size()).infoList(list).build();
 	}
 
 }

@@ -32,6 +32,8 @@ public interface ContractMapper {
 
     ContractDTO.RegisterResponse toRegisterResponse(Contract contract);
 
+    @Mapping(source = "contract.tenant.id", target = "tenant.tenantId")
+    @Mapping(source = "contract.tenant.name", target = "tenant.tenantName")
     ContractDTO.Info toInfo(Contract contract);
 
     ContractDTO.InfoList toInfoList(Long count, List<ContractDTO.Info> infoList);

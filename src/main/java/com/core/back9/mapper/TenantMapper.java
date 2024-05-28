@@ -21,4 +21,8 @@ public interface TenantMapper {
 
 	TenantDTO.InfoList toInfoList(Long count, List<TenantDTO.Info> infoList);
 
+	@Mapping(source = "id", target = "tenantId")
+	@Mapping(source = "name", target = "tenantName")
+	TenantDTO.SimpleInfo toSimpleInfo(Tenant tenant);
+
 }

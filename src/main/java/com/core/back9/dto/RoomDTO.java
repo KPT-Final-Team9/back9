@@ -57,6 +57,7 @@ public class RoomDTO {
 		private Usage usage;
 		private Status status;
 		private float rating;
+		private ContractDTO.InfoList contracts;
 		private SettingDTO.Info setting;
 		private LocalDateTime createdAt;
 		private LocalDateTime updatedAt;

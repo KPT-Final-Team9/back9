@@ -85,4 +85,12 @@ public class Room extends BaseEntity {
 		this.member = member;
 	}
 
+	public void addContract(Contract contract) {
+		this.contracts.add(contract);
+	}
+
+	public List<Contract> getContractList() {
+		return this.contracts;
+	}
+
 }
