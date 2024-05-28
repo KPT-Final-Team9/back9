@@ -51,7 +51,7 @@ public class ContractService {
         // 공실 유무 체크(내가 계약 이행을 원하는 일자에 이미 맺어진 계약이 있는지 체크)
         List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.COMPLETED, ContractStatus.IN_PROGRESS);
 
-        contractRepository.findByContract(roomId, statusList, request.getStartDate())
+        contractRepository.findByContractDuplicate(roomId, statusList, request.getStartDate(), request.getEndDate())
                 .ifPresent(contracts -> {
                     if (!contracts.isEmpty()) {
                         throw new ApiException(ApiErrorCode.ROOM_ALREADY_ASSIGNED);
@@ -167,7 +167,7 @@ public class ContractService {
 
     }
 
-    public ContractDTO.statusInfo completeContract(
+    public ContractDTO.StatusInfo completeContract(
             MemberDTO.Info member,
             Long buildingId,
             Long roomId,
@@ -187,7 +187,7 @@ public class ContractService {
 
     }
 
-    public ContractDTO.statusInfo cancelContract(
+    public ContractDTO.StatusInfo cancelContract(
             MemberDTO.Info member,
             Long buildingId,
             Long roomId,
@@ -207,7 +207,7 @@ public class ContractService {
 
     }
 
-    public ContractDTO.statusInfo progressContract(
+    public ContractDTO.StatusInfo progressContract(
             MemberDTO.Info member,
             Long buildingId,
             Long roomId,
@@ -226,7 +226,7 @@ public class ContractService {
         return contractMapper.toStatusInfo(contractProgressed);
     }
 
-    public ContractDTO.statusInfo expireContract(
+    public ContractDTO.StatusInfo expireContract(
             MemberDTO.Info member,
             Long buildingId,
             Long roomId,
@@ -251,7 +251,7 @@ public class ContractService {
 
     }
 
-    public ContractDTO.statusInfo terminateContract(
+    public ContractDTO.StatusInfo terminateContract(
             MemberDTO.Info member,
             Long buildingId,
             Long roomId,
