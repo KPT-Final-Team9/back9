@@ -38,7 +38,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     }
 
-    @PostMapping("/{contractId}/tenant/{tenantId}")
+    @PostMapping("/{contractId}/tenants/{tenantId}")
     public ResponseEntity<ContractDTO.Info> renewContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
