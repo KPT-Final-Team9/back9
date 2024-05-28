@@ -24,7 +24,7 @@ public class RoomDTO {
 		@NotBlank(message = "층은 필수 입력입니다")
 		private String floor;
 
-		@NotNull(message = "면접은 필수 입력입니다")
+		@NotNull(message = "면적은 필수 입력입니다")
 		private float area;
 
 		@NotNull(message = "용도는 필수 입력입니다")
