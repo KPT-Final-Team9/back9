@@ -1,11 +1,13 @@
 package com.core.back9.service;
 
 import com.core.back9.dto.ContractDTO;
+import com.core.back9.dto.MemberDTO;
 import com.core.back9.entity.Contract;
 import com.core.back9.entity.Room;
 import com.core.back9.entity.Tenant;
 import com.core.back9.entity.constant.ContractStatus;
 import com.core.back9.entity.constant.ContractType;
+import com.core.back9.entity.constant.Role;
 import com.core.back9.exception.ApiException;
 import com.core.back9.repository.ContractRepository;
 import com.core.back9.service.fixture.ContractServiceFixture;
@@ -44,8 +46,13 @@ public class ContractServiceTest extends ContractServiceFixture {
 
         LocalDate today = LocalDate.now().plusDays(10);
 
+        MemberDTO.Info memberInfo = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
         // when
-        ContractDTO.statusInfo updatedContract = contractService.completeContract(1L, 1L, savedContract.getId(), today);
+        ContractDTO.statusInfo updatedContract = contractService.completeContract(memberInfo, 1L, 1L, savedContract.getId(), today);
 
         // then
         assertThat(updatedContract)
@@ -77,11 +84,78 @@ public class ContractServiceTest extends ContractServiceFixture {
 
         LocalDate today = LocalDate.now().plusDays(11);
 
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
         // when & then
-        assertThatThrownBy(() -> contractService.completeContract(1L, 1L, savedContract.getId(), today))
+        assertThatThrownBy(() -> contractService.completeContract(member, 1L, 1L, savedContract.getId(), today))
                 .isInstanceOf(ApiException.class)
                 .extracting("errorMessage")
                 .isEqualTo("계약 완료처리가 가능한 일자가 이미 경과했습니다.");
+
+    }
+
+    @Test
+    @DisplayName("어드민 권한을 가지지 않은 사용자라면 완료 요청이 불가능하다.")
+    void completeContractRoleInvalid() {
+        // given
+        Contract contract = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(25),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract savedContract = contractRepository.save(contract);
+
+        LocalDate today = LocalDate.now().plusDays(11);
+
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.ADMIN)
+                .build();
+
+        // when & then
+        assertThatThrownBy(() -> contractService.completeContract(member, 1L, 1L, savedContract.getId(), today))
+                .isInstanceOf(ApiException.class)
+                .extracting("errorMessage")
+                .isEqualTo("소유자만 접근할 수 있습니다.");
+
+    }
+
+    @Test
+    @DisplayName("해당 호실의 소유자가 아니라면 호실과 관련된 계약의 완료 처리를 수행할 수 없다.")
+    void notCompleteContractNotOwnerThisRoom() {
+        // given
+        Contract contract = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(25),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract savedContract = contractRepository.save(contract);
+
+        LocalDate today = LocalDate.now().plusDays(11);
+
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(1L)
+                .role(Role.OWNER)
+                .build();
+
+        // when & then
+        assertThatThrownBy(() -> contractService.completeContract(member, 1L, 1L, savedContract.getId(), today))
+                .isInstanceOf(ApiException.class)
+                .extracting("errorMessage")
+                .isEqualTo("유효한 호실을 찾을 수 없습니다");
 
     }
 
@@ -103,8 +177,13 @@ public class ContractServiceTest extends ContractServiceFixture {
 
         LocalDate today = LocalDate.now().plusDays(10);
 
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
         // when
-        ContractDTO.statusInfo updatedContract = contractService.cancelContract(1L, 1L, savedContract.getId(), today);
+        ContractDTO.statusInfo updatedContract = contractService.cancelContract(member, 1L, 1L, savedContract.getId(), today);
 
         // then
         assertThat(updatedContract)
@@ -136,8 +215,13 @@ public class ContractServiceTest extends ContractServiceFixture {
 
         LocalDate today = LocalDate.now().plusDays(11);
 
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
         // when & then
-        assertThatThrownBy(() -> contractService.completeContract(1L, 1L, savedContract.getId(), today))
+        assertThatThrownBy(() -> contractService.completeContract(member, 1L, 1L, savedContract.getId(), today))
                 .isInstanceOf(ApiException.class)
                 .extracting("errorMessage")
                 .isEqualTo("계약 완료처리가 가능한 일자가 이미 경과했습니다.");
@@ -163,8 +247,13 @@ public class ContractServiceTest extends ContractServiceFixture {
 
         LocalDate today = LocalDate.now().plusDays(10);
 
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
         // when
-        ContractDTO.statusInfo updatedContract = contractService.progressContract(1L, 1L, savedContract.getId(), today);
+        ContractDTO.statusInfo updatedContract = contractService.progressContract(member, 1L, 1L, savedContract.getId(), today);
 
         // then
         assertThat(updatedContract)
@@ -198,13 +287,18 @@ public class ContractServiceTest extends ContractServiceFixture {
         LocalDate afterDay = LocalDate.now().plusDays(11);
         LocalDate beforeDay = LocalDate.now().plusDays(9);
 
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
         // when & then
-        assertThatThrownBy(() -> contractService.progressContract(1L, 1L, savedContract.getId(), afterDay))
+        assertThatThrownBy(() -> contractService.progressContract(member, 1L, 1L, savedContract.getId(), afterDay))
                 .isInstanceOf(ApiException.class) // 이행 요청 일자가 계약 시작 일자 이후인 경우
                 .extracting("errorMessage")
                 .isEqualTo("계약 이행 가능 일자가 아닙니다.");
 
-        assertThatThrownBy(() -> contractService.progressContract(1L, 1L, savedContract.getId(), beforeDay))
+        assertThatThrownBy(() -> contractService.progressContract(member, 1L, 1L, savedContract.getId(), beforeDay))
                 .isInstanceOf(ApiException.class) // 이행 요청 일자가 계약 시작 일자 이전인 경우
                 .extracting("errorMessage")
                 .isEqualTo("계약 이행 가능 일자가 아닙니다.");
@@ -231,8 +325,13 @@ public class ContractServiceTest extends ContractServiceFixture {
 
         LocalDate today = LocalDate.now().plusDays(25); // 계약 만료 요청 일자
 
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
         // when
-        ContractDTO.statusInfo updatedContract = contractService.expireContract(1L, 1L, savedContract.getId(), today);
+        ContractDTO.statusInfo updatedContract = contractService.expireContract(member, 1L, 1L, savedContract.getId(), today);
 
         // then
         assertThat(updatedContract)
@@ -266,8 +365,13 @@ public class ContractServiceTest extends ContractServiceFixture {
 
         LocalDate today = LocalDate.now().plusDays(24); // 계약 만료 요청 일자
 
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
         // when & then
-        assertThatThrownBy(() -> contractService.expireContract(1L, 1L, savedContract.getId(), today))
+        assertThatThrownBy(() -> contractService.expireContract(member, 1L, 1L, savedContract.getId(), today))
                 .isInstanceOf(ApiException.class)
                 .extracting("errorMessage")
                 .isEqualTo("""
@@ -298,8 +402,13 @@ public class ContractServiceTest extends ContractServiceFixture {
 
         LocalDate today = LocalDate.now().plusDays(24); // 계약 파기 요청 일자
 
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
         // when
-        ContractDTO.statusInfo updatedContract = contractService.terminateContract(1L, 1L, savedContract.getId(), today);
+        ContractDTO.statusInfo updatedContract = contractService.terminateContract(member, 1L, 1L, savedContract.getId(), today);
 
         // then
         assertThat(updatedContract)
@@ -333,8 +442,13 @@ public class ContractServiceTest extends ContractServiceFixture {
 
         LocalDate today = LocalDate.now().plusDays(26); // 계약 파기 요청 일자
 
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
         // when & then
-        assertThatThrownBy(() -> contractService.terminateContract(1L, 1L, savedContract.getId(), today))
+        assertThatThrownBy(() -> contractService.terminateContract(member, 1L, 1L, savedContract.getId(), today))
                 .isInstanceOf(ApiException.class)
                 .extracting("errorMessage")
                 .isEqualTo("""
@@ -365,8 +479,13 @@ public class ContractServiceTest extends ContractServiceFixture {
 
         LocalDate today = LocalDate.now().plusDays(25); // 계약 퇴실 요청 일자
 
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
         // when & then
-        assertThatThrownBy(() -> contractService.terminateContract(1L, 1L, savedContract.getId(), today))
+        assertThatThrownBy(() -> contractService.terminateContract(member, 1L, 1L, savedContract.getId(), today))
                 .isInstanceOf(ApiException.class)
                 .extracting("errorMessage")
                 .isEqualTo("""

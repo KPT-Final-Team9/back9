@@ -1,10 +1,13 @@
 package com.core.back9.service;
 
 import com.core.back9.dto.ContractDTO;
+import com.core.back9.dto.MemberDTO;
 import com.core.back9.entity.Contract;
 import com.core.back9.entity.Room;
 import com.core.back9.entity.Tenant;
+import com.core.back9.entity.constant.ContractStatus;
 import com.core.back9.entity.constant.ContractType;
+import com.core.back9.entity.constant.Role;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.exception.ApiErrorCode;
 import com.core.back9.exception.ApiException;
@@ -33,57 +36,73 @@ public class ContractService {
     private final ContractMapper contractMapper;
 
     public ContractDTO.RegisterResponse registerContract(
+            MemberDTO.Info member,
             Long buildingId,
             Long roomId,
             Long tenantId,
             ContractDTO.RegisterRequest request
     ) {
 
+        Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
+
         // 상위 데이터 유효성 검증
         Tenant tenant = tenantRepository.getValidOneTenantOrThrow(tenantId);
-        Room room = roomRepository.getValidRoomWithIdOrThrow(buildingId, roomId, Status.REGISTER); // 해당 building의 room 조회
 
-        contractRepository.findByContractRoomIdAndTenantId(roomId, tenantId, ContractType.INITIAL)
-                .ifPresent(contract -> {
-                    throw new ApiException(ApiErrorCode.ROOM_ALREADY_ASSIGNED);
-                }); // 중복 데이터 검증(최초 계약이라는 정합성을 지켜야함!)
+        // 공실 유무 체크(내가 계약 이행을 원하는 일자에 이미 맺어진 계약이 있는지 체크)
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.COMPLETED, ContractStatus.IN_PROGRESS);
 
-        Contract validcontract = contractMapper.toEntity(request, tenant, room, ContractType.INITIAL); // 연결 관계 매핑
+        contractRepository.findByContract(roomId, statusList, request.getStartDate())
+                .ifPresent(contracts -> {
+                    if (!contracts.isEmpty()) {
+                        throw new ApiException(ApiErrorCode.ROOM_ALREADY_ASSIGNED);
+                    }
+                });
 
-        return contractMapper.toRegisterResponse(contractRepository.save(validcontract));
+        Contract validContract = contractMapper.toEntity(request, tenant, room, ContractType.INITIAL); // 연결 관계 매핑
+        Contract savedContract = contractRepository.save(validContract);
+
+        Contract completedContract = savedContract.contractComplete(); // 계약 무조건 완료처리 (계약 등록과 동시에 실행되는 완료처리라 기간 검증 필요X)
+
+        return contractMapper.toRegisterResponse(completedContract);
 
     }
 
     public ContractDTO.Info renewContract(
+            MemberDTO.Info member,
             Long buildingId,
             Long roomId,
             Long contractId,
-            Long tenantId, ContractDTO.RegisterRequest request
+            Long tenantId,
+            ContractDTO.RenewRequest request
     ) {
 
+        Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
         Tenant tenant = tenantRepository.getValidOneTenantOrThrow(tenantId);
-        Room room = roomRepository.getValidRoomWithIdOrThrow(buildingId, roomId, Status.REGISTER);
+        Contract contract = contractRepository.findByContractId(contractId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_CONTRACT));// 기존 계약이 존재하는지 검증
 
-        contractRepository.findByContractInitial(contractId, ContractType.INITIAL)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_CONTRACT)); // 초기 계약인지 검증
+        LocalDate renewalDate = contract.getEndDate().plusDays(1); // 재계약의 시작일은 기존 계약 만료일의 다음날
+        ContractDTO.RenewDto renewDto = contractMapper.toDto(request, renewalDate); // dto 추가 생성해 재시작일을 반영
 
-        // TODO : 최초 계약의 기간에 따라 재계약 일자를 검증 & 설정하는 비즈니스 로직 필요, 현재는 재계약의 동작 여부를 확인하기 위한 정도만 구현함
+        Contract validContract = contractMapper.toEntity(renewDto, tenant, room, ContractType.RENEWAL); // dto -> 엔티티 매핑
+        Contract savedContract = contractRepository.save(validContract);
 
+        Contract completedContract = savedContract.contractComplete();
 
-        Contract validContract = contractMapper.toEntity(request, tenant, room, ContractType.RENEWAL); // 엔티티 매핑
-
-        return contractMapper.toInfo(validContract);
+        return contractMapper.toInfo(completedContract);
 
     }
 
     @Transactional(readOnly = true)
     public ContractDTO.InfoList getAllContract(
+            MemberDTO.Info member,
             Long buildingId,
             Long roomId,
             Pageable pageable
     ) {
 
-        Room room = roomRepository.getValidRoomWithIdOrThrow(buildingId, roomId, Status.REGISTER);
+        Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
+
         Page<Contract> contracts = contractRepository.selectAllRegisteredContract(room.getId(), Status.REGISTER, pageable);
 
         long count = contracts.getTotalElements();
@@ -98,12 +117,14 @@ public class ContractService {
 
     @Transactional(readOnly = true)
     public ContractDTO.Info getOneContract(
+            MemberDTO.Info member,
             Long buildingId,
             Long roomId,
             Long contractId
     ) {
 
-        Room room = roomRepository.getValidRoomWithIdOrThrow(buildingId, roomId, Status.REGISTER);
+        Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
+
         Contract contract = contractRepository.getValidOneContractOrThrow(room.getId(), contractId);
 
         return contractMapper.toInfo(contract);
@@ -111,13 +132,15 @@ public class ContractService {
     }
 
     public ContractDTO.Info modifyContract(
+            MemberDTO.Info member,
             Long buildingId,
             Long roomId,
             Long contractId,
             ContractDTO.UpdateRequest request
     ) {
 
-        Room room = roomRepository.getValidRoomWithIdOrThrow(buildingId, roomId, Status.REGISTER);
+        Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
+
         Contract contract = contractRepository.getValidOneContractOrThrow(room.getId(), contractId);
         Contract updatedContract = contract.infoUpdate(request);
 
@@ -126,21 +149,29 @@ public class ContractService {
     }
 
     public Integer deleteContract(
+            MemberDTO.Info member,
             Long buildingId,
             Long roomId,
             Long contractId
     ) {
 
-        Room room = roomRepository.getValidRoomWithIdOrThrow(buildingId, roomId, Status.REGISTER);
+        Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
+
         return contractRepository.deleteRegisteredContract(Status.UNREGISTER, room.getId(), contractId)
                 .filter(result -> result != 0)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DELETE_FAIL));
 
     }
 
-    public ContractDTO.statusInfo completeContract(Long buildingId, Long roomId, Long contractId, LocalDate startDate) {
+    public ContractDTO.statusInfo completeContract(
+            MemberDTO.Info member,
+            Long buildingId,
+            Long roomId,
+            Long contractId,
+            LocalDate startDate
+    ) {
 
-        Contract contract = getValidRoomAndContract(buildingId, roomId, contractId);
+        Contract contract = getValidRoomAndContract(member, buildingId, roomId, contractId);
 
         if (startDate.isAfter(contract.getStartDate())) {
             throw new ApiException(ApiErrorCode.INVALID_CHANGE, "계약 완료처리가 가능한 일자가 이미 경과했습니다.");
@@ -152,9 +183,15 @@ public class ContractService {
 
     }
 
-    public ContractDTO.statusInfo cancelContract(Long buildingId, Long roomId, Long contractId, LocalDate startDate) {
+    public ContractDTO.statusInfo cancelContract(
+            MemberDTO.Info member,
+            Long buildingId,
+            Long roomId,
+            Long contractId,
+            LocalDate startDate
+    ) {
 
-        Contract contract = getValidRoomAndContract(buildingId, roomId, contractId);
+        Contract contract = getValidRoomAndContract(member, buildingId, roomId, contractId);
 
         if (startDate.isAfter(contract.getStartDate())) {
             throw new ApiException(ApiErrorCode.INVALID_CHANGE, "취소 가능한 일자가 경과했습니다.");
@@ -166,9 +203,15 @@ public class ContractService {
 
     }
 
-    public ContractDTO.statusInfo progressContract(Long buildingId, Long roomId, Long contractId, LocalDate startDate) {
+    public ContractDTO.statusInfo progressContract(
+            MemberDTO.Info member,
+            Long buildingId,
+            Long roomId,
+            Long contractId,
+            LocalDate startDate
+    ) {
 
-        Contract contract = getValidRoomAndContract(buildingId, roomId, contractId);
+        Contract contract = getValidRoomAndContract(member, buildingId, roomId, contractId);
 
         if (!startDate.isEqual(contract.getStartDate())) {
             throw new ApiException(ApiErrorCode.INVALID_CHANGE, "계약 이행 가능 일자가 아닙니다.");
@@ -179,9 +222,15 @@ public class ContractService {
         return contractMapper.toStatusInfo(contractProgressed);
     }
 
-    public ContractDTO.statusInfo expireContract(Long buildingId, Long roomId, Long contractId, LocalDate endDate) {
+    public ContractDTO.statusInfo expireContract(
+            MemberDTO.Info member,
+            Long buildingId,
+            Long roomId,
+            Long contractId,
+            LocalDate endDate
+    ) {
 
-        Contract contract = getValidRoomAndContract(buildingId, roomId, contractId);
+        Contract contract = getValidRoomAndContract(member, buildingId, roomId, contractId);
 
         if (endDate.isBefore(contract.getEndDate())) { // 원하는 일자가 실제 만료일의 이전 일자인 경우(이후 일자인지의 여부는 상관 X -> 실제 만료일 이후라도 만료 처리 가능 고려함)
             throw new ApiException(ApiErrorCode.INVALID_CHANGE,
@@ -198,9 +247,15 @@ public class ContractService {
 
     }
 
-    public ContractDTO.statusInfo terminateContract(Long buildingId, Long roomId, Long contractId, LocalDate checkOut) {
+    public ContractDTO.statusInfo terminateContract(
+            MemberDTO.Info member,
+            Long buildingId,
+            Long roomId,
+            Long contractId,
+            LocalDate checkOut
+    ) {
 
-        Contract contract = getValidRoomAndContract(buildingId, roomId, contractId);
+        Contract contract = getValidRoomAndContract(member, buildingId, roomId, contractId);
 
         if (checkOut.isAfter(contract.getEndDate()) ||
             checkOut.isEqual(contract.getCheckOut())) {
@@ -218,11 +273,30 @@ public class ContractService {
 
     }
 
-    private Contract getValidRoomAndContract(Long buildingId, Long roomId, Long contractId) {
+    private Contract getValidRoomAndContract(
+            MemberDTO.Info member, Long buildingId,
+            Long roomId,
+            Long contractId
+    ) {
+        if(member.getRole() != Role.OWNER) {
+            throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "소유자만 접근할 수 있습니다.");
+        }
 
-        Room room = roomRepository.getValidRoomWithIdOrThrow(buildingId, roomId, Status.REGISTER);
+        Room room = roomRepository.getRoomBySpecificIds(buildingId, roomId, member.getId(), Status.REGISTER)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
 
         return contractRepository.getValidOneContractOrThrow(room.getId(), contractId);
 
     }
+
+    private Room validateOwnerAndRoomExistence(MemberDTO.Info member, Long buildingId, Long roomId) {
+        if(member.getRole() != Role.OWNER) {
+            throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "소유자만 접근할 수 있습니다.");
+        }
+
+        return roomRepository.getRoomBySpecificIds(buildingId, roomId, member.getId(), Status.REGISTER)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
+
+    }
+
 }

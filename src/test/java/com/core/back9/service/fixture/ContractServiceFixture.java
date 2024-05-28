@@ -1,11 +1,15 @@
 package com.core.back9.service.fixture;
 
+import com.core.back9.dto.MemberDTO;
 import com.core.back9.entity.Building;
+import com.core.back9.entity.Member;
 import com.core.back9.entity.Room;
 import com.core.back9.entity.Tenant;
+import com.core.back9.entity.constant.Role;
 import com.core.back9.entity.constant.Usage;
 import com.core.back9.mapper.ContractMapper;
 import com.core.back9.repository.BuildingRepository;
+import com.core.back9.repository.MemberRepository;
 import com.core.back9.repository.RoomRepository;
 import com.core.back9.repository.TenantRepository;
 import jakarta.persistence.EntityManager;
@@ -27,7 +31,11 @@ public class ContractServiceFixture {
     private EntityManager em;
 
     @Autowired
+    private MemberRepository memberRepository;
+
+    @Autowired
     private BuildingRepository buildingRepository;
+
 
     @Autowired
     private TenantRepository tenantRepository;
@@ -51,6 +59,8 @@ public class ContractServiceFixture {
     @BeforeEach
     void setUp() {
 
+        em.createNativeQuery("ALTER TABLE members AUTO_INCREMENT = 1;")
+                .executeUpdate();
         em.createNativeQuery("ALTER TABLE buildings AUTO_INCREMENT = 1;")
                 .executeUpdate();
         em.createNativeQuery("ALTER TABLE rooms AUTO_INCREMENT = 1;")
@@ -59,6 +69,21 @@ public class ContractServiceFixture {
                 .executeUpdate();
         em.createNativeQuery("ALTER TABLE contracts AUTO_INCREMENT = 1;")
                 .executeUpdate();
+
+        Member user = Member.builder()
+                .email("test@test.com")
+                .role(Role.USER)
+                .build();
+        Member owner = Member.builder()
+                .email("test@test.com")
+                .role(Role.OWNER)
+                .build();
+        Member admin = Member.builder()
+                .email("test@test.com")
+                .role(Role.ADMIN)
+                .build();
+
+        memberRepository.saveAll(List.of(user, owner, admin));
 
         building = Building.builder()
                 .name("빌딩1")
@@ -73,6 +98,7 @@ public class ContractServiceFixture {
                 .floor("1층")
                 .area(0)
                 .usage(Usage.OFFICES)
+                .member(owner) // 2L
                 .build();
         room2 = Room.builder()
                 .building(building)
@@ -80,6 +106,7 @@ public class ContractServiceFixture {
                 .floor("2층")
                 .area(0)
                 .usage(Usage.OFFICES)
+                .member(owner) // 2L
                 .build();
         room3 = Room.builder()
                 .building(building)
@@ -87,6 +114,7 @@ public class ContractServiceFixture {
                 .floor("3층")
                 .area(0)
                 .usage(Usage.OFFICES)
+                .member(owner) // 2L
                 .build();
         roomRepository.saveAll(List.of(room1, room2, room3));
 

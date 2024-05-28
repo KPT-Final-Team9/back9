@@ -28,6 +28,27 @@ public class ContractDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
+	public static class RenewRequest {
+		private LocalDate endDate; // 새 만기 일자
+		private Long deposit;
+		private Long rentalPrice;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class RenewDto {
+		private LocalDate startDate;
+		private LocalDate endDate;
+		private Long deposit;
+		private Long rentalPrice;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
 	public static class UpdateRequest {
 		private LocalDate startDate;
 		private LocalDate endDate;

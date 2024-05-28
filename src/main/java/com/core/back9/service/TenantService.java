@@ -1,7 +1,9 @@
 package com.core.back9.service;
 
+import com.core.back9.dto.MemberDTO;
 import com.core.back9.dto.TenantDTO;
 import com.core.back9.entity.Tenant;
+import com.core.back9.entity.constant.Role;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.exception.ApiErrorCode;
 import com.core.back9.exception.ApiException;
@@ -25,7 +27,11 @@ public class TenantService {
     private final TenantMapper tenantMapper;
 
     @Transactional
-    public TenantDTO.Response registerTenant(TenantDTO.Request request) {
+    public TenantDTO.Response registerTenant(MemberDTO.Info member, TenantDTO.Request request) {
+
+        if(member.getRole() != Role.ADMIN) {
+            throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "관리자만 접근할 수 있습니다.");
+        }
 
         Tenant tenant = tenantMapper.toEntity(request);
 
@@ -56,9 +62,13 @@ public class TenantService {
 
     @Transactional
     public TenantDTO.Info modifyTenant(
-            Long tenantId,
+            MemberDTO.Info member, Long tenantId,
             TenantDTO.Request request
     ) {
+
+        if(member.getRole() != Role.ADMIN) {
+            throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "관리자만 접근할 수 있습니다.");
+        }
 
         Tenant tenant = tenantRepository.getValidOneTenantOrThrow(tenantId);
         Tenant updatedTenant = tenant.update(request);
@@ -67,7 +77,11 @@ public class TenantService {
     }
 
     @Transactional
-    public Integer deleteTenant(Long tenantId) {
+    public Integer deleteTenant(MemberDTO.Info member, Long tenantId) {
+
+        if(member.getRole() != Role.ADMIN) {
+            throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "관리자만 접근할 수 있습니다.");
+        }
 
         return tenantRepository.deleteRegisteredTenant(Status.UNREGISTER, tenantId)
                 .filter(result -> result != 0)
