@@ -1,6 +1,8 @@
 package com.core.back9.controller;
 
+import com.core.back9.dto.MemberDTO;
 import com.core.back9.dto.RoomDTO;
+import com.core.back9.security.AuthMember;
 import com.core.back9.service.RoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,37 +20,36 @@ public class RoomController {
 
 	@PostMapping("")
 	public ResponseEntity<RoomDTO.Response> register(
-	  /* TODO Member 추가 */
+	  @AuthMember MemberDTO.Info member,
 	  @PathVariable Long buildingId,
 	  @Valid
 	  @RequestBody RoomDTO.Request request
 	) {
-		return ResponseEntity.ok(roomService.create(buildingId, request));
+		return ResponseEntity.ok(roomService.create(member, buildingId, request));
 	}
 
 	@PatchMapping("/{roomId}")
 	public ResponseEntity<RoomDTO.Info> modify(
-	  /* TODO Member 추가 */
+	  @AuthMember MemberDTO.Info member,
 	  @PathVariable Long buildingId,
 	  @PathVariable Long roomId,
 	  @Valid
 	  @RequestBody RoomDTO.Request request
 	) {
-		return ResponseEntity.ok(roomService.update(buildingId, roomId, request));
+		return ResponseEntity.ok(roomService.update(member, buildingId, roomId, request));
 	}
 
 	@DeleteMapping("/{roomId}")
 	public ResponseEntity<Boolean> unregister(
-	  /* TODO Member 추가 */
+	  @AuthMember MemberDTO.Info member,
 	  @PathVariable Long buildingId,
 	  @PathVariable Long roomId
 	) {
-		return ResponseEntity.ok(roomService.delete(buildingId, roomId));
+		return ResponseEntity.ok(roomService.delete(member, buildingId, roomId));
 	}
 
 	@GetMapping("")
 	public ResponseEntity<Page<RoomDTO.Info>> getAll(
-	  /* TODO Member 추가 */
 	  @PathVariable Long buildingId,
 	  Pageable pageable
 	) {
@@ -57,7 +58,6 @@ public class RoomController {
 
 	@GetMapping("/{roomId}")
 	public ResponseEntity<RoomDTO.Info> getOne(
-	  /* TODO Member 추가 */
 	  @PathVariable Long buildingId,
 	  @PathVariable Long roomId
 	) {
@@ -66,30 +66,40 @@ public class RoomController {
 
 	@PostMapping("/{roomId}/setting-on")
 	public ResponseEntity<RoomDTO.Info> turnOn(
-	  /* TODO Member 추가 */
+	  @AuthMember MemberDTO.Info member,
 	  @PathVariable Long buildingId,
 	  @PathVariable Long roomId
 	) {
-		return ResponseEntity.ok(roomService.updateSwitch(buildingId, roomId, true));
+		return ResponseEntity.ok(roomService.updateSwitch(member, buildingId, roomId, true));
 	}
 
 	@PostMapping("/{roomId}/setting-off")
 	public ResponseEntity<RoomDTO.Info> turnOff(
-	  /* TODO Member 추가 */
+	  @AuthMember MemberDTO.Info member,
 	  @PathVariable Long buildingId,
 	  @PathVariable Long roomId
 	) {
-		return ResponseEntity.ok(roomService.updateSwitch(buildingId, roomId, false));
+		return ResponseEntity.ok(roomService.updateSwitch(member, buildingId, roomId, false));
 	}
 
 	@PatchMapping("/{roomId}/modify-encourage-message")
 	public ResponseEntity<RoomDTO.Info> modify(
-	  /* TODO Member 추가 */
+	  @AuthMember MemberDTO.Info member,
 	  @PathVariable Long buildingId,
 	  @PathVariable Long roomId,
 	  @RequestBody String encourageMessage
 	) {
-		return ResponseEntity.ok(roomService.updateEncourageMessage(buildingId, roomId, encourageMessage));
+		return ResponseEntity.ok(roomService.updateEncourageMessage(member, buildingId, roomId, encourageMessage));
+	}
+
+	@PatchMapping("/{roomId}/owners/{ownerId}")
+	public ResponseEntity<RoomDTO.InfoWithOwner> giveRoom(
+	  @AuthMember MemberDTO.Info member,
+	  @PathVariable Long buildingId,
+	  @PathVariable Long roomId,
+	  @PathVariable Long ownerId
+	) {
+		return ResponseEntity.ok(roomService.settingOwner(member, buildingId, roomId, ownerId));
 	}
 
 }
