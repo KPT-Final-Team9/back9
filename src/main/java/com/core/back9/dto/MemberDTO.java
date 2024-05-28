@@ -82,4 +82,15 @@ public class MemberDTO {
         private LocalDateTime updatedAt;
     }
 
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Getter
+    public static class OwnerInfo {
+        private Long ownerId;
+        private String ownerEmail;
+        private Role role;
+        private Status ownerStatus;
+    }
+
 }

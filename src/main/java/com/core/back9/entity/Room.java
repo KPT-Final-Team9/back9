@@ -81,4 +81,8 @@ public class Room extends BaseEntity {
 		this.status = Status.UNREGISTER;
 	}
 
+	public void setOwner(Member member) {
+		this.member = member;
+	}
+
 }
