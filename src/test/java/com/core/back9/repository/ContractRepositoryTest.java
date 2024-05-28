@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -264,6 +265,229 @@ class ContractRepositoryTest extends ContractRepositoryFixture {
                         ContractStatus.PENDING,
                         ContractType.INITIAL
                 );
+
+    }
+
+    @Test
+    @DisplayName("선택한 호실에 계약 시작을 원하는 날짜와 겹치는 일자의 계약이 존재하는지 조회할 수 있다.")
+    void findByContractDuplicateCase1() {
+        // given
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.COMPLETED, ContractStatus.IN_PROGRESS);
+        Contract contract = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+
+        Contract savedContract = contractRepository.save(contract);
+        savedContract.contractComplete();
+
+        LocalDate contractStartDate = LocalDate.now().plusDays(19);
+        LocalDate contractEndDate = LocalDate.now().plusDays(39);
+
+        // when
+        Optional<List<Contract>> contractList = contractRepository.findByContractDuplicate(room1.getId(), statusList, contractStartDate, contractEndDate);
+
+        // then
+        assertThat(contractList.get()).hasSize(1);
+        assertThat(contractList.get())
+                .extracting("startDate", "endDate", "contractStatus")
+                .contains(
+                        tuple(
+                                LocalDate.now().plusDays(10),
+                                LocalDate.now().plusDays(20),
+                                ContractStatus.COMPLETED
+                        ));
+
+    }
+
+    @Test
+    @DisplayName("선택한 호실에 계약 종료를 원하는 날짜와 겹치는 일자의 계약이 존재하는지 조회할 수 있다.")
+    void findByContractDuplicateCase2() {
+        // given
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.COMPLETED, ContractStatus.IN_PROGRESS);
+        Contract contract = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+
+        Contract savedContract = contractRepository.save(contract);
+        savedContract.contractComplete();
+
+        LocalDate contractStartDate = LocalDate.now().plusDays(19);
+        LocalDate contractEndDate = LocalDate.now().plusDays(39);
+
+        // when
+        Optional<List<Contract>> contractList = contractRepository.findByContractDuplicate(room1.getId(), statusList, contractStartDate, contractEndDate);
+
+        // then
+        assertThat(contractList.get()).hasSize(1);
+        assertThat(contractList.get())
+                .extracting("startDate", "endDate", "contractStatus")
+                .contains(
+                        tuple(
+                                LocalDate.now().plusDays(10),
+                                LocalDate.now().plusDays(20),
+                                ContractStatus.COMPLETED
+                        ));
+
+    }
+
+    @Test
+    @DisplayName("선택한 호실에 계약 시작을 원하는 날짜와 겹치는 일자의 계약이 2개 이상 존재하는지 조회할 수 있다.(필터링 조건 동시충족)")
+    void findByContractDuplicateCase3() {
+        // given
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.COMPLETED, ContractStatus.IN_PROGRESS);
+        Contract contract1 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+        Contract savedContract1 = contractRepository.save(contract1);
+Contract contract2 = assumeContract(
+                LocalDate.now().plusDays(30),
+                LocalDate.now().plusDays(40),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+        Contract savedContract2 = contractRepository.save(contract2);
+
+
+        savedContract1.contractComplete();
+        savedContract2.contractComplete();
+
+        LocalDate contractStartDate = LocalDate.now().plusDays(19);
+        LocalDate contractEndDate = LocalDate.now().plusDays(39);
+
+        // when
+        Optional<List<Contract>> contractList = contractRepository.findByContractDuplicate(room1.getId(), statusList, contractStartDate, contractEndDate);
+
+        // then
+        assertThat(contractList.get()).hasSize(2);
+        assertThat(contractList.get())
+                .extracting("startDate", "endDate", "contractStatus")
+                .contains(
+                        tuple(
+                                LocalDate.now().plusDays(10),
+                                LocalDate.now().plusDays(20),
+                                ContractStatus.COMPLETED
+                        ));
+
+    }
+
+    @Test
+    @DisplayName("선택한 호실에 계약을 원하는 날짜와 겹치는 일자의 계약이 존재하는지 조회할 수 있다.")
+    void findByContractDuplicateCase4() {
+        // given
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.COMPLETED, ContractStatus.IN_PROGRESS);
+        Contract contract = assumeContract(
+                LocalDate.now().plusDays(14),
+                LocalDate.now().plusDays(26),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+
+        Contract savedContract = contractRepository.save(contract);
+        savedContract.contractComplete();
+
+        LocalDate contractStartDate = LocalDate.now().plusDays(15);
+        LocalDate contractEndDate = LocalDate.now().plusDays(25);
+
+        // when
+        Optional<List<Contract>> contractList = contractRepository.findByContractDuplicate(room1.getId(), statusList, contractStartDate, contractEndDate);
+
+        // then
+        assertThat(contractList.get()).hasSize(1);
+        assertThat(contractList.get())
+                .extracting("startDate", "endDate", "contractStatus")
+                .contains(
+                        tuple(
+                                LocalDate.now().plusDays(14),
+                                LocalDate.now().plusDays(26),
+                                ContractStatus.COMPLETED
+                        ));
+
+    }
+
+    @Test
+    @DisplayName("선택한 호실에 계약 시작을 원하는 날짜와 겹치는 일자의 계약이 없다면 빈 리스트를 반환한다.")
+    void findByContractDuplicateEmpty() {
+        // given
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.COMPLETED, ContractStatus.IN_PROGRESS);
+        Contract contract = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(30),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract savedContract = contractRepository.save(contract);
+        savedContract.contractComplete();
+
+        LocalDate contractStartDate = LocalDate.now().plusDays(8);
+        LocalDate contractEndDate = LocalDate.now().plusDays(9);
+
+        // when
+        Optional<List<Contract>> contractList = contractRepository.findByContractDuplicate(room1.getId(), statusList, contractStartDate, contractEndDate);
+
+        // then
+        assertThat(contractList.get()).isEmpty();
+
+    }
+
+    @Test
+    @DisplayName("선택한 호실에 계약 시작을 원하는 날짜와 겹치는 일자의 계약이 존재해도 정상 상태가 아닐 시 조회되지 않는다.")
+    void findByContractDuplicateAbnormal() {
+        // given
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.COMPLETED, ContractStatus.IN_PROGRESS);
+        Contract contract = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract savedContract = contractRepository.save(contract);
+        savedContract.contractComplete();
+        savedContract.contractInProgress();
+        savedContract.contractExpire();
+
+        LocalDate contractStartDate = LocalDate.now().plusDays(19);
+        LocalDate contractEndDate = LocalDate.now().plusDays(39);
+
+        // when
+        Optional<List<Contract>> contractList = contractRepository.findByContractDuplicate(room1.getId(), statusList, contractStartDate, contractEndDate);
+
+        // then
+        assertThat(contractList.get()).isEmpty();
 
     }
 

@@ -101,7 +101,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
     }
 
     @PatchMapping("/{contractId}/complete")
-    public ResponseEntity<ContractDTO.statusInfo> completeContract(
+    public ResponseEntity<ContractDTO.StatusInfo> completeContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
@@ -110,14 +110,14 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
         LocalDate startDate = LocalDate.now();
 
-        ContractDTO.statusInfo statusInfo = contractService.completeContract(member, buildingId, roomId, contractId, startDate);
+        ContractDTO.StatusInfo statusInfo = contractService.completeContract(member, buildingId, roomId, contractId, startDate);
 
         return ResponseEntity.ok(statusInfo);
 
     }
 
     @PatchMapping("/{contractId}/cancel")
-    public ResponseEntity<ContractDTO.statusInfo> cancelContract(
+    public ResponseEntity<ContractDTO.StatusInfo> cancelContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
@@ -126,14 +126,14 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
         LocalDate startDate = LocalDate.now();
 
-        ContractDTO.statusInfo statusInfo = contractService.cancelContract(member, buildingId, roomId, contractId, startDate);
+        ContractDTO.StatusInfo statusInfo = contractService.cancelContract(member, buildingId, roomId, contractId, startDate);
 
         return ResponseEntity.ok(statusInfo);
 
     }
 
     @PatchMapping("/{contractId}/progress")
-    public ResponseEntity<ContractDTO.statusInfo> progressContract(
+    public ResponseEntity<ContractDTO.StatusInfo> progressContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
@@ -142,14 +142,14 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
         LocalDate startDate = LocalDate.now();
 
-        ContractDTO.statusInfo statusInfo = contractService.progressContract(member, buildingId, roomId, contractId, startDate);
+        ContractDTO.StatusInfo statusInfo = contractService.progressContract(member, buildingId, roomId, contractId, startDate);
 
         return ResponseEntity.ok(statusInfo);
 
     }
 
     @PatchMapping("/{contractId}/expire")
-    public ResponseEntity<ContractDTO.statusInfo> expireContract(
+    public ResponseEntity<ContractDTO.StatusInfo> expireContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
@@ -158,14 +158,14 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
         LocalDate endDate = LocalDate.now();
 
-        ContractDTO.statusInfo statusInfo = contractService.expireContract(member, buildingId, roomId, contractId, endDate);
+        ContractDTO.StatusInfo statusInfo = contractService.expireContract(member, buildingId, roomId, contractId, endDate);
 
         return ResponseEntity.ok(statusInfo);
 
     }
 
     @PatchMapping("/{contractId}/terminate")
-    public ResponseEntity<ContractDTO.statusInfo> terminateContract(
+    public ResponseEntity<ContractDTO.StatusInfo> terminateContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId,
@@ -173,7 +173,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
             @RequestParam(name = "checkOut") LocalDate checkOut // 더 적합한 방법으로 일자를 받을 방법 고민 중
     ) {
 
-        ContractDTO.statusInfo statusInfo = contractService.terminateContract(member, buildingId, roomId, contractId, checkOut);
+        ContractDTO.StatusInfo statusInfo = contractService.terminateContract(member, buildingId, roomId, contractId, checkOut);
 
         return ResponseEntity.ok(statusInfo);
 

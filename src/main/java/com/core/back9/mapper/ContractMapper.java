@@ -38,6 +38,6 @@ public interface ContractMapper {
 
     ContractDTO.InfoList toInfoList(Long count, List<ContractDTO.Info> infoList);
 
-    ContractDTO.statusInfo toStatusInfo(Contract contract);
+    ContractDTO.StatusInfo toStatusInfo(Contract contract);
 
 }

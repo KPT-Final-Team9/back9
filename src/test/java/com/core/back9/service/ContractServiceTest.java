@@ -52,7 +52,7 @@ public class ContractServiceTest extends ContractServiceFixture {
                 .build();
 
         // when
-        ContractDTO.statusInfo updatedContract = contractService.completeContract(memberInfo, 1L, 1L, savedContract.getId(), today);
+        ContractDTO.StatusInfo updatedContract = contractService.completeContract(memberInfo, 1L, 1L, savedContract.getId(), today);
 
         // then
         assertThat(updatedContract)
@@ -183,7 +183,7 @@ public class ContractServiceTest extends ContractServiceFixture {
                 .build();
 
         // when
-        ContractDTO.statusInfo updatedContract = contractService.cancelContract(member, 1L, 1L, savedContract.getId(), today);
+        ContractDTO.StatusInfo updatedContract = contractService.cancelContract(member, 1L, 1L, savedContract.getId(), today);
 
         // then
         assertThat(updatedContract)
@@ -253,7 +253,7 @@ public class ContractServiceTest extends ContractServiceFixture {
                 .build();
 
         // when
-        ContractDTO.statusInfo updatedContract = contractService.progressContract(member, 1L, 1L, savedContract.getId(), today);
+        ContractDTO.StatusInfo updatedContract = contractService.progressContract(member, 1L, 1L, savedContract.getId(), today);
 
         // then
         assertThat(updatedContract)
@@ -331,7 +331,7 @@ public class ContractServiceTest extends ContractServiceFixture {
                 .build();
 
         // when
-        ContractDTO.statusInfo updatedContract = contractService.expireContract(member, 1L, 1L, savedContract.getId(), today);
+        ContractDTO.StatusInfo updatedContract = contractService.expireContract(member, 1L, 1L, savedContract.getId(), today);
 
         // then
         assertThat(updatedContract)
@@ -408,7 +408,7 @@ public class ContractServiceTest extends ContractServiceFixture {
                 .build();
 
         // when
-        ContractDTO.statusInfo updatedContract = contractService.terminateContract(member, 1L, 1L, savedContract.getId(), today);
+        ContractDTO.StatusInfo updatedContract = contractService.terminateContract(member, 1L, 1L, savedContract.getId(), today);
 
         // then
         assertThat(updatedContract)

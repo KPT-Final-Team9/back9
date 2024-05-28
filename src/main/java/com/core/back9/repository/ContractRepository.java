@@ -2,7 +2,6 @@ package com.core.back9.repository;
 
 import com.core.back9.entity.Contract;
 import com.core.back9.entity.constant.ContractStatus;
-import com.core.back9.entity.constant.ContractType;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.exception.ApiErrorCode;
 import com.core.back9.exception.ApiException;
@@ -52,14 +51,15 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             """)
     Optional<Integer> deleteRegisteredContract(Status status, Long roomId, Long contractId);
 
+    // TODO : 기간 검증 로직에 대해 추가적인 고민 해보기
     @Query("""
             select c
             from Contract c
             where c.room.id=?1
             and c.contractStatus IN (?2)
-            and c.endDate>?3
+            and((c.endDate>?3 and c.startDate<?3) or (c.startDate <?4 and c.endDate>?4))
             """)
-    Optional<List<Contract>> findByContract(Long roomId, List<ContractStatus> statusList, LocalDate startDate);
+    Optional<List<Contract>> findByContractDuplicate(Long roomId, List<ContractStatus> statusList, LocalDate startDate, LocalDate endDate);
 
     @Query("""
             select c

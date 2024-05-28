@@ -258,6 +258,32 @@ public class ContractMapperTest {
 
     }
 
+    @Test
+    @DisplayName("Contract 엔티티를 StatusInfo로 매핑할 수 있다.")
+    void contractToStatusInfo() {
+        // given
+        Contract contract = assumeContract(
+                LocalDate.now(),
+                LocalDate.now().plusDays(1),
+                100000000L,
+                200000L
+        );
+
+        // when
+        ContractDTO.StatusInfo statusInfo = contractMapper.toStatusInfo(contract);
+
+        // then
+        assertThat(statusInfo)
+                .extracting("startDate", "endDate", "checkOut", "contractStatus")
+                .contains(
+                        LocalDate.now(),
+                        LocalDate.now().plusDays(1),
+                        LocalDate.now().plusDays(1),
+                        ContractStatus.PENDING
+                );
+
+    }
+
     private Contract assumeContract(
             LocalDate startDate,
             LocalDate endDate,

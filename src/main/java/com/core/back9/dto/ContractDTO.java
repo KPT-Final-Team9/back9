@@ -1,7 +1,6 @@
 package com.core.back9.dto;
 
 import com.core.back9.entity.constant.ContractStatus;
-import com.core.back9.entity.constant.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -92,7 +91,7 @@ public class ContractDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class statusInfo {
+	public static class StatusInfo {
 		private Long id;
 		private LocalDate startDate;
 		private LocalDate endDate;
