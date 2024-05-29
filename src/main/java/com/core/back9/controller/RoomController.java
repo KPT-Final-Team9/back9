@@ -2,8 +2,10 @@ package com.core.back9.controller;
 
 import com.core.back9.dto.MemberDTO;
 import com.core.back9.dto.RoomDTO;
+import com.core.back9.entity.constant.RatingType;
 import com.core.back9.security.AuthMember;
 import com.core.back9.service.RoomService;
+import com.core.back9.service.ScoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class RoomController {
 
 	private final RoomService roomService;
+	private final ScoreService scoreService;
 
 	@PostMapping("")
 	public ResponseEntity<RoomDTO.Response> register(
@@ -100,6 +103,17 @@ public class RoomController {
 	  @PathVariable Long ownerId
 	) {
 		return ResponseEntity.ok(roomService.settingOwner(member, buildingId, roomId, ownerId));
+	}
+
+	@PatchMapping("/{roomId}/scores-generate")
+	public void evaluation(
+	  @AuthMember MemberDTO.Info member,
+	  @PathVariable Long buildingId,
+	  @PathVariable Long roomId,
+	  @RequestParam RatingType ratingType
+	) {
+		// 빌딩-호실에 대해 현재 계약중인 입주사에 평가를 수동으로 발생
+		scoreService.create(member, buildingId, roomId, ratingType);
 	}
 
 }
