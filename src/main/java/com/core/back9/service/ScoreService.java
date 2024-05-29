@@ -15,6 +15,7 @@ import com.core.back9.mapper.ScoreMapper;
 import com.core.back9.repository.MemberRepository;
 import com.core.back9.repository.RoomRepository;
 import com.core.back9.repository.ScoreRepository;
+import com.core.back9.util.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,6 @@ import java.util.List;
 public class ScoreService {
 
 	private final MemberRepository memberRepository;
-	//	private final TenantRepository tenantRepository;
 	private final RoomRepository roomRepository;
 	private final ScoreRepository scoreRepository;
 	private final ScoreMapper scoreMapper;
@@ -65,9 +65,6 @@ public class ScoreService {
 			Room validRoom = roomRepository.getRoomBySpecificIds(buildingId, roomId, member.getId(), Status.REGISTER)
 			  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
 
-			/* 유효한 입주사 -> 필요가 없넹 */
-//			Tenant validTenant = tenantRepository.getValidOneTenantOrThrow(createRequest.getTenantId());
-
 			/* 해당 호실의 계약 목록 */
 			List<Contract> contracts = validRoom.getContracts();
 
@@ -79,46 +76,77 @@ public class ScoreService {
 			/* 계약 이행 중인 입주사에 포함된 모든 사용자에게 평가 레코드 생성 (평가타입은 리퀘스트로 받음) */
 			progressContract.getTenant().getMembers().forEach(user -> {
 				try {
-					memberRepository.findFirstByIdAndRoleAndStatus(user.getId(), Role.USER, Status.REGISTER)
-					  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER, "평가 레코드를 생성할 수 없는 사용자입니다"));
-					Score newScore = Score.builder()
-					  .score(0)
-					  .comment("")
-					  .bookmark(false)
-					  .ratingType(ratingType)
-					  .room(validRoom)
-					  .member(user)
-					  .status(Status.REGISTER)
-					  .build();
-					scoreRepository.save(newScore);
+					if (isPossible(user.getId(), validRoom.getId(), ratingType)) {
+						Score newScore = Score.builder()
+						  .score(0)
+						  .comment("")
+						  .bookmark(false)
+						  .ratingType(ratingType)
+						  .room(validRoom)
+						  .member(user)
+						  .status(Status.REGISTER)
+						  .build();
+						scoreRepository.save(newScore);
+					}
 				} catch (ApiException apiException) {
 					System.out.printf("평가 레코드 생성 실패 사용자 id: %s, role: %s, status: %s%n", user.getId(), user.getRole(), user.getStatus());
 				}
 			});
 			return;
 
-
 		}
 		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "평가 수동 발생은 소유자의 권한입니다");
 	}
 
-	public ScoreDTO.UpdateResponse update(
+	@Transactional
+	public ScoreDTO.UpdateResponse updateScore(
 	  MemberDTO.Info member,    // USER
 	  Long scoreId,
-	  Long roomId,
 	  ScoreDTO.UpdateRequest updateRequest
 	) {
-		Score validScore = scoreRepository.getValidScoreWithIdAndMemberIdAndRoomId(scoreId, member.getId(), roomId);
-		validScore.updateScore(updateRequest);
-		return scoreMapper.toUpdateResponse(validScore);
+		if (member.getRole() == Role.USER) {
+
+			Score validScore = scoreRepository.getValidScoreWithIdAndMemberIdAndStatus(scoreId, member.getId(), Status.REGISTER);
+
+			if (validScore.getScore() > 0 || !validScore.getCreatedAt().isEqual(validScore.getUpdatedAt())) {
+				throw new ApiException(ApiErrorCode.ALREADY_COMPLETED_EVALUATION);
+			}
+
+			validScore.updateScore(updateRequest);
+			return scoreMapper.toUpdateResponse(validScore);
+		}
+		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
 	}
 
-	/* TODO 마지막 계약을 가져오는 건 검증의 조건이 될 수 없음, 내일 아침에 당장 바까라
-	    차라리 계약 이행중인 입주사 하나만 빼오는게 좋음 (유일한 상태 값) -> 계약 도메인이 완전한 상태라면 */
-//	private boolean isPossible(List<Contract> contracts, Tenant validTenant) {
-//		return !contracts.isEmpty()
-//		  && contracts.get(contracts.size() - 1).getContractStatus() != ContractStatus.IN_PROGRESS
-//		  && Objects.equals(contracts.get(contracts.size() - 1).getTenant().getId(), validTenant.getId());
-//	}
+	public ScoreDTO.Info updateBookmark(MemberDTO.Info member, Long scoreId, boolean bookmark) {
+		if (member.getRole() == Role.OWNER) {
+			Score validScore = scoreRepository.getValidScoreWithIdAndMemberIdAndStatus(scoreId, member.getId(), Status.REGISTER);
+			validScore.updateBookmark(bookmark);
+			return scoreMapper.toInfo(validScore);
+		}
+		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
+	}
+
+	private boolean isPossible(Long memberId, Long roomId, RatingType ratingType) {
+		DateUtils dateUtils = new DateUtils();
+		int quarter = dateUtils.getQuarter();
+
+		memberRepository.findFirstByIdAndRoleAndStatus(memberId, Role.USER, Status.REGISTER)
+		  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER, "평가 레코드를 생성할 수 없는 사용자입니다"));
+
+		if (ratingType == RatingType.FACILITY) {
+			// 시설 - 분기별
+			return scoreRepository.existsByYearAndQuarterAndMemberIdAndRoomId(
+			  dateUtils.getYear(),
+			  dateUtils.getStartMonth(quarter),
+			  dateUtils.getEndMonth(quarter),
+			  memberId, roomId);
+		} else {
+			// 관리 - 월별
+			return scoreRepository.existsByYearAndMonthAndMemberIdAndRoomId(
+			  dateUtils.getYear(), dateUtils.getMonth(),
+			  memberId, roomId);
+		}
+	}
 
 }

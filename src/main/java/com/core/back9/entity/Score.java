@@ -57,4 +57,8 @@ public class Score extends BaseEntity {
 		this.comment = updateRequest.getComment();
 	}
 
+	public void updateBookmark(boolean bookmark) {
+		this.bookmark = bookmark;
+	}
+
 }

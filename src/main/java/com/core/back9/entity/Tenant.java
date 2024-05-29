@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -27,8 +28,10 @@ public class Tenant extends BaseEntity {
 	@Column
 	private Status status;
 
-	@OneToMany(mappedBy = "tenant", cascade = CascadeType.REMOVE)
-	private List<Member> members;
+	@OneToMany(mappedBy = "tenant",
+	  cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
+	  fetch = FetchType.LAZY)
+	private final List<Member> members = new ArrayList<>();
 
 	@Builder
 	private Tenant(String name, String companyNumber) {
@@ -44,8 +47,5 @@ public class Tenant extends BaseEntity {
 		return this;
 	}
 
-	public void addMember(Member member) {
-		this.members.add(member);
-	}
 
 }
