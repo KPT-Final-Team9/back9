@@ -29,6 +29,7 @@ public enum ApiErrorCode {
     NOT_BEARER_TOKEN(HttpStatus.BAD_REQUEST.value(), "BEARER 토큰이 아닙니다."),
     INVALID_TOKEN(HttpStatus.BAD_REQUEST.value(), "잘못된 JWT입니다."),
     EXPIRED_TOKEN(HttpStatus.BAD_REQUEST.value(), "만료된 JWT입니다."),
+	ALREADY_COMPLETED_EVALUATION(HttpStatus.BAD_REQUEST.value(), "이미 완료된 평가입니다."),
 
 	THREAD_POOL_REJECTED(HttpStatus.REQUEST_TIMEOUT.value(), "더 이상 요청을 처리 할 수 없습니다"),
 

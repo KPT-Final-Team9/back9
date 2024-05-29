@@ -49,7 +49,7 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member") // 양방향 설정
     private List<Score> scores = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinColumn(name = "tenant_id")
     private Tenant tenant;
 

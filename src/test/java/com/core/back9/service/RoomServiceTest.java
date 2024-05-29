@@ -135,7 +135,7 @@ class RoomServiceTest {
 
 		RoomDTO.Response result = roomService.create(admin, building.getId(), request);
 
-		assertThat(result).isEqualTo(result);
+		assertThat(result).isEqualTo(response);
 		verify(buildingRepository).getValidBuildingWithIdOrThrow(building.getId(), Status.REGISTER);
 		verify(roomMapper).toEntity(building, request, setting);
 		verify(roomRepository).save(room);
