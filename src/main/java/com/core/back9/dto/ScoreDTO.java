@@ -14,22 +14,32 @@ public class ScoreDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class RegisterRequest {
-		private int score;
-		private String comment;
+	public static class CreateResponse {
+		private Long id;
+		private Long roomId;
 		private RatingType ratingType;
+		private LocalDateTime createdAt;
 	}
 
 	@AllArgsConstructor
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class RegisterResponse {
+	public static class UpdateRequest {
+		private int score;
+		private String comment;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class UpdateResponse {
 		private Long id;
 		private int score;
 		private String comment;
 		private RatingType ratingType;
-		private LocalDateTime createdAt;
+		private LocalDateTime updatedAt;
 	}
 
 	@AllArgsConstructor

@@ -13,9 +13,9 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface ScoreMapper {
 
-	Score toEntity(ScoreDTO.RegisterRequest registerRequest);
+	Score toEntity(ScoreDTO.UpdateRequest updateRequest);
 
-	ScoreDTO.RegisterResponse toRegisterResponse(Score score);
+	ScoreDTO.UpdateResponse toUpdateResponse(Score score);
 
 	ScoreDTO.Info toInfo(Score score);
 

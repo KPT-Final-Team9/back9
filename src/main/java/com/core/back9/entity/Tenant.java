@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
@@ -25,6 +27,9 @@ public class Tenant extends BaseEntity {
 	@Column
 	private Status status;
 
+	@OneToMany(mappedBy = "tenant", cascade = CascadeType.REMOVE)
+	private List<Member> members;
+
 	@Builder
 	private Tenant(String name, String companyNumber) {
 		this.name = name;
@@ -38,4 +43,9 @@ public class Tenant extends BaseEntity {
 		this.status = Status.REGISTER;
 		return this;
 	}
+
+	public void addMember(Member member) {
+		this.members.add(member);
+	}
+
 }

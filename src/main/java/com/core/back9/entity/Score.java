@@ -1,6 +1,7 @@
 package com.core.back9.entity;
 
 import com.core.back9.common.entity.BaseEntity;
+import com.core.back9.dto.ScoreDTO;
 import com.core.back9.entity.constant.RatingType;
 import com.core.back9.entity.constant.Status;
 import jakarta.persistence.*;
@@ -50,4 +51,10 @@ public class Score extends BaseEntity {
 		this.member = member;
 		this.status = status;
 	}
+
+	public void updateScore(ScoreDTO.UpdateRequest updateRequest) {
+		this.score = updateRequest.getScore();
+		this.comment = updateRequest.getComment();
+	}
+
 }
