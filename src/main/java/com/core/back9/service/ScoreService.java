@@ -62,7 +62,8 @@ public class ScoreService {
 
 		if (member.getRole() == Role.OWNER) {
 			/* 유효한 호실 */
-			Room validRoom = roomRepository.getValidRoomWithIdOrThrow(buildingId, roomId, Status.REGISTER);
+			Room validRoom = roomRepository.getRoomBySpecificIds(buildingId, roomId, member.getId(), Status.REGISTER)
+			  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
 
 			/* 유효한 입주사 -> 필요가 없넹 */
 //			Tenant validTenant = tenantRepository.getValidOneTenantOrThrow(createRequest.getTenantId());
