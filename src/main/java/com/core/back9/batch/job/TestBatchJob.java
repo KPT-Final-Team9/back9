@@ -1,8 +1,7 @@
 package com.core.back9.batch.job;
 
-import com.core.back9.batch.tasklet.ContractTasklet;
 import com.core.back9.batch.property.BatchProperty;
-import com.core.back9.batch.tasklet.testTasklet;
+import com.core.back9.batch.tasklet.TestTasklet;
 import com.core.back9.repository.ContractRepository;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +48,7 @@ public class TestBatchJob extends DefaultBatchConfiguration implements BatchConf
     @Override
     public Step executeStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         Step step = new StepBuilder("testStep", jobRepository)
-                .tasklet(new testTasklet(), transactionManager)
+                .tasklet(new TestTasklet(), transactionManager)
                 .build();
         return step;
     }

@@ -9,7 +9,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 
 @RequiredArgsConstructor
 @Slf4j
-public class testTasklet implements Tasklet {
+public class TestTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
