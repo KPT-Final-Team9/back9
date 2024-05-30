@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/scores")
-public class ScoreController {
+public class UserScoreController {
 
 	private final ScoreService scoreService;
 
@@ -22,22 +22,6 @@ public class ScoreController {
 	  @RequestBody ScoreDTO.UpdateRequest updateRequest
 	) {
 		return ResponseEntity.ok(scoreService.updateScore(member, scoreId, updateRequest));
-	}
-
-	@PatchMapping("/{scoreId}/bookmark-add")
-	public ResponseEntity<ScoreDTO.Info> addBookmark(
-	  @AuthMember MemberDTO.Info member,
-	  @PathVariable Long scoreId
-	) {
-		return ResponseEntity.ok(scoreService.updateBookmark(member, scoreId, true));
-	}
-
-	@PatchMapping("/{scoreId}/bookmark-remove")
-	public ResponseEntity<ScoreDTO.Info> removeBookmark(
-	  @AuthMember MemberDTO.Info member,
-	  @PathVariable Long scoreId
-	) {
-		return ResponseEntity.ok(scoreService.updateBookmark(member, scoreId, false));
 	}
 
 }
