@@ -16,10 +16,15 @@ import com.core.back9.repository.MemberRepository;
 import com.core.back9.repository.RoomRepository;
 import com.core.back9.repository.ScoreRepository;
 import com.core.back9.util.DateUtils;
+import com.core.back9.util.EvaluationSpecifications;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -38,26 +43,13 @@ public class ScoreService {
 	  Long roomId,
 	  RatingType ratingType
 	) {
-		/* TODO 평가 레코드 생성 조건 붙이기,
-		    batch 생성이라면 멤버(OWNER) 권한은 필요없음
+		/* TODO batch 생성이라면 멤버(OWNER) 권한은 필요없음
 		    예외적으로 로그인 멤버가 OWNER 상태일 때 수동으로 발생
 		*/
 
 		/*
-		첫번째 작업 - 코딩 중 예외상황이 많이 확인되어 철회
-		해당 호실과 인증된 유저로 평가 레코드가 생성될 수 있는지 확인 후 생성
-		1. 해당 호실의 계약목록이 있는지
-		2. 계약목록이 있다면 마지막 계약이 진행중인 계약인지
-		3. 진행중인 계약의 입주사에 포함된 유저인지
-
-		생각해볼 문제: 1차적인 생각으로 위의 조건으로 생성을 했는데
-		 1. 계약목록이 4건이 있는데 4번째 계약은 대기 상태이고 유저는 3번째 계약 진행중인 입주사에 포함되어 있을 때
-		 -> 무조건 마지막 계약이 진행중인지 확인하는건 오류 가능성이 있음
 		 TODO 2. 평가를 진행 할 수 있는 유효기간이 필요함
 		  -> 4월 1일에 발생한 평가를 진행하지 않고 7월 1일이 되었을 때
-		 3. 평가 레코드 생성은 시설/관리는 입주사 기준으로 생성이 되고, 민원은 유저 기준으로 생성되어야 함
-		 4. 다 필요없고 빌딩-호실에서 수동으로 평가를 발생시키려면 평가타입만 선택하면 계약 이행중인 입주사에 바로 실행
-		 TODO 5. 평가 레코드 타입에 대해 생성일 체크하여 중복생성 방지해야함 (시설-분기별, 관리-월별, 민원-건별)
 		 */
 
 		if (member.getRole() == Role.OWNER) {
@@ -125,6 +117,37 @@ public class ScoreService {
 			return scoreMapper.toInfo(validScore);
 		}
 		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
+	}
+
+	public Page<ScoreDTO.Info> selectScores(
+	  MemberDTO.Info member,
+	  Long buildingId,
+	  Long roomId,
+	  LocalDateTime startDate,
+	  LocalDateTime endDate,
+	  RatingType ratingType,
+	  Boolean bookmark,
+	  String keyword,
+	  Pageable pageable
+	) {
+		Room room = roomRepository.getRoomBySpecificIds(buildingId, roomId, member.getId(), Status.REGISTER)
+		  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
+		Specification<Score> specification = Specification.where(null);
+		specification = specification.and(EvaluationSpecifications.isCompleted());
+		specification = specification.and(EvaluationSpecifications.hasRatingType(ratingType));
+		if (roomId != null) {
+			specification = specification.and(EvaluationSpecifications.hasRoomId(room));
+		}
+		if (startDate != null && endDate != null) {
+			specification = specification.and(EvaluationSpecifications.isUpdatedBetween(startDate, endDate));
+		}
+		if (bookmark != null) {
+			specification = specification.and(EvaluationSpecifications.isBookmarked(bookmark));
+		}
+		if (keyword != null) {
+			specification = specification.and(EvaluationSpecifications.containsKeyword(keyword));
+		}
+		return scoreRepository.findAll(specification, pageable).map(scoreMapper::toInfo);
 	}
 
 	private boolean isPossible(Long memberId, Long roomId, RatingType ratingType) {
