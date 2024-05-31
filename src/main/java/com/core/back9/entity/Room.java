@@ -56,8 +56,11 @@ public class Room extends BaseEntity {
 	)
 	private Setting setting;
 
+	@Column(name = "represent")
+	private boolean represent;
+
 	@Builder
-	private Room(String name, String floor, float area, Usage usage, float rating, Building building, Member member, List<Contract> contracts, Setting setting) {
+	private Room(String name, String floor, float area, Usage usage, float rating, Building building, Member member, List<Contract> contracts, Setting setting, boolean isRepresent) {
 		this.name = name;
 		this.floor = floor;
 		this.area = area;
@@ -68,6 +71,7 @@ public class Room extends BaseEntity {
 		this.contracts = contracts;
 		this.status = Status.REGISTER;
 		this.setting = setting;
+		this.represent = isRepresent;
 	}
 
 	public void update(RoomDTO.Request request) {
@@ -91,6 +95,14 @@ public class Room extends BaseEntity {
 
 	public List<Contract> getContractList() {
 		return this.contracts;
+	}
+
+	public void addRepresent() {
+		this.represent = true;
+	}
+
+	public void removeRepresent() {
+		this.represent = false;
 	}
 
 }

@@ -51,7 +51,7 @@ public class RoomController {
 		return ResponseEntity.ok(roomService.delete(member, buildingId, roomId));
 	}
 
-	@GetMapping("")
+	@GetMapping("")	// 대시보드에서 호실 목록 보여줄 때
 	public ResponseEntity<Page<RoomDTO.Info>> getAll(
 	  @PathVariable Long buildingId,
 	  Pageable pageable
@@ -103,6 +103,16 @@ public class RoomController {
 	  @PathVariable Long ownerId
 	) {
 		return ResponseEntity.ok(roomService.settingOwner(member, buildingId, roomId, ownerId));
+	}
+
+	@PatchMapping("/{roomId}/setting-represent")
+	public ResponseEntity<Page<RoomDTO.Info>> modifyRepresent(
+	  @AuthMember MemberDTO.Info member,
+	  @PathVariable Long buildingId,
+	  @PathVariable Long roomId,
+	  Pageable pageable
+	) {
+		return ResponseEntity.ok(roomService.updateRepresent(member, buildingId, roomId, pageable));
 	}
 
 	@PatchMapping("/{roomId}/scores-generate")

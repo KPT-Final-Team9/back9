@@ -51,6 +51,7 @@ public class RoomDTO {
 	@Getter
 	public static class Info {
 		private Long id;
+		private boolean represent;
 		private String name;
 		private String floor;
 		private float area;
@@ -69,6 +70,7 @@ public class RoomDTO {
 	@Getter
 	public static class InfoWithOwner {
 		private Long id;
+		private boolean represent;
 		private String name;
 		private String floor;
 		private float area;

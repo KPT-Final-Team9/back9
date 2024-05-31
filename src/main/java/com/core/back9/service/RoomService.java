@@ -128,9 +128,28 @@ public class RoomService {
 			Member validOwner = memberRepository.getValidMemberWithIdAndRole(ownerId, Role.OWNER, Status.REGISTER);
 			Room validRoom = roomRepository.getValidRoomWithIdOrThrow(buildingId, roomId, Status.REGISTER);
 			validRoom.setOwner(validOwner);
+
+			// 관리자가 소유자에게 호실 배정 시 현재 빌딩의 호실 목록 중 대표호실로 설정된게 있는지 확인하고 없으면 대표호실로 설정한다
+			if (roomRepository.existsRepresentRoom(buildingId, member.getId())) {
+				validRoom.addRepresent();
+			}
+
 			return roomMapper.toInfoWithOwner(validRoom, validOwner);
 		}
 		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
+	}
+
+	public Page<RoomDTO.Info> updateRepresent(
+	  MemberDTO.Info member,
+	  Long buildingId,
+	  Long roomId,
+	  Pageable pageable
+	) {
+		roomRepository.getValidRepresentRoom(buildingId, member.getId()).removeRepresent();
+		roomRepository.getValidSpecificRoom(buildingId, roomId, member.getId(), Status.REGISTER).addRepresent();
+
+		return roomRepository.findAllByBuildingIdAndStatus(buildingId, Status.REGISTER, pageable)
+		  .map(roomMapper::toInfo);
 	}
 
 	private Room currentRoom(Long buildingId, Long roomId) {
