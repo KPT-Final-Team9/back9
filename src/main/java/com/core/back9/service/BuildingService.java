@@ -39,8 +39,22 @@ public class BuildingService {
 	}
 
 	@Transactional(readOnly = true)
+	public Page<BuildingDTO.Info> selectAll(MemberDTO.Info member, Pageable pageable) {
+
+		return buildingRepository.findAllBuildingWithRoomsByBuildingIdAndMemberId(member.getId(), pageable)
+		  .map(building -> buildingMapper.toInfo(building, pageable));
+
+	}
+
+	@Transactional(readOnly = true)
 	public BuildingDTO.Info selectOne(Long buildingId, Pageable pageable) {
 		Building validBuilding = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
+		return buildingMapper.toInfo(validBuilding, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public BuildingDTO.Info selectOne(MemberDTO.Info member, Long buildingId, Pageable pageable) {
+		Building validBuilding = buildingRepository.findValidBuildingWithRoomsByBuildingIdAndMemberId(buildingId, member.getId());
 		return buildingMapper.toInfo(validBuilding, pageable);
 	}
 
