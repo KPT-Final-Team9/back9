@@ -14,8 +14,9 @@ public class TestBatchScheduler extends BatchScheduler {
 
         BatchConfig batchConfig = batchConfigFactory.getBatchConfig("testBatchConfig");
 
-        if(batchConfig.getBatchProperty().isJobEnabled()) {
+        if (batchConfig.getBatchProperty().isJobEnabled()) {
             startScheduler(batchConfig.getIdentifier());
         }
     }
+
 }

@@ -68,4 +68,37 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             """)
     Optional<Contract> findByContractId(Long contractId);
 
+    @Query("""
+            select c
+            from Contract c
+            where c.contractStatus='COMPLETED'
+            and c.startDate>=?1
+            """)
+    List<Contract> findByContractComplete(LocalDate now);
+
+    @Query("""
+            select c
+            from Contract c
+            where c.contractStatus='IN_PROGRESS'
+            and c.endDate=?1
+            """)
+    List<Contract> findByContractInProgress(LocalDate now);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            update Contract c
+            set c.contractStatus='IN_PROGRESS'
+            where c.contractStatus='COMPLETED'
+            and c.endDate>=?1
+            """)
+    int updateContractComplete(LocalDate now);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            update Contract c
+            set c.contractStatus='EXPIRED'
+            where c.contractStatus='IN_PROGRESS'
+            and c.endDate=?1
+            """)
+    int updateContractInProgress(LocalDate now);
 }

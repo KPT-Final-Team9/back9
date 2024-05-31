@@ -1,6 +1,7 @@
 package com.core.back9.batch.job;
 
-import com.core.back9.batch.tasklet.ContractTasklet;
+import com.core.back9.batch.tasklet.ContractExpireTasklet;
+import com.core.back9.batch.tasklet.ContractInProgressTasklet;
 import com.core.back9.batch.property.BatchProperty;
 import com.core.back9.repository.ContractRepository;
 import lombok.Getter;
@@ -15,7 +16,6 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
@@ -42,16 +42,22 @@ public class ContractBatchJob extends DefaultBatchConfiguration implements Batch
         Job job = new JobBuilder(batchProperty.getJobName(), jobRepository)
                 .incrementer(new RunIdIncrementer())
                 .start(executeStep(jobRepository, transactionManager))
+                .next(lastStep(jobRepository, transactionManager))
                 .build();
         return job;
     }
 
     @Override
     public Step executeStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
-        Step step = new StepBuilder("testStep", jobRepository)
-                .tasklet(new ContractTasklet(contractRepository), transactionManager) // 생성한 tasklet 부착
+        return new StepBuilder("contractStep : update ContractStatus COMPLETE --> IN_PROGRESS", jobRepository)
+                .tasklet(new ContractInProgressTasklet(contractRepository), transactionManager) // 생성한 tasklet 부착
                 .build();
-        return step;
+    }
+
+    public Step lastStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+        return new StepBuilder("contractStep : update ContractStatus IN_PROGRESS --> EXPIRED", jobRepository)
+                .tasklet(new ContractExpireTasklet(contractRepository), transactionManager) // 생성한 tasklet 부착
+                .build();
     }
 
 }
