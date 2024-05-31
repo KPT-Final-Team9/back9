@@ -6,7 +6,6 @@ import com.core.back9.security.AuthMember;
 import com.core.back9.service.BuildingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,21 +24,6 @@ public class BuildingController {
 	  @RequestBody BuildingDTO.Request request
 	) {
 		return ResponseEntity.ok(buildingService.create(member, request));
-	}
-
-	@GetMapping("")
-	public ResponseEntity<Page<BuildingDTO.Info>> getAll(
-	  Pageable pageable
-	) {
-		return ResponseEntity.ok(buildingService.selectAll(pageable));
-	}
-
-	@GetMapping("/{buildingId}")
-	public ResponseEntity<BuildingDTO.Info> getOne(
-	  @PathVariable Long buildingId,
-	  Pageable pageable
-	) {
-		return ResponseEntity.ok(buildingService.selectOne(buildingId, pageable));
 	}
 
 	@PatchMapping("/{buildingId}")

@@ -83,8 +83,22 @@ public class RoomService {
 	}
 
 	@Transactional(readOnly = true)
+	public Page<RoomDTO.Info> selectAll(MemberDTO.Info member, Long buildingId, Pageable pageable) {
+		return roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
+			buildingId, member.getId(), Status.REGISTER, pageable
+		  )
+		  .map(roomMapper::toInfo);
+	}
+
+	@Transactional(readOnly = true)
 	public RoomDTO.Info selectOne(Long buildingId, Long roomId) {
 		Room validRoom = currentRoom(buildingId, roomId);
+		return roomMapper.toInfo(validRoom);
+	}
+
+	@Transactional(readOnly = true)
+	public RoomDTO.Info selectOne(MemberDTO.Info member, Long buildingId, Long roomId) {
+		Room validRoom = currentRoom(buildingId, roomId, member.getId());
 		return roomMapper.toInfo(validRoom);
 	}
 
@@ -130,7 +144,7 @@ public class RoomService {
 			validRoom.setOwner(validOwner);
 
 			// 관리자가 소유자에게 호실 배정 시 현재 빌딩의 호실 목록 중 대표호실로 설정된게 있는지 확인하고 없으면 대표호실로 설정한다
-			if (roomRepository.existsRepresentRoom(buildingId, member.getId())) {
+			if (roomRepository.notExistsRepresentRoom(buildingId, validOwner.getId())) {
 				validRoom.addRepresent();
 			}
 
@@ -154,6 +168,10 @@ public class RoomService {
 
 	private Room currentRoom(Long buildingId, Long roomId) {
 		return roomRepository.getValidRoomWithIdOrThrow(buildingId, roomId, Status.REGISTER);
+	}
+
+	private Room currentRoom(Long buildingId, Long roomId, Long memberId) {
+		return roomRepository.getValidSpecificRoom(buildingId, roomId, memberId, Status.REGISTER);
 	}
 
 	public Setting createSetting() {

@@ -40,6 +40,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
 	Page<Room> findAllByBuildingIdAndStatus(Long buildingId, Status status, Pageable pageable);
 
+	Page<Room> findAllByBuildingIdAndMemberIdAndStatus(Long buildingId, Long memberId, Status status, Pageable pageable);
+
 	@Query(
 	  """
 		SELECT COUNT(r) = 0 
@@ -49,7 +51,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 		AND r.represent = true
 		"""
 	)
-	boolean existsRepresentRoom(@Param("buildingId") Long buildingId, @Param("memberId") Long memberId);
+	boolean notExistsRepresentRoom(@Param("buildingId") Long buildingId, @Param("memberId") Long memberId);
 
 	@Query(
 	  """
