@@ -4,6 +4,8 @@ import com.core.back9.batch.job.BatchConfigFactory;
 import com.core.back9.batch.job.BatchConfig;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,9 +16,9 @@ public class ContractBatchScheduler extends BatchScheduler {
 
         BatchConfig batchConfig = batchConfigFactory.getBatchConfig("contractBatchConfig");
 
-        if(batchConfig.getBatchProperty().isJobEnabled()) {
+        if (batchConfig.getBatchProperty().isJobEnabled()) {
             startScheduler(batchConfig.getIdentifier());
         }
-
     }
+
 }
