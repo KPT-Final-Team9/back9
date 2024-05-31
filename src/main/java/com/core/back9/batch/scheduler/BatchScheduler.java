@@ -1,7 +1,7 @@
 package com.core.back9.batch.scheduler;
 
-import com.core.back9.batch.job.BatchConfigFactory;
 import com.core.back9.batch.job.BatchConfig;
+import com.core.back9.batch.job.BatchConfigFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -15,16 +15,14 @@ import org.springframework.batch.core.repository.JobExecutionAlreadyRunningExcep
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
-@Component
-@DependsOn(value = {"batchPropertyConfig"})
+@Configuration
 @Slf4j
 public abstract class BatchScheduler {
 
@@ -60,15 +58,16 @@ public abstract class BatchScheduler {
     private Runnable runJob(BatchConfig batchConfig) {
         return () -> {
             launch(batchConfig.getBatchProperty().getJobName());
+
         };
     }
 
     public void launch(String jobName) {
-        String time = LocalDateTime.now().toString();
+        LocalDateTime time = LocalDateTime.now();
         try {
 
             Job job = jobRegistry.getJob(jobName); // 등록한 job 꺼내옴 -> 다를시 NoSuchJobException
-            JobParametersBuilder jobParam = new JobParametersBuilder().addString("time", time);
+            JobParametersBuilder jobParam = new JobParametersBuilder().addLocalDateTime("time", time);
             jobLauncher.run(job, jobParam.toJobParameters());
 
         } catch (NoSuchJobException |
