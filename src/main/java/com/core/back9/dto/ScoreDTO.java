@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 
 public class ScoreDTO {
 
@@ -53,6 +54,19 @@ public class ScoreDTO {
 		private RatingType ratingType;
 		private LocalDateTime createdAt;
 		private LocalDateTime updatedAt;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class DetailByMonth {    // 선택한 월을 기준으로 이전 1년치 데이터 배열로 주기
+		private YearMonth selectedMonth;    // 선택한 월(년/월)
+		private float totalAvg;                // 내 호실 점수
+		private float evaluationProgress;    // 평가 진행률
+		private float facilityAvg;        // 평가 항목별 점수 (시설)
+		private float managementAvg;    // 평가 항목별 점수 (관리)
+		private float complaintAvg;        // 평가 항목별 점수 (민원)
 	}
 
 }
