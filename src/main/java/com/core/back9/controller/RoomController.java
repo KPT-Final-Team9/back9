@@ -4,7 +4,6 @@ import com.core.back9.dto.MemberDTO;
 import com.core.back9.dto.RoomDTO;
 import com.core.back9.security.AuthMember;
 import com.core.back9.service.RoomService;
-import com.core.back9.service.ScoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 public class RoomController {
 
 	private final RoomService roomService;
-	private final ScoreService scoreService;
 
 	@PostMapping("")
 	public ResponseEntity<RoomDTO.Response> register(

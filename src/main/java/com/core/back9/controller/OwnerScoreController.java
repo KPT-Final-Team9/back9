@@ -24,11 +24,6 @@ public class OwnerScoreController {
 
 	private final ScoreService scoreService;
 
-	/*
-	조회 관련 api 필터링 목록
-	- 기간, 건물, 호실, 평가항목, 북마크
-	 */
-
 	@GetMapping("")
 	public ResponseEntity<Page<ScoreDTO.Info>> searchScores(
 	  @AuthMember MemberDTO.Info member,

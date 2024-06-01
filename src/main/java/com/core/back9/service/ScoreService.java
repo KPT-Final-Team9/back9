@@ -163,7 +163,6 @@ public class ScoreService {
 		specification = specification.and(EvaluationSpecifications.isOneYearAgo(yearMonth.atEndOfMonth().atTime(LocalTime.MAX)));
 
 		List<Score> yearScores = scoreRepository.findAll(specification);
-		System.out.println("yearScores = " + yearScores.size());
 
 		List<ScoreDTO.DetailByMonth> detailByMonthList = new ArrayList<>();
 		for (int i = 0; i < 12; i++) {
@@ -187,6 +186,37 @@ public class ScoreService {
 		return detailByMonthList;
 	}
 
+	public ScoreDTO.DetailByQuarter selectScoresByQuarter(MemberDTO.Info member, Long buildingId, int year, int quarter, Pageable pageable) {
+
+		List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
+		  buildingId, member.getId(), Status.REGISTER, pageable
+		).stream().toList();
+
+		DateUtils dateUtils = new DateUtils();
+		LocalDateTime[] startDayAndEndDay = dateUtils.getStartDayAndEndDayByYearAndQuarter(year, quarter);
+
+		Specification<Score> specification = Specification.where(null);
+		specification = specification.and(EvaluationSpecifications.isCompleted());
+		specification = specification.and(EvaluationSpecifications.isUpdatedBetween(
+		  startDayAndEndDay[0], startDayAndEndDay[1]
+		));
+		specification = specification.and(EvaluationSpecifications.hasRoomList(roomList));
+
+		List<Score> all = scoreRepository.findAll(specification);
+		float totalAvg = calculateTotalAvg(all);
+		float facilityAvg = calculateScoreTypeAvg(all, RatingType.FACILITY);
+		float managementAvg = calculateScoreTypeAvg(all, RatingType.MANAGEMENT);
+		float complaintAvg = calculateScoreTypeAvg(all, RatingType.COMPLAINT);
+		return ScoreDTO.DetailByQuarter.builder()
+		  .selectedYear(year)
+		  .selectedQuarter(quarter)
+		  .totalAvg(totalAvg)
+		  .facilityAvg(facilityAvg)
+		  .managementAvg(managementAvg)
+		  .complaintAvg(complaintAvg)
+		  .build();
+	}
+
 	private boolean isPossible(Long memberId, Long roomId, RatingType ratingType) {
 		DateUtils dateUtils = new DateUtils();
 		int quarter = dateUtils.getQuarter();
@@ -204,12 +234,13 @@ public class ScoreService {
 		} else {
 			// 관리 - 월별
 			return scoreRepository.existsByYearAndMonthAndMemberIdAndRoomId(
-			  dateUtils.getYear(), dateUtils.getMonth(),
+			  dateUtils.getYear(), dateUtils.getMonthValue(),
 			  memberId, roomId);
 		}
 	}
 
 	private float calculateTotalAvg(List<Score> scores) {
+		// 매개변수의 평가 데이터 목록 중 진행된 것의 평가
 		return (float) scores.stream()
 		  .filter(score -> !score.getCreatedAt().isEqual(score.getUpdatedAt()))
 		  .mapToInt(Score::getScore).average().orElse(0);

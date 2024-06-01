@@ -3,13 +3,11 @@ package com.core.back9.util;
 import com.core.back9.entity.Room;
 import com.core.back9.entity.Score;
 import com.core.back9.entity.constant.RatingType;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class EvaluationSpecifications {
 
@@ -58,5 +56,14 @@ public class EvaluationSpecifications {
 		};
 	}
 
+	public static Specification<Score> hasRoomList(List<Room> rooms) {
+		return ((root, query, criteriaBuilder) -> {
+			if (rooms == null || rooms.isEmpty()) {
+				return criteriaBuilder.conjunction();
+			}
+			Join<Score, Room> roomJoin = root.join("room", JoinType.INNER);
+			return roomJoin.in(rooms);
+		});
+	}
 
 }
