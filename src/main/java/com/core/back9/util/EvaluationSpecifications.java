@@ -51,5 +51,12 @@ public class EvaluationSpecifications {
 		  criteriaBuilder.like(score.get("comment"), "%" + keyword + "%");
 	}
 
+	public static Specification<Score> isOneYearAgo(LocalDateTime baseDateTime) {
+		return (Root<Score> score, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+			LocalDateTime oneYearAgo = baseDateTime.minusYears(1);
+			return criteriaBuilder.between(score.get("createdAt"), oneYearAgo, baseDateTime);
+		};
+	}
+
 
 }

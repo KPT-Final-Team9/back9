@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -46,6 +48,15 @@ public class OwnerScoreController {
 		return ResponseEntity.ok(response);
 	}
 
+	@GetMapping("/monthly")
+	public ResponseEntity<List<ScoreDTO.DetailByMonth>> searchScoresByMonth(
+	  @AuthMember MemberDTO.Info member,
+	  @PathVariable Long buildingId,
+	  @PathVariable Long roomId,
+	  @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth
+	) {
+		return ResponseEntity.ok(scoreService.selectScoresByMonth(member, buildingId, roomId, yearMonth));
+	}
 
 	@PatchMapping("/{scoreId}/bookmark-add")
 	public ResponseEntity<ScoreDTO.Info> addBookmark(

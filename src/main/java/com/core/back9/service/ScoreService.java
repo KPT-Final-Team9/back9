@@ -25,6 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -90,7 +93,6 @@ public class ScoreService {
 		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "평가 수동 발생은 소유자의 권한입니다");
 	}
 
-	@Transactional
 	public ScoreDTO.UpdateResponse updateScore(
 	  MemberDTO.Info member,    // USER
 	  Long scoreId,
@@ -119,6 +121,7 @@ public class ScoreService {
 		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
 	}
 
+	@Transactional(readOnly = true)
 	public Page<ScoreDTO.Info> selectScores(
 	  MemberDTO.Info member,
 	  Long buildingId,
@@ -150,6 +153,40 @@ public class ScoreService {
 		return scoreRepository.findAll(specification, pageable).map(scoreMapper::toInfo);
 	}
 
+	@Transactional(readOnly = true)
+	public List<ScoreDTO.DetailByMonth> selectScoresByMonth(MemberDTO.Info member, Long buildingId, Long roomId, YearMonth yearMonth) {
+
+		Room validRoom = roomRepository.getValidSpecificRoom(buildingId, roomId, member.getId(), Status.REGISTER);
+
+		Specification<Score> specification = Specification.where(null);
+		specification = specification.and(EvaluationSpecifications.hasRoomId(validRoom));
+		specification = specification.and(EvaluationSpecifications.isOneYearAgo(yearMonth.atEndOfMonth().atTime(LocalTime.MAX)));
+
+		List<Score> yearScores = scoreRepository.findAll(specification);
+		System.out.println("yearScores = " + yearScores.size());
+
+		List<ScoreDTO.DetailByMonth> detailByMonthList = new ArrayList<>();
+		for (int i = 0; i < 12; i++) {
+			YearMonth current = yearMonth.minusMonths(i);
+			LocalDateTime startDayOfMonth = current.atDay(1).atStartOfDay();
+			LocalDateTime endDayOfMonth = current.atEndOfMonth().atTime(LocalTime.MAX);
+
+			List<Score> scoresOfMonth = yearScores.stream()
+			  .filter(score -> !score.getCreatedAt().isBefore(startDayOfMonth) && !score.getCreatedAt().isAfter(endDayOfMonth))
+			  .toList();
+
+			detailByMonthList.add(ScoreDTO.DetailByMonth.builder()
+			  .selectedMonth(current)
+			  .totalAvg(calculateTotalAvg(scoresOfMonth))
+			  .evaluationProgress(calculateEvaluationProgress(scoresOfMonth))
+			  .facilityAvg(calculateScoreTypeAvg(scoresOfMonth, RatingType.FACILITY))
+			  .managementAvg(calculateScoreTypeAvg(scoresOfMonth, RatingType.MANAGEMENT))
+			  .complaintAvg(calculateScoreTypeAvg(scoresOfMonth, RatingType.COMPLAINT))
+			  .build());
+		}
+		return detailByMonthList;
+	}
+
 	private boolean isPossible(Long memberId, Long roomId, RatingType ratingType) {
 		DateUtils dateUtils = new DateUtils();
 		int quarter = dateUtils.getQuarter();
@@ -170,6 +207,25 @@ public class ScoreService {
 			  dateUtils.getYear(), dateUtils.getMonth(),
 			  memberId, roomId);
 		}
+	}
+
+	private float calculateTotalAvg(List<Score> scores) {
+		return (float) scores.stream()
+		  .filter(score -> !score.getCreatedAt().isEqual(score.getUpdatedAt()))
+		  .mapToInt(Score::getScore).average().orElse(0);
+	}
+
+	private float calculateEvaluationProgress(List<Score> scores) {
+		float completed = scores.stream().filter(score -> !score.getCreatedAt().equals(score.getUpdatedAt())).count();
+		return completed > 0 ? completed / scores.size() * 100 : 0;
+	}
+
+	private float calculateScoreTypeAvg(List<Score> scores, RatingType ratingType) {
+		return (float) scores.stream()
+		  .filter(score -> score.getRatingType() == ratingType)
+		  .mapToInt(Score::getScore)
+		  .average()
+		  .orElse(0);
 	}
 
 }
