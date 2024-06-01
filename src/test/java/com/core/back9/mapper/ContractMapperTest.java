@@ -284,6 +284,28 @@ public class ContractMapperTest {
 
     }
 
+    @Test
+    @DisplayName("costDto와 costAverageDto를 costInfo로 매핑할 수 있다.")
+    void toCostInfo() {
+        // given
+        ContractDTO.CostDto costDto = ContractDTO.CostDto.builder()
+                .id(1L)
+                .deposit(10000000L)
+                .rentalPrice(200000L)
+                .build();
+        ContractDTO.CostAverageDto costAverageDto = ContractDTO.CostAverageDto.builder()
+                .averageRentalPrice(10000000)
+                .averageDeposit(200000)
+                .build();
+
+        // when
+        ContractDTO.CostInfo costInfo = contractMapper.toCostInfo(costDto, costAverageDto);
+
+        // then
+        assertThat(costInfo.getDeposit()).isEqualTo(10000000L);
+
+    }
+
     private Contract assumeContract(
             LocalDate startDate,
             LocalDate endDate,
