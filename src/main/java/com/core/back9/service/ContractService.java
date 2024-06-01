@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -282,7 +283,7 @@ public class ContractService {
             Long roomId,
             Long contractId
     ) {
-        if(member.getRole() != Role.OWNER) {
+        if (member.getRole() != Role.OWNER) {
             throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "소유자만 접근할 수 있습니다.");
         }
 
@@ -294,7 +295,7 @@ public class ContractService {
     }
 
     private Room validateOwnerAndRoomExistence(MemberDTO.Info member, Long buildingId, Long roomId) {
-        if(member.getRole() != Role.OWNER) {
+        if (member.getRole() != Role.OWNER) {
             throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "소유자만 접근할 수 있습니다.");
         }
 
@@ -303,4 +304,53 @@ public class ContractService {
 
     }
 
+    /* 내 호실의 임대료 및 타호실 동일 항목 평균값 조회 */
+    public ContractDTO.CostInfo getContractCostInfo(MemberDTO.Info member, Long buildingId, Long roomId) {
+
+        Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
+
+        // 내 호실의 임대료 조회
+        ContractDTO.CostDto costDto = calculateAveragesPerRoom(room.getId());
+
+        // 해당 빌딩의 모든 호실의 계약 조회
+        ContractDTO.CostAverageDto costAverageDto = calculateCostAverages(buildingId, costDto);
+
+        return contractMapper.toCostInfo(costDto, costAverageDto); // dto로 정리해서 반환
+
+    }
+
+    private ContractDTO.CostDto calculateAveragesPerRoom(Long roomId) {
+
+        Contract contract = contractRepository.findByLatestContract(roomId); // 없으면 null 반환
+
+        if (contract == null) {
+            return new ContractDTO.CostDto();
+        }
+
+        return contractMapper.toCostDto(contract.getId(), contract.getDeposit(), contract.getRentalPrice());
+    }
+
+    private ContractDTO.CostAverageDto calculateCostAverages(Long buildingId, ContractDTO.CostDto costDto) {
+
+        List<Contract> contracts;
+
+        if(costDto.getId() == null) {
+            contracts = contractRepository.findByContractInProgressPerBuilding(buildingId, null);
+        } else {
+            contracts = contractRepository.findByContractInProgressPerBuilding(buildingId, costDto.getId());
+        }
+
+        Double averageDeposit = contracts.stream() // 평균 보증금 계산
+                .mapToDouble(Contract::getDeposit)
+                .average()
+                .orElse(0.0);
+
+        Double averageRentalPrice = contracts.stream() // 평균 임대료 계산
+                .mapToDouble(Contract::getRentalPrice)
+                .average()
+                .orElse(0.0);
+
+        return contractMapper.toCostAverageDto(averageDeposit, averageRentalPrice);
+
+    }
 }
