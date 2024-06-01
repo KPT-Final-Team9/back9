@@ -491,6 +491,177 @@ Contract contract2 = assumeContract(
 
     }
 
+    @Test
+    @DisplayName("이행 상태인 계약 중 가장 최신의 계약을 반환한다.")
+    void findByLatestContract() {
+        // given
+        Contract contract1 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract savedContract1 = contractRepository.save(contract1);
+        savedContract1.contractComplete();
+        savedContract1.contractInProgress();
+        savedContract1.contractExpire();
+
+        Contract contract2 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract savedContract2 = contractRepository.save(contract2);
+        savedContract2.contractComplete();
+        savedContract2.contractInProgress();
+        savedContract2.contractExpire();
+
+        Contract contract3 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract savedContract3 = contractRepository.save(contract3);
+        savedContract3.contractComplete();
+        savedContract3.contractInProgress();
+
+        // when
+        Contract latestContract = contractRepository.findByLatestContract(1L);
+
+        // then
+        assertThat(latestContract.getId()).isEqualTo(3L);
+
+    }
+
+    @Test
+    @DisplayName("이행 상태인 계약이 없을 시 null을 반환한다.")
+    void findByLatestContractNull() {
+        // given
+        Contract contract1 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract savedContract1 = contractRepository.save(contract1);
+        savedContract1.contractComplete();
+        savedContract1.contractInProgress();
+        savedContract1.contractExpire();
+
+        Contract contract2 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract savedContract2 = contractRepository.save(contract2);
+        savedContract2.contractComplete();
+        savedContract2.contractInProgress();
+        savedContract2.contractExpire();
+
+        Contract contract3 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract savedContract3 = contractRepository.save(contract3);
+        savedContract3.contractComplete();
+        savedContract3.contractInProgress();
+        savedContract3.contractExpire();
+
+        // when
+        Contract latestContract = contractRepository.findByLatestContract(1L);
+
+        // then
+        assertThat(latestContract).isNull();
+
+    }
+
+    @Test
+    @DisplayName("선택한 빌딩의 모든 진행 중인 비교 호실(타 호실)의 계약을 조회할 수 있다.")
+    void findByContractInProgressPerBuilding() {
+        // given
+        Contract contract1 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract contract2 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room2,
+                tenant2
+        );
+
+        Contract contract3 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(20),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room3,
+                tenant3
+        );
+
+        contractRepository.saveAll(List.of(contract1, contract2, contract3));
+        contract1.contractComplete();
+        contract1.contractInProgress();
+
+        contract2.contractComplete();
+        contract2.contractInProgress();
+
+        contract3.contractComplete();
+        contract3.contractInProgress();
+
+        // when
+        List<Contract> contractInProgressPerBuilding = contractRepository.findByContractInProgressPerBuilding(1L, contract1.getId());
+
+        // then
+        assertThat(contractInProgressPerBuilding)
+                .extracting("deposit", "rentalPrice", "contractStatus")
+                .contains(
+                        tuple(100000000L, 200000L, ContractStatus.IN_PROGRESS),
+                        tuple(100000000L, 200000L, ContractStatus.IN_PROGRESS),
+                        tuple(100000000L, 200000L, ContractStatus.IN_PROGRESS)
+                );
+
+    }
+
     private Contract assumeContract(
             LocalDate startDate,
             LocalDate endDate,

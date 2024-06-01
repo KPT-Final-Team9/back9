@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -495,6 +496,190 @@ public class ContractServiceTest extends ContractServiceFixture {
                         """);
 
     }
+
+    @Test
+    @DisplayName("내 호실과 비교 대상 호실의 보증금/임대료를 비교할 수 있는 데이터를 조회할 수 있다.")
+    void getContractCostInfoTest() {
+        // given
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
+        Contract contract1 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(25),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+        Contract contract2 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(25),
+                200000000L,
+                500000L,
+                ContractType.INITIAL,
+                room2,
+                tenant2
+        );
+        Contract contract3 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(25),
+                400000000L,
+                500000L,
+                ContractType.INITIAL,
+                room3,
+                tenant3
+        );
+        contractRepository.saveAll(List.of(contract1, contract2, contract3));
+
+        contract1.contractComplete();
+        contract1.contractInProgress();
+
+        contract2.contractComplete();
+        contract2.contractInProgress();
+
+        contract3.contractComplete();
+        contract3.contractInProgress();
+
+        // when
+        ContractDTO.CostInfo contractCostInfo = contractService.getContractCostInfo(member, 1L, room1.getId());
+
+        // then
+        assertThat(contractCostInfo)
+                .extracting("deposit", "rentalPrice", "averageDeposit", "averageRentalPrice")
+                .contains(
+                        100000000L,
+                        200000L,
+                        300000000.0,
+                        500000.0
+                );
+
+    }
+
+    @Test
+    @DisplayName("내 호실과 비교 대상 호실의 보증금/임대료를 비교할 수 있는 데이터를 조회시 비교 대상이 없다면 0.0을 반환한다.")
+    void getContractCostInfoTestAverageDefaultValue() {
+        // given
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
+        Contract contract1 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(25),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+        Contract contract2 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(25),
+                200000000L,
+                500000L,
+                ContractType.INITIAL,
+                room2,
+                tenant2
+        );
+        Contract contract3 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(25),
+                400000000L,
+                500000L,
+                ContractType.INITIAL,
+                room3,
+                tenant3
+        );
+        contractRepository.saveAll(List.of(contract1, contract2, contract3));
+
+        contract1.contractComplete();
+        contract1.contractInProgress();
+
+        contract2.contractComplete();
+
+        contract3.contractComplete();
+
+        // when
+        ContractDTO.CostInfo contractCostInfo = contractService.getContractCostInfo(member, 1L, room1.getId());
+
+        // then
+        assertThat(contractCostInfo)
+                .extracting("deposit", "rentalPrice", "averageDeposit", "averageRentalPrice")
+                .contains(
+                        100000000L,
+                        200000L,
+                        0.0,
+                        0.0
+                );
+
+    }
+
+    @Test
+    @DisplayName("내 호실과 비교 대상 호실의 보증금/임대료를 비교할 수 있는 데이터를 조회시 계약 상태인 내 호실이 없는 경우 null을 반환한다.")
+    void getContractCostInfoTestCostIsNull() {
+        // given
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
+        Contract contract1 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(25),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+        Contract contract2 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(25),
+                200000000L,
+                500000L,
+                ContractType.INITIAL,
+                room2,
+                tenant2
+        );
+        Contract contract3 = assumeContract(
+                LocalDate.now().plusDays(10),
+                LocalDate.now().plusDays(25),
+                400000000L,
+                500000L,
+                ContractType.INITIAL,
+                room3,
+                tenant3
+        );
+        contractRepository.saveAll(List.of(contract1, contract2, contract3));
+
+        contract1.contractComplete();
+
+        contract2.contractComplete();
+        contract2.contractInProgress();
+
+        contract3.contractComplete();
+        contract3.contractInProgress();
+
+        // when
+        ContractDTO.CostInfo contractCostInfo = contractService.getContractCostInfo(member, 1L, room1.getId());
+
+        // then
+        assertThat(contractCostInfo)
+                .extracting("deposit", "rentalPrice", "averageDeposit", "averageRentalPrice")
+                .contains(
+                        null,
+                        null,
+                        300000000.0,
+                        500000.0
+                );
+
+    }
+
 
     private Contract assumeContract(
             LocalDate startDate,

@@ -40,4 +40,9 @@ public interface ContractMapper {
 
     ContractDTO.StatusInfo toStatusInfo(Contract contract);
 
+    ContractDTO.CostDto toCostDto(Long id, Long deposit, Long rentalPrice);
+
+    ContractDTO.CostAverageDto toCostAverageDto(Double averageDeposit, Double averageRentalPrice);
+
+    ContractDTO.CostInfo toCostInfo(ContractDTO.CostDto costDto, ContractDTO.CostAverageDto costAverageDto);
 }

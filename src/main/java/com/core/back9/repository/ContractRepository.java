@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -101,4 +102,25 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             and c.endDate=?1
             """)
     int updateContractInProgress(LocalDate now);
+
+    /* 이행 상태인 계약 중 가장 최신 계약 반환 */
+    @Query("""
+            select c
+            from Contract c
+            where c.room.id=?1
+            and c.contractStatus='IN_PROGRESS'
+            and c.status='REGISTER'
+            order by c.id desc
+            """)
+    Contract findByLatestContract(Long roomId);
+
+    @Query("""
+        select c
+        from Contract c
+        where c.room.building.id = ?1
+        and c.contractStatus = 'IN_PROGRESS'
+        and c.status = 'REGISTER'
+        AND (?2 IS NULL OR c.id <> ?2)
+        """)
+    List<Contract> findByContractInProgressPerBuilding(Long buildingId, Long contractId);
 }

@@ -108,4 +108,44 @@ public class ContractDTO {
 		private Long count;
 		private List<Info> infoList;
 	}
+
+//	@AllArgsConstructor
+//	@NoArgsConstructor
+//	@Builder
+//	@Getter
+	public static class StatisticInfo {
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class CostInfo {
+		private Long deposit;
+		private Long rentalPrice;
+		private double averageDeposit;
+		private double averageRentalPrice;
+
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class CostDto {
+		private Long id;
+		private Long deposit;
+		private Long rentalPrice;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class CostAverageDto {
+		private double averageDeposit;
+		private double averageRentalPrice;
+
+	}
+
 }
