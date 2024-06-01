@@ -3,9 +3,7 @@ package com.core.back9.util;
 import com.core.back9.dto.DateDTO;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
+import java.time.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,11 +24,15 @@ public class DateUtils {
 		return localDate.getYear();
 	}
 
-	public int getMonth() {
+	public int getMonthValue() {
 		return localDate.getMonth().getValue();
 	}
 
-	public int getMonth(LocalDate localDate) {
+	public Month getMonth() {
+		return localDate.getMonth();
+	}
+
+	public int getMonthValue(LocalDate localDate) {
 		return localDate.getMonth().getValue();
 	}
 
@@ -69,7 +71,7 @@ public class DateUtils {
 	public DateDTO getYearAndQuarter(LocalDate... localDate) {
 		LocalDate date = Arrays.stream(localDate).findFirst().orElseGet(() -> this.localDate);
 		return DateDTO.builder()
-		  .year(date.getYear())
+		  .yearValue(date.getYear())
 		  .quarter(getQuarter(date))
 		  .build();
 	}
@@ -77,19 +79,19 @@ public class DateUtils {
 	public DateDTO getStartAndEndMonths(LocalDate... localDate) {
 		LocalDate date = Arrays.stream(localDate).findFirst().orElseGet(() -> this.localDate);
 		return DateDTO.builder()
-		  .startMonth(getQuarter(date))
-		  .endMonth(getQuarter(date))
+		  .startMonthValue(getQuarter(date))
+		  .endMonthValue(getQuarter(date))
 		  .build();
 	}
 
 	public DateDTO allParameters(LocalDate... localDate) {
 		LocalDate date = Arrays.stream(localDate).findFirst().orElseGet(() -> this.localDate);
 		return DateDTO.builder()
-		  .year(date.getYear())
-		  .month(getMonth(date))
+		  .yearValue(date.getYear())
+		  .monthValue(getMonthValue(date))
 		  .quarter(getQuarter(date))
-		  .startMonth(getQuarter(date))
-		  .endMonth(getQuarter(date))
+		  .startMonthValue(getQuarter(date))
+		  .endMonthValue(getQuarter(date))
 		  .build();
 	}
 
@@ -97,6 +99,15 @@ public class DateUtils {
 		LocalDateTime now = LocalDateTime.now();
 		LocalDateTime twoYearsAgo = now.minusYears(2);
 		return updatedAts.stream().anyMatch(updatedAt -> !updatedAt.isBefore(twoYearsAgo));
+	}
+
+	public LocalDateTime[] getStartDayAndEndDayByYearAndQuarter(int year, int quarter) {
+		int startMonth = getStartMonth(quarter);
+		int endMonth = getEndMonth(quarter);
+
+		LocalDateTime startDate = LocalDate.of(year, startMonth, 1).atTime(LocalTime.MIN);
+		LocalDateTime endDate = YearMonth.of(year, endMonth).atEndOfMonth().atTime(LocalTime.MAX);
+		return new LocalDateTime[]{startDate, endDate};
 	}
 
 }

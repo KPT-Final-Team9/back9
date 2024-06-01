@@ -69,4 +69,17 @@ public class ScoreDTO {
 		private float complaintAvg;        // 평가 항목별 점수 (민원)
 	}
 
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class DetailByQuarter {    // 선택한 월을 기준으로 이전 1년치 데이터 배열로 주기
+		private int selectedYear;
+		private int selectedQuarter;
+		private float totalAvg;                // 내 호실 점수
+		private float facilityAvg;        // 평가 항목별 점수 (시설)
+		private float managementAvg;    // 평가 항목별 점수 (관리)
+		private float complaintAvg;        // 평가 항목별 점수 (민원)
+	}
+
 }
