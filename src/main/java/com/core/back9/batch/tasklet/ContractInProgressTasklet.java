@@ -25,7 +25,7 @@ public class ContractInProgressTasklet implements Tasklet {
         log.info("========== Start Change Contract Status ==========");
         log.info("--- 실행 일자 : {} ---", time);
         // 이행 조건이 충족된 경우 이행 상태로 업데이트
-        int result = contractRepository.updateContractComplete(time);
+        int result = contractRepository.updateContractInProgress(time);
 
         if (result == 0) {
             log.info("========== 변경할 완료 상태인 계약 내용이 없습니다. ==========");
