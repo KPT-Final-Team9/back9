@@ -148,4 +148,22 @@ public class ContractDTO {
 
 	}
 
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class RenewalContractRateInfo {
+		private double renewalContractRate;
+		private double averageRenewalContractRate;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class VacancyRateInfo {
+		private double vacancyRate; // 내 호실 공실률
+		private double averageVacancyRate; // 비교 공실률
+	}
+
 }
