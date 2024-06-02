@@ -840,7 +840,6 @@ public class ContractServiceTest extends ContractServiceFixture {
                 })
                 .collect(Collectors.toList());
 
-
         // when
         ContractDTO.RenewalContractRateInfo renewalContractRateInfo = contractService.getRenewalContractRateInfo(member, 1L, room1.getId());
 
@@ -850,7 +849,262 @@ public class ContractServiceTest extends ContractServiceFixture {
 
     }
 
+    @Test
+    @DisplayName("비교 호실 추정 재계약률 평균값 일치 테스트.")
+    void getRenewalContractRateInfo50Percent() {
+        // given
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
 
+        List<Contract> contracts1 = IntStream.range(0, 1)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            ContractType.INITIAL,
+                            room1,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire();
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        List<Contract> contracts1_1 = IntStream.range(0, 1)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            ContractType.INITIAL,
+                            room1,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire();
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        List<Contract> contracts1_2 = IntStream.range(0, 1)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            ContractType.INITIAL,
+                            room1,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire();
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        /* ========== 아래 부터 비교 호실 데이터 구성 ========== */
+        List<Contract> contracts2 = IntStream.range(0, 2)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room2,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < 2 - 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire();
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        List<Contract> contracts2_1 = IntStream.range(0, 2)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room2,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < 2 - 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire();
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        List<Contract> contracts2_2 = IntStream.range(0, 2)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room2,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < 2 - 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire();
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        List<Contract> contracts3 = IntStream.range(0, 2)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room3,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < 2 - 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire();
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        List<Contract> contracts3_1 = IntStream.range(0, 2)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room3,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < 2 - 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire();
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        // when
+        ContractDTO.RenewalContractRateInfo renewalContractRateInfo = contractService.getRenewalContractRateInfo(member, 1L, room1.getId());
+
+        // then
+        assertThat(renewalContractRateInfo.getRenewalContractRate()).isEqualTo(0.0);
+        assertThat(renewalContractRateInfo.getAverageRenewalContractRate()).isEqualTo(63.35);
+
+    }
 
     private Contract assumeContract(
             LocalDate startDate,
