@@ -6,11 +6,11 @@ import com.core.back9.entity.constant.Status;
 import com.core.back9.exception.ApiErrorCode;
 import com.core.back9.exception.ApiException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -57,7 +57,7 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             select c
             from Contract c
             where c.room.id=?1
-            and c.contractStatus IN (?2)
+            and c.contractStatus in (?2)
             and((c.endDate>?3 and c.startDate<?3) or (c.startDate <?4 and c.endDate>?4))
             """)
     Optional<List<Contract>> findByContractDuplicate(Long roomId, List<ContractStatus> statusList, LocalDate startDate, LocalDate endDate);
@@ -103,7 +103,7 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             """)
     int updateContractInProgress(LocalDate now);
 
-    /* 이행 상태인 계약 중 가장 최신 계약 반환 */
+    /* 내 호실의 이행 상태인 계약 중 가장 최신 계약 조회(데이터 조회 오차를 고려 desc 사용-> 순서상 가장 최신 데이터 조회) */
     @Query("""
             select c
             from Contract c
@@ -114,13 +114,44 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             """)
     Contract findByLatestContract(Long roomId);
 
+    /* 내가 선택한 계약을 제외한 선택된 빌딩의 모든 호실의 이행 중인 계약 내용 조회 */
     @Query("""
         select c
         from Contract c
         where c.room.building.id = ?1
         and c.contractStatus = 'IN_PROGRESS'
+        and (?2 is null or c.id <> ?2)
         and c.status = 'REGISTER'
-        AND (?2 IS NULL OR c.id <> ?2)
         """)
-    List<Contract> findByContractInProgressPerBuilding(Long buildingId, Long contractId);
+    List<Contract> findByContractInProgressAllRoomsPerBuilding(Long buildingId, Long contractId);
+
+    /*계약 대기, 취소를 제외한 선택한 호실의 모든 계약 내용 조회 */
+    @Query("""
+            select c
+            from Contract c
+            where c.room.id=?1
+            and c.contractStatus not in (?2)
+            and c.status = 'REGISTER'
+            """)
+    List<Contract> findByAllContractPerRoom(Long roomId, List<ContractStatus> statusList);
+
+    /*계약 대기, 취소를 제외, 선택된 호실을 제외한 해당 빌딩의 호실의 모든 계약 내용 조회 */
+    @Query("""
+            select c
+            from Contract c
+            where c.room.building.id = ?1
+            and (?2 is null or c.room.id <> ?2)
+            and c.contractStatus not in (?3)
+            and c.status = 'REGISTER'
+            """)
+    List<Contract> findByAllContractAllRoomsPerBuilding(Long buildingId, Long roomId, List<ContractStatus> statusList);
+
+
+    @Query("""
+            select c
+            from Contract c
+            where c.id <?1
+            order by c.id desc
+            """)
+    Contract findPreviousContract(Long contractId, PageRequest pageRequest);
 }

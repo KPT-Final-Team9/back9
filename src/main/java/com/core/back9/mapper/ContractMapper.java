@@ -45,4 +45,6 @@ public interface ContractMapper {
     ContractDTO.CostAverageDto toCostAverageDto(Double averageDeposit, Double averageRentalPrice);
 
     ContractDTO.CostInfo toCostInfo(ContractDTO.CostDto costDto, ContractDTO.CostAverageDto costAverageDto);
+
+    ContractDTO.RenewalContractRateInfo toRenewalContractRateInfo(Double renewalContractRate, Double averageRenewalContractRate);
 }
