@@ -56,13 +56,13 @@ public class EvaluationSpecifications {
 		};
 	}
 
-	public static Specification<Score> hasRoomList(List<Room> rooms) {
+	public static Specification<Score> hasRoomList(List<Room> rooms, boolean has) {
 		return ((root, query, criteriaBuilder) -> {
 			if (rooms == null || rooms.isEmpty()) {
 				return criteriaBuilder.conjunction();
 			}
 			Join<Score, Room> roomJoin = root.join("room", JoinType.INNER);
-			return roomJoin.in(rooms);
+			return has ? roomJoin.in(rooms) : criteriaBuilder.not(roomJoin.in(rooms));
 		});
 	}
 
