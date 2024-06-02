@@ -154,67 +154,75 @@ public class ScoreService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<ScoreDTO.DetailByMonth> selectScoresByMonth(MemberDTO.Info member, Long buildingId, Long roomId, YearMonth yearMonth) {
+	public ScoreDTO.ListOfYearAvgWithMeAndOthers selectYearScoresIntervalMonth(MemberDTO.Info member, Long buildingId, Long roomId, YearMonth yearMonth) {
 
 		Room validRoom = roomRepository.getValidSpecificRoom(buildingId, roomId, member.getId(), Status.REGISTER);
+		List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
+		  buildingId, member.getId(), Status.REGISTER, null
+		).stream().toList();
 
 		Specification<Score> specification = Specification.where(null);
 		specification = specification.and(EvaluationSpecifications.hasRoomId(validRoom));
 		specification = specification.and(EvaluationSpecifications.isOneYearAgo(yearMonth.atEndOfMonth().atTime(LocalTime.MAX)));
+		List<Score> myYearScores = scoreRepository.findAll(specification);    // 내 단일 호실 점수 목록
 
-		List<Score> yearScores = scoreRepository.findAll(specification);
+		specification = Specification.where(null);
+		specification = specification.and(EvaluationSpecifications.hasRoomList(roomList, false));
+		specification = specification.and(EvaluationSpecifications.isOneYearAgo(yearMonth.atEndOfMonth().atTime(LocalTime.MAX)));
+		List<Score> othersYearScores = scoreRepository.findAll(specification);    // 타 호실 점수 목록
 
-		List<ScoreDTO.DetailByMonth> detailByMonthList = new ArrayList<>();
-		for (int i = 0; i < 12; i++) {
-			YearMonth current = yearMonth.minusMonths(i);
-			LocalDateTime startDayOfMonth = current.atDay(1).atStartOfDay();
-			LocalDateTime endDayOfMonth = current.atEndOfMonth().atTime(LocalTime.MAX);
+		List<ScoreDTO.AllAvgByMonth> yearlyScoreMy = getYearlyScoreListOfMyOrOthers(yearMonth, myYearScores);
+		List<ScoreDTO.AllAvgByMonth> yearlyScoreOthers = getYearlyScoreListOfMyOrOthers(yearMonth, othersYearScores);
 
-			List<Score> scoresOfMonth = yearScores.stream()
-			  .filter(score -> !score.getCreatedAt().isBefore(startDayOfMonth) && !score.getCreatedAt().isAfter(endDayOfMonth))
-			  .toList();
-
-			detailByMonthList.add(ScoreDTO.DetailByMonth.builder()
-			  .selectedMonth(current)
-			  .totalAvg(calculateTotalAvg(scoresOfMonth))
-			  .evaluationProgress(calculateEvaluationProgress(scoresOfMonth))
-			  .facilityAvg(calculateScoreTypeAvg(scoresOfMonth, RatingType.FACILITY))
-			  .managementAvg(calculateScoreTypeAvg(scoresOfMonth, RatingType.MANAGEMENT))
-			  .complaintAvg(calculateScoreTypeAvg(scoresOfMonth, RatingType.COMPLAINT))
-			  .build());
-		}
-		return detailByMonthList;
+		return scoreMapper.toListOfYearAvgWithMeAndOthers(yearlyScoreMy, yearlyScoreOthers);
 	}
 
-	public ScoreDTO.DetailByQuarter selectScoresByQuarter(MemberDTO.Info member, Long buildingId, int year, int quarter, Pageable pageable) {
-
+	public ScoreDTO.AvgByQuarter selectScoresByQuarter(MemberDTO.Info member, Long buildingId, int year, int quarter) {
 		List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
-		  buildingId, member.getId(), Status.REGISTER, pageable
+		  buildingId, member.getId(), Status.REGISTER, null
 		).stream().toList();
 
-		DateUtils dateUtils = new DateUtils();
-		LocalDateTime[] startDayAndEndDay = dateUtils.getStartDayAndEndDayByYearAndQuarter(year, quarter);
+		List<Score> currentQuarterScoreList = getQuarterlyScoreListOfMyOrOthers(roomList, year, quarter, true);
 
-		Specification<Score> specification = Specification.where(null);
-		specification = specification.and(EvaluationSpecifications.isCompleted());
-		specification = specification.and(EvaluationSpecifications.isUpdatedBetween(
-		  startDayAndEndDay[0], startDayAndEndDay[1]
-		));
-		specification = specification.and(EvaluationSpecifications.hasRoomList(roomList));
+		return scoreMapper.toQuarterlyTotalAvg(year, quarter, currentQuarterScoreList);
+	}
 
-		List<Score> all = scoreRepository.findAll(specification);
-		float totalAvg = calculateTotalAvg(all);
-		float facilityAvg = calculateScoreTypeAvg(all, RatingType.FACILITY);
-		float managementAvg = calculateScoreTypeAvg(all, RatingType.MANAGEMENT);
-		float complaintAvg = calculateScoreTypeAvg(all, RatingType.COMPLAINT);
-		return ScoreDTO.DetailByQuarter.builder()
-		  .selectedYear(year)
-		  .selectedQuarter(quarter)
-		  .totalAvg(totalAvg)
-		  .facilityAvg(facilityAvg)
-		  .managementAvg(managementAvg)
-		  .complaintAvg(complaintAvg)
-		  .build();
+	public ScoreDTO.CurrentAndBeforeQuarterlyTotalAvg selectQuarterlyScoreOfMyRooms(MemberDTO.Info member, Long buildingId, int year, int quarter) {
+		List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
+		  buildingId, member.getId(), Status.REGISTER, null
+		).stream().toList();
+
+		List<ScoreDTO.TotalAvgByRoom> currentQuarterByRoomList = getQuarterlyScoreListOfMyRooms(roomList, year, quarter);
+
+		int beforeYear = year, beforeQuarter;
+		if (quarter == 1) {
+			beforeQuarter = 4;
+			beforeYear = year - 1;
+		} else {
+			beforeQuarter = quarter - 1;
+		}
+
+		List<ScoreDTO.TotalAvgByRoom> beforeQuarterByRoomList = getQuarterlyScoreListOfMyRooms(roomList, beforeYear, beforeQuarter);
+
+		return scoreMapper.toQuarterlyTotalAvgWithCurrentAndBefore(currentQuarterByRoomList, beforeQuarterByRoomList);
+	}
+
+	public List<ScoreDTO.AllAvgByRoom> selectYearScoreOfMyRooms(MemberDTO.Info member, Long buildingId) {
+		List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
+		  buildingId, member.getId(), Status.REGISTER, null
+		).stream().toList();
+
+		YearMonth now = YearMonth.now();
+
+		return roomList.stream().map(room -> {
+
+			Specification<Score> specification = Specification.where(null);
+			specification = specification.and(EvaluationSpecifications.hasRoomId(room));
+			specification = specification.and(EvaluationSpecifications.isOneYearAgo(now.atEndOfMonth().atTime(LocalTime.MAX)));
+			List<Score> myYearScores = scoreRepository.findAll(specification);    // 내 단일 호실 점수 목록
+
+			return scoreMapper.toAllAvgWithMonthByRoom(room, getYearlyScoreListOfMyOrOthers(now, myYearScores));
+		}).toList();
 	}
 
 	private boolean isPossible(Long memberId, Long roomId, RatingType ratingType) {
@@ -239,24 +247,50 @@ public class ScoreService {
 		}
 	}
 
-	private float calculateTotalAvg(List<Score> scores) {
-		// 매개변수의 평가 데이터 목록 중 진행된 것의 평가
-		return (float) scores.stream()
-		  .filter(score -> !score.getCreatedAt().isEqual(score.getUpdatedAt()))
-		  .mapToInt(Score::getScore).average().orElse(0);
+	public List<ScoreDTO.TotalAvgByRoom> getQuarterlyScoreListOfMyRooms(List<Room> roomList, int year, int quarter) {
+		return roomList.stream().map(room -> {
+			DateUtils dateUtils = new DateUtils();
+			LocalDateTime[] startDayAndEndDay = dateUtils.getStartDayAndEndDayByYearAndQuarter(year, quarter);
+
+			Specification<Score> specification = Specification.where(null);
+			specification = specification.and(EvaluationSpecifications.isCompleted());
+			specification = specification.and(EvaluationSpecifications.isUpdatedBetween(
+			  startDayAndEndDay[0], startDayAndEndDay[1]
+			));
+			specification = specification.and(EvaluationSpecifications.hasRoomId(room));
+			List<Score> scoreByRoom = scoreRepository.findAll(specification);
+
+			return scoreMapper.toTotalAvgByRoom(room, scoreByRoom);
+		}).toList();
 	}
 
-	private float calculateEvaluationProgress(List<Score> scores) {
-		float completed = scores.stream().filter(score -> !score.getCreatedAt().equals(score.getUpdatedAt())).count();
-		return completed > 0 ? completed / scores.size() * 100 : 0;
+	public List<Score> getQuarterlyScoreListOfMyOrOthers(List<Room> roomList, int year, int quarter, boolean isMine) {
+		DateUtils dateUtils = new DateUtils();
+		LocalDateTime[] startDayAndEndDay = dateUtils.getStartDayAndEndDayByYearAndQuarter(year, quarter);
+
+		Specification<Score> specification = Specification.where(null);
+		specification = specification.and(EvaluationSpecifications.isCompleted());
+		specification = specification.and(EvaluationSpecifications.isUpdatedBetween(
+		  startDayAndEndDay[0], startDayAndEndDay[1]
+		));
+		specification = specification.and(EvaluationSpecifications.hasRoomList(roomList, isMine));
+		return scoreRepository.findAll(specification);
 	}
 
-	private float calculateScoreTypeAvg(List<Score> scores, RatingType ratingType) {
-		return (float) scores.stream()
-		  .filter(score -> score.getRatingType() == ratingType)
-		  .mapToInt(Score::getScore)
-		  .average()
-		  .orElse(0);
+	public List<ScoreDTO.AllAvgByMonth> getYearlyScoreListOfMyOrOthers(YearMonth yearMonth, List<Score> scoreList) {
+		List<ScoreDTO.AllAvgByMonth> allAvgByMonthList = new ArrayList<>();
+		for (int i = 0; i < 12; i++) {
+			YearMonth current = yearMonth.minusMonths(i);
+			LocalDateTime startDayOfMonth = current.atDay(1).atStartOfDay();
+			LocalDateTime endDayOfMonth = current.atEndOfMonth().atTime(LocalTime.MAX);
+
+			List<Score> scoresOfMonth = scoreList.stream()
+			  .filter(score -> !score.getCreatedAt().isBefore(startDayOfMonth) && !score.getCreatedAt().isAfter(endDayOfMonth))
+			  .toList();
+
+			allAvgByMonthList.add(scoreMapper.toAllAvgWithMonth(current, scoresOfMonth));
+		}
+		return allAvgByMonthList;
 	}
 
 }

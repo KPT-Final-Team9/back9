@@ -6,8 +6,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.List;
 
 public class ScoreDTO {
 
@@ -60,7 +62,19 @@ public class ScoreDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class DetailByMonth {    // 선택한 월을 기준으로 이전 1년치 데이터 배열로 주기
+	public static class ScoreSearchRequest {
+		private LocalDate startDate;
+		private LocalDate endDate;
+		private RatingType ratingType;
+		private Boolean bookmark;
+		private String keyword;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class AllAvgByMonth {    // 선택한 월을 기준으로 이전 1년치 데이터 배열로 주기
 		private YearMonth selectedMonth;    // 선택한 월(년/월)
 		private float totalAvg;                // 내 호실 점수
 		private float evaluationProgress;    // 평가 진행률
@@ -73,7 +87,45 @@ public class ScoreDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class DetailByQuarter {    // 선택한 월을 기준으로 이전 1년치 데이터 배열로 주기
+	public static class AllAvgByRoom {
+		private Long roomId;
+		private String roomName;
+		private List<AllAvgByMonth> allAvgByMonthList;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class TotalAvgByRoom {
+		private Long roomId;
+		private String roomName;
+		private float totalAvg;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class CurrentAndBeforeQuarterlyTotalAvg {
+		private List<TotalAvgByRoom> current;
+		private List<TotalAvgByRoom> before;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class ListOfYearAvgWithMeAndOthers {
+		private List<AllAvgByMonth> my;
+		private List<AllAvgByMonth> others;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class AvgByQuarter {    // 선택한 월을 기준으로 이전 1년치 데이터 배열로 주기
 		private int selectedYear;
 		private int selectedQuarter;
 		private float totalAvg;                // 내 호실 점수

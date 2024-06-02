@@ -5,6 +5,7 @@ import com.core.back9.dto.ScoreDTO;
 import com.core.back9.entity.constant.RatingType;
 import com.core.back9.security.AuthMember;
 import com.core.back9.service.ScoreService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,8 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.YearMonth;
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,6 +23,7 @@ public class OwnerScoreController {
 
 	private final ScoreService scoreService;
 
+	@Operation(summary = "평가 상세 보기 조회", description = "모든 조건에 부합하는 평가 항목을 조회한다.")
 	@GetMapping("")
 	public ResponseEntity<Page<ScoreDTO.Info>> searchScores(
 	  @AuthMember MemberDTO.Info member,
@@ -43,16 +43,7 @@ public class OwnerScoreController {
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/monthly")
-	public ResponseEntity<List<ScoreDTO.DetailByMonth>> searchScoresByMonth(
-	  @AuthMember MemberDTO.Info member,
-	  @PathVariable Long buildingId,
-	  @PathVariable Long roomId,
-	  @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth
-	) {
-		return ResponseEntity.ok(scoreService.selectScoresByMonth(member, buildingId, roomId, yearMonth));
-	}
-
+	@Operation(summary = "평가 북마크", description = "해당 평가를 북마크 설정한다.")
 	@PatchMapping("/{scoreId}/bookmark-add")
 	public ResponseEntity<ScoreDTO.Info> addBookmark(
 	  @AuthMember MemberDTO.Info member,
@@ -63,6 +54,7 @@ public class OwnerScoreController {
 		return ResponseEntity.ok(scoreService.updateBookmark(member, scoreId, true));
 	}
 
+	@Operation(summary = "평가 북마크", description = "해당 평가를 북마크 해제한다.")
 	@PatchMapping("/{scoreId}/bookmark-remove")
 	public ResponseEntity<ScoreDTO.Info> removeBookmark(
 	  @AuthMember MemberDTO.Info member,
