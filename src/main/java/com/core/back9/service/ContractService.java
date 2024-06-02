@@ -17,13 +17,14 @@ import com.core.back9.repository.RoomRepository;
 import com.core.back9.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -334,10 +335,10 @@ public class ContractService {
 
         List<Contract> contracts;
 
-        if(costDto.getId() == null) {
-            contracts = contractRepository.findByContractInProgressPerBuilding(buildingId, null);
+        if (costDto.getId() == null) {
+            contracts = contractRepository.findByContractInProgressAllRoomsPerBuilding(buildingId, null);
         } else {
-            contracts = contractRepository.findByContractInProgressPerBuilding(buildingId, costDto.getId());
+            contracts = contractRepository.findByContractInProgressAllRoomsPerBuilding(buildingId, costDto.getId());
         }
 
         Double averageDeposit = contracts.stream() // 평균 보증금 계산
@@ -353,4 +354,99 @@ public class ContractService {
         return contractMapper.toCostAverageDto(averageDeposit, averageRentalPrice);
 
     }
+
+    /* 내 호실의 재계약률 & 비교 호실의 재계약률 평균 (현재일 기준, 누적치) */
+    public ContractDTO.RenewalContractRateInfo getRenewalContractRateInfo(MemberDTO.Info member, Long buildingId, Long roomId) {
+        Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
+
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.CANCELED);
+
+        /* 내 호실 재계약률 산출 */
+        Double renewalContractRate = getRenewalContractData(room.getId(), statusList);
+
+        /* 내 호실의 계약을 제외한 선택 빌딩의 모든 계약률 평균 산출 */
+        double averageRenewalContractRate = getRenewalRelativeContractData(buildingId, room, statusList);
+
+        return contractMapper.toRenewalContractRateInfo(renewalContractRate, averageRenewalContractRate);
+
+    }
+
+    private double getRenewalRelativeContractData(Long buildingId, Room room, List<ContractStatus> statusList) {
+        List<Contract> contracts = contractRepository.findByAllContractAllRoomsPerBuilding(buildingId, room.getId(), statusList);
+        Map<Room, Map<ContractType, Long>> contractCountsPerRoomAndType = getContractCountsPerRoomAndType(contracts);
+
+        return contractCountsPerRoomAndType.values().stream()
+                .mapToDouble(contractsTypeMap -> calculateRenewalContract(contracts, contractsTypeMap))
+                .average()
+                .orElse(0.0);
+    }
+
+    private double calculateRenewalContract(List<Contract> contracts, Map<ContractType, Long> contractsTypeMap) {
+        long initialContractsCount = contractsTypeMap.getOrDefault(ContractType.INITIAL, 0L);
+        long renewalContractsCount = contractsTypeMap.getOrDefault(ContractType.RENEWAL, 0L) + initialContractsCount - 1L; // 재계약 시도를 나타내는 계약 수
+
+        long failedRenewalContractsCount = getRenewalContractFailedCount(contracts);
+
+        long pureRenewalContractsCount = renewalContractsCount -= failedRenewalContractsCount;
+        long totalContractsCount = initialContractsCount + renewalContractsCount;
+
+        double result = ((double) pureRenewalContractsCount / (totalContractsCount - 1)) * 100;
+
+        return Math.round(result * 10.0) / 10.0;
+    }
+
+    private Map<Room, Map<ContractType, Long>> getContractCountsPerRoomAndType(List<Contract> contractList) {
+        return contractList.stream()
+                .collect(Collectors.groupingBy(
+                        Contract::getRoom,
+                        Collectors.groupingBy(
+                                Contract::getContractType,
+                                Collectors.counting()) // 2차 세분류
+                ));
+    }
+
+    private Double getRenewalContractData(Long roomId, List<ContractStatus> statusList) {
+        /* 내 호실 재계약 데이터 조회 & 카운팅(일단 누적치로 가자) - 계약대기, 취소상태 제외 모든 계약 데이터 조회 */
+        List<Contract> contracts = contractRepository.findByAllContractPerRoom(roomId, statusList);
+        Map<ContractType, Long> contractsTypeMap = getContractCountPerType(contracts);
+
+        return calculateRenewalContract(contracts, contractsTypeMap);
+    }
+
+    private Map<ContractType, Long> getContractCountPerType(List<Contract> contracts) {
+        return contracts.stream()
+                .collect(Collectors.groupingBy(Contract::getContractType, Collectors.counting()));
+    }
+
+    private long getRenewalContractFailedCount(List<Contract> contracts) {
+        return contracts.stream()
+                .filter(contract -> contract.getContractType() == ContractType.INITIAL) // ContractType.INITIAL만 필터링
+                .filter(this::isFailedRenewal) // 재계약 실패( isFailedRenewal=true )만 필터링
+                .count();
+    }
+
+    private boolean isFailedRenewal(Contract currentContract) {
+        /* 현재 계약의 이전 계약 정보를 가져옴 */
+        PageRequest pageRequest = PageRequest.of(0, 1);
+
+        Contract previousContract = contractRepository.findPreviousContract(currentContract.getId(), pageRequest);
+
+        /* 이전 계약이 없으면 재계약이 아니므로 실패로 처리하지 않음 (false) */
+        if (previousContract == null) {
+            return false;
+        }
+
+        /* 이전 계약이 RENEWAL이고 현재 계약이 INITIAL인 경우 재계약 실패 처리 (true) */
+        boolean result = previousContract.getContractType() == ContractType.RENEWAL
+                         && currentContract.getContractType() == ContractType.INITIAL;
+        return result;
+    }
+
+    /* 내 호실의 연간 공실률 & 비교 호실 연평균 공실률 조회 (현재일 기준) */
+    public ContractDTO.VacancyRateInfo getContractVacancyRate(MemberDTO.Info member, Long buildingId, Long roomId) {
+        Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
+
+        return null;
+    }
+
 }
