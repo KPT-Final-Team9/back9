@@ -375,13 +375,12 @@ public class ContractService {
         List<Contract> contracts = contractRepository.findByAllContractAllRoomsPerBuilding(buildingId, room.getId(), statusList);
         Map<Room, Map<ContractType, Long>> contractCountsPerRoomAndType = getContractCountsPerRoomAndType(contracts);
 
-        return contractCountsPerRoomAndType.values().stream()
+        double avgData = contractCountsPerRoomAndType.values().stream()
                 .mapToDouble(contractsTypeMap -> calculateRenewalContract(contracts, contractsTypeMap))
                 .average()
-                .stream()
-                .map(avg -> Math.round(avg * 10.0) / 10.0)
-                .findAny()
                 .orElse(0.0);
+
+        return Math.round(avgData * 10.0) / 10.0;
     }
 
     private double calculateRenewalContract(List<Contract> contracts, Map<ContractType, Long> contractsTypeMap) {
