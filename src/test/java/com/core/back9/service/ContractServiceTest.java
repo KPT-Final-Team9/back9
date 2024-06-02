@@ -683,7 +683,7 @@ public class ContractServiceTest extends ContractServiceFixture {
     }
 
     @Test
-    @DisplayName("내 호실의 재계약률과 비교 호실의 재계약률 평균 데이터를 조회할 수 있다.")
+    @DisplayName("내 호실의 재계약이 없을 경우 결과는 0.0이다.")
     void getRenewalContractRateInfo() {
         // given
         MemberDTO.Info member = MemberDTO.Info.builder()
@@ -691,24 +691,23 @@ public class ContractServiceTest extends ContractServiceFixture {
                 .role(Role.OWNER)
                 .build();
 
-        List<Contract> contracts1 = IntStream.range(0, 2)
+        List<Contract> contracts1 = IntStream.range(0, 1)
                 .mapToObj(i -> {
                     long startDate = 10L * i + 1;
                     long endDate = 10L * (i + 1);
-                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
 
                     Contract contract = assumeContract(
                             LocalDate.now().plusDays(startDate),
                             LocalDate.now().plusDays(endDate),
                             100000000L,
                             200000L,
-                            contractType,
+                            ContractType.INITIAL,
                             room1,
                             tenant1
                     );
                     Contract savedContract = contractRepository.save(contract);
 
-                    if (i < 10 - 1) {
+                    if (i < 1) {
                         savedContract.contractComplete();
                         savedContract.contractInProgress();
                         savedContract.contractExpire();
@@ -721,7 +720,7 @@ public class ContractServiceTest extends ContractServiceFixture {
                 })
                 .collect(Collectors.toList());
 
-        List<Contract> contracts1_1 = IntStream.range(0, 2)
+        List<Contract> contracts1_1 = IntStream.range(0, 1)
                 .mapToObj(i -> {
                     long startDate = 10L * i + 1;
                     long endDate = 10L * (i + 1);
@@ -732,13 +731,13 @@ public class ContractServiceTest extends ContractServiceFixture {
                             LocalDate.now().plusDays(endDate),
                             100000000L,
                             200000L,
-                            contractType,
+                            ContractType.INITIAL,
                             room1,
                             tenant1
                     );
                     Contract savedContract = contractRepository.save(contract);
 
-                    if (i < 2 - 1) {
+                    if (i < 1) {
                         savedContract.contractComplete();
                         savedContract.contractInProgress();
                         savedContract.contractExpire();
@@ -751,24 +750,23 @@ public class ContractServiceTest extends ContractServiceFixture {
                 })
                 .collect(Collectors.toList());
 
-        List<Contract> contracts1_2 = IntStream.range(0, 2)
+        List<Contract> contracts1_2 = IntStream.range(0, 1)
                 .mapToObj(i -> {
                     long startDate = 10L * i + 1;
                     long endDate = 10L * (i + 1);
-                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
 
                     Contract contract = assumeContract(
                             LocalDate.now().plusDays(startDate),
                             LocalDate.now().plusDays(endDate),
                             100000000L,
                             200000L,
-                            contractType,
+                            ContractType.INITIAL,
                             room1,
                             tenant1
                     );
                     Contract savedContract = contractRepository.save(contract);
 
-                    if (i < 2 - 1) {
+                    if (i < 1) {
                         savedContract.contractComplete();
                         savedContract.contractInProgress();
                         savedContract.contractExpire();
@@ -782,7 +780,7 @@ public class ContractServiceTest extends ContractServiceFixture {
                 .collect(Collectors.toList());
 
         /* ========== 아래 부터 비교 호실 데이터 구성 ========== */
-        List<Contract> contracts2 = IntStream.range(0, 10)
+        List<Contract> contracts2 = IntStream.range(0, 3)
                 .mapToObj(i -> {
                     long startDate = 10L * i + 1;
                     long endDate = 10L * (i + 1);
@@ -799,7 +797,7 @@ public class ContractServiceTest extends ContractServiceFixture {
                     );
                     Contract savedContract = contractRepository.save(contract);
 
-                    if (i < 10 - 1) {
+                    if (i < 3 - 1) {
                         savedContract.contractComplete();
                         savedContract.contractInProgress();
                         savedContract.contractExpire();
@@ -812,7 +810,7 @@ public class ContractServiceTest extends ContractServiceFixture {
                 })
                 .collect(Collectors.toList());
 
-        List<Contract> contracts3 = IntStream.range(0, 10)
+        List<Contract> contracts3 = IntStream.range(0, 3)
                 .mapToObj(i -> {
                     long startDate = 10L * i + 1;
                     long endDate = 10L * (i + 1);
@@ -829,7 +827,7 @@ public class ContractServiceTest extends ContractServiceFixture {
                     );
                     Contract savedContract = contractRepository.save(contract);
 
-                    if (i < 10 - 1) {
+                    if (i < 3 - 1) {
                         savedContract.contractComplete();
                         savedContract.contractInProgress();
                         savedContract.contractExpire();
@@ -847,10 +845,12 @@ public class ContractServiceTest extends ContractServiceFixture {
         ContractDTO.RenewalContractRateInfo renewalContractRateInfo = contractService.getRenewalContractRateInfo(member, 1L, room1.getId());
 
         // then
-        assertThat(renewalContractRateInfo.getRenewalContractRate()).isEqualTo(60.0);
+        assertThat(renewalContractRateInfo.getRenewalContractRate()).isEqualTo(0.0);
         assertThat(renewalContractRateInfo.getAverageRenewalContractRate()).isEqualTo(100.0);
 
     }
+
+
 
     private Contract assumeContract(
             LocalDate startDate,

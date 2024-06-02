@@ -386,7 +386,7 @@ public class ContractService {
         long renewalContractsCount = contractsTypeMap.getOrDefault(ContractType.RENEWAL, 0L);
         long failedRenewalContractsCount = getRenewalContractFailedCount(contracts); // 재계약 실패를 나타내는 결과값
 
-        long attemptedRenewalContractsCount = initialContractsCount + renewalContractsCount - 1L; // 재계약 시도를 나타내는 결과값
+        long attemptedRenewalContractsCount = failedRenewalContractsCount + renewalContractsCount; // 재계약 시도를 나타내는 결과값
         long pureRenewalContractsCount = attemptedRenewalContractsCount - failedRenewalContractsCount; // 재계약을 성공한 경우를 나타내는 결과값
 
         long totalContractsCount = initialContractsCount + pureRenewalContractsCount; // 실제 총 계약 수
