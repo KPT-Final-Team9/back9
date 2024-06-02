@@ -18,6 +18,8 @@ import org.springframework.data.domain.PageRequest;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -359,7 +361,7 @@ class ContractRepositoryTest extends ContractRepositoryFixture {
                 tenant1
         );
         Contract savedContract1 = contractRepository.save(contract1);
-Contract contract2 = assumeContract(
+        Contract contract2 = assumeContract(
                 LocalDate.now().plusDays(30),
                 LocalDate.now().plusDays(40),
                 100000000L,
@@ -505,11 +507,6 @@ Contract contract2 = assumeContract(
                 tenant1
         );
 
-        Contract savedContract1 = contractRepository.save(contract1);
-        savedContract1.contractComplete();
-        savedContract1.contractInProgress();
-        savedContract1.contractExpire();
-
         Contract contract2 = assumeContract(
                 LocalDate.now().plusDays(10),
                 LocalDate.now().plusDays(20),
@@ -519,11 +516,6 @@ Contract contract2 = assumeContract(
                 room1,
                 tenant1
         );
-
-        Contract savedContract2 = contractRepository.save(contract2);
-        savedContract2.contractComplete();
-        savedContract2.contractInProgress();
-        savedContract2.contractExpire();
 
         Contract contract3 = assumeContract(
                 LocalDate.now().plusDays(10),
@@ -535,9 +527,20 @@ Contract contract2 = assumeContract(
                 tenant1
         );
 
-        Contract savedContract3 = contractRepository.save(contract3);
-        savedContract3.contractComplete();
-        savedContract3.contractInProgress();
+        List<Contract> contracts = contractRepository.saveAll(List.of(contract1, contract2, contract3));
+        IntStream.range(0, contracts.size())
+                .forEach(i -> {
+                    Contract contract = contracts.get(i);
+
+                    if (i < contracts.size() - 1) {
+                        contract.contractComplete();
+                        contract.contractInProgress();
+                        contract.contractExpire();
+                    } else {
+                        contract.contractComplete();
+                        contract.contractInProgress();
+                    }
+                });
 
         // when
         Contract latestContract = contractRepository.findByLatestContract(1L);
@@ -561,11 +564,6 @@ Contract contract2 = assumeContract(
                 tenant1
         );
 
-        Contract savedContract1 = contractRepository.save(contract1);
-        savedContract1.contractComplete();
-        savedContract1.contractInProgress();
-        savedContract1.contractExpire();
-
         Contract contract2 = assumeContract(
                 LocalDate.now().plusDays(10),
                 LocalDate.now().plusDays(20),
@@ -575,11 +573,6 @@ Contract contract2 = assumeContract(
                 room1,
                 tenant1
         );
-
-        Contract savedContract2 = contractRepository.save(contract2);
-        savedContract2.contractComplete();
-        savedContract2.contractInProgress();
-        savedContract2.contractExpire();
 
         Contract contract3 = assumeContract(
                 LocalDate.now().plusDays(10),
@@ -591,10 +584,15 @@ Contract contract2 = assumeContract(
                 tenant1
         );
 
-        Contract savedContract3 = contractRepository.save(contract3);
-        savedContract3.contractComplete();
-        savedContract3.contractInProgress();
-        savedContract3.contractExpire();
+        List<Contract> contracts = contractRepository.saveAll(List.of(contract1, contract2, contract3));
+        IntStream.range(0, contracts.size())
+                .forEach(i -> {
+                    Contract contract = contracts.get(i);
+
+                    contract.contractComplete();
+                    contract.contractInProgress();
+                    contract.contractExpire();
+                });
 
         // when
         Contract latestContract = contractRepository.findByLatestContract(1L);
@@ -621,7 +619,7 @@ Contract contract2 = assumeContract(
         Contract contract2 = assumeContract(
                 LocalDate.now().plusDays(10),
                 LocalDate.now().plusDays(20),
-                100000000L,
+                200000000L,
                 200000L,
                 ContractType.INITIAL,
                 room2,
@@ -631,34 +629,214 @@ Contract contract2 = assumeContract(
         Contract contract3 = assumeContract(
                 LocalDate.now().plusDays(10),
                 LocalDate.now().plusDays(20),
-                100000000L,
+                400000000L,
                 200000L,
                 ContractType.INITIAL,
                 room3,
                 tenant3
         );
 
-        contractRepository.saveAll(List.of(contract1, contract2, contract3));
-        contract1.contractComplete();
-        contract1.contractInProgress();
+        List<Contract> contracts = contractRepository.saveAll(List.of(contract1, contract2, contract3));
+        IntStream.range(0, contracts.size())
+                .forEach(i -> {
+                    Contract contract = contracts.get(i);
 
-        contract2.contractComplete();
-        contract2.contractInProgress();
-
-        contract3.contractComplete();
-        contract3.contractInProgress();
+                    contract.contractComplete();
+                    contract.contractInProgress();
+                });
 
         // when
-        List<Contract> contractInProgressPerBuilding = contractRepository.findByContractInProgressPerBuilding(1L, contract1.getId());
+        List<Contract> contractInProgressPerBuilding = contractRepository.findByContractInProgressAllRoomsPerBuilding(1L, contract1.getId());
 
         // then
+        assertThat(contractInProgressPerBuilding).hasSize(2);
         assertThat(contractInProgressPerBuilding)
                 .extracting("deposit", "rentalPrice", "contractStatus")
                 .contains(
-                        tuple(100000000L, 200000L, ContractStatus.IN_PROGRESS),
-                        tuple(100000000L, 200000L, ContractStatus.IN_PROGRESS),
-                        tuple(100000000L, 200000L, ContractStatus.IN_PROGRESS)
+                        tuple(200000000L, 200000L, ContractStatus.IN_PROGRESS),
+                        tuple(400000000L, 200000L, ContractStatus.IN_PROGRESS)
                 );
+
+    }
+
+
+    @Test
+    @DisplayName("계약 대기, 취소 상태를 제외한 선택 호실의 모든 계약 내역을 조회할 수 있다.")
+    void findByAllContractPerRoom() {
+        // given
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.CANCELED);
+
+        IntStream.range(0, 25)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room1,
+                            tenant1
+                    );
+
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i > 5 && i < 10) {
+                        savedContract.contractCancelMissedStartDate();
+                    } else if (i >= 10) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        // when
+        List<Contract> allContractPerRoom = contractRepository.findByAllContractPerRoom(1L, statusList);
+
+        // then
+        assertThat(allContractPerRoom).hasSize(15);
+
+    }
+
+    @Test
+    @DisplayName("선택한 호실의 계약 대기, 취소 상태인 계약 내역은 조회할 수 없다.")
+    void findByCancelContractsAreNotSelected() {
+        // given
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.CANCELED);
+
+        IntStream.range(0, 25)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room1,
+                            tenant1
+                    );
+
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i > 10) {
+                        savedContract.contractCancelMissedStartDate();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        // when
+        List<Contract> allContractPerRoom = contractRepository.findByAllContractPerRoom(1L, statusList);
+
+        // then
+        assertThat(allContractPerRoom).hasSize(0);
+
+    }
+
+    @Test
+    @DisplayName("계약 대기, 취소 상태를 제외한 내 호실의 계약을 이외의 선택한 빌딩의 모든 계약 List를 조회할 수 있다.")
+    void findByAllContractAllRoomsPerBuildingAreNotSelected() {
+        // given
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.CANCELED);
+
+        List<Contract> contractList1 = findByAllContractAllRoomsPerBuildingFixture(10, room1); // 조회 대상에서 제외될 호실
+        List<Contract> contractList2 = findByAllContractAllRoomsPerBuildingFixture(15, room2);
+        List<Contract> contractList3 = findByAllContractAllRoomsPerBuildingFixture(20, room3);
+
+        // when
+        List<Contract> contractList = contractRepository.findByAllContractAllRoomsPerBuilding(1L, room1.getId(), statusList);
+
+        // then
+        assertThat(contractList).hasSize(35);
+
+    }
+
+    @Test
+    @DisplayName("계약 대기, 취소 상태인 빌딩의 계약은 조회할 수 없다.")
+    void findByAllContractAllRoomsPerBuilding() {
+        // given
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.CANCELED);
+
+        List<Contract> contractList1 = findByAllContractAllRoomsPerBuildingFixture(10, room1);
+        List<Contract> contractList2 = findByAllContractAllRoomsPerBuildingNotSelectedFixture(15, room2);
+        List<Contract> contractList3 = findByAllContractAllRoomsPerBuildingNotSelectedFixture(20, room3);
+
+        // when
+        List<Contract> contractList = contractRepository.findByAllContractAllRoomsPerBuilding(1L, room1.getId(), statusList);
+
+        // then
+        assertThat(contractList).hasSize(0);
+
+    }
+
+    private List<Contract> findByAllContractAllRoomsPerBuildingFixture(int endCount, Room room) { // 조회 조건을 담고 있는 Fixture
+        return IntStream.range(0, endCount)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < endCount - 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire(); // 기간 조건은 해당 테스트에서 생략하기로 함
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+    }
+
+    private List<Contract> findByAllContractAllRoomsPerBuildingNotSelectedFixture(int endCount, Room room) { // 제외 조건을 담고 있는 Fixture
+        return IntStream.range(0, endCount) // 내 호실의 계약
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < endCount - (endCount / 2)) {
+                        savedContract.contractCancelMissedStartDate();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
 
     }
 
