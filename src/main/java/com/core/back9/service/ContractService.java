@@ -383,16 +383,13 @@ public class ContractService {
 
     private double calculateRenewalContract(List<Contract> contracts, Map<ContractType, Long> contractsTypeMap) {
         long initialContractsCount = contractsTypeMap.getOrDefault(ContractType.INITIAL, 0L);
-        long renewalContractsCount = contractsTypeMap.getOrDefault(ContractType.RENEWAL, 0L) + initialContractsCount - 1L; // 재계약 시도를 나타내는 계약 수
+        long renewalContractsCount = contractsTypeMap.getOrDefault(ContractType.RENEWAL, 0L);
+        long failedRenewalContractsCount = getRenewalContractFailedCount(contracts); // 재계약 실패를 나타내는 결과값
 
-        System.out.println(renewalContractsCount);
+        long attemptedRenewalContractsCount = initialContractsCount + renewalContractsCount - 1L; // 재계약 시도를 나타내는 결과값
+        long pureRenewalContractsCount = attemptedRenewalContractsCount - failedRenewalContractsCount; // 재계약을 성공한 경우를 나타내는 결과값
 
-        long failedRenewalContractsCount = getRenewalContractFailedCount(contracts);
-
-        long pureRenewalContractsCount = renewalContractsCount - failedRenewalContractsCount;
-        long totalContractsCount = initialContractsCount + pureRenewalContractsCount;
-
-        System.out.println(totalContractsCount);
+        long totalContractsCount = initialContractsCount + pureRenewalContractsCount; // 실제 총 계약 수
 
         double result = ((double) pureRenewalContractsCount / (totalContractsCount - 1)) * 100;
 
