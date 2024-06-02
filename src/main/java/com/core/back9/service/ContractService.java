@@ -378,6 +378,9 @@ public class ContractService {
         return contractCountsPerRoomAndType.values().stream()
                 .mapToDouble(contractsTypeMap -> calculateRenewalContract(contracts, contractsTypeMap))
                 .average()
+                .stream()
+                .map(avg -> Math.round(avg * 10.0) / 10.0)
+                .findAny()
                 .orElse(0.0);
     }
 

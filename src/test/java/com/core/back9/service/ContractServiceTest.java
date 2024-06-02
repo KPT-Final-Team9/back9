@@ -1102,7 +1102,7 @@ public class ContractServiceTest extends ContractServiceFixture {
 
         // then
         assertThat(renewalContractRateInfo.getRenewalContractRate()).isEqualTo(0.0);
-        assertThat(renewalContractRateInfo.getAverageRenewalContractRate()).isEqualTo(63.35);
+        assertThat(renewalContractRateInfo.getAverageRenewalContractRate()).isEqualTo(63.4);
 
     }
 
