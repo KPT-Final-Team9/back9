@@ -49,4 +49,6 @@ public interface ContractMapper {
     ContractDTO.RenewalContractRateInfo toRenewalContractRateInfo(Double renewalContractRate, Double averageRenewalContractRate);
 
     ContractDTO.VacancyRateInfo toVacancyRateInfo(Double vacancyRate, Double averageVacancyRate);
+
+    ContractDTO.StatisticInfo toStatisticInfo(ContractDTO.CostInfo costInfo, ContractDTO.RenewalContractRateInfo contractRateInfo, ContractDTO.VacancyRateInfo vacancyRateInfo);
 }

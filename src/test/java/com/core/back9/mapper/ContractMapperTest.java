@@ -306,6 +306,46 @@ public class ContractMapperTest {
 
     }
 
+    @Test
+    @DisplayName("toStatisticInfo를 필요한 부분과 매핑할 수 있다.")
+    void toStatisticInfo() {
+        // given
+        ContractDTO.CostInfo costInfo = ContractDTO.CostInfo.builder()
+                .deposit(1000000L)
+                .rentalPrice(200000L)
+                .averageDeposit(1000000L)
+                .averageRentalPrice(200000L)
+                .build();
+
+        ContractDTO.RenewalContractRateInfo contractRateInfo = ContractDTO.RenewalContractRateInfo.builder()
+                .renewalContractRate(100.0)
+                .averageRenewalContractRate(100.0)
+                .build();
+
+        ContractDTO.VacancyRateInfo vacancyRateInfo = ContractDTO.VacancyRateInfo.builder()
+                .vacancyRate(50.0)
+                .averageVacancyRate(50.0)
+                .build();
+
+        // when
+        ContractDTO.StatisticInfo statisticInfo = contractMapper.toStatisticInfo(costInfo, contractRateInfo, vacancyRateInfo);
+
+        // then
+        assertThat(statisticInfo)
+                .extracting("deposit", "rentalPrice", "averageDeposit", "averageRentalPrice",
+                        "renewalContractRate", "averageRenewalContractRate", "vacancyRate", "averageVacancyRate")
+                .contains(
+                        1000000L,
+                        200000L,
+                        1000000L,
+                        200000L,
+                        100.0,
+                        100.0,
+                        50.0,
+                        50.0
+                );
+    }
+
     private Contract assumeContract(
             LocalDate startDate,
             LocalDate endDate,

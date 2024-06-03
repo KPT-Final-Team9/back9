@@ -109,11 +109,20 @@ public class ContractDTO {
 		private List<Info> infoList;
 	}
 
-//	@AllArgsConstructor
-//	@NoArgsConstructor
-//	@Builder
-//	@Getter
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
 	public static class StatisticInfo {
+		private Long deposit;
+		private Long rentalPrice;
+		private double averageDeposit;
+		private double averageRentalPrice;
+		private double renewalContractRate;
+		private double averageRenewalContractRate;
+		private double vacancyRate;
+		private double averageVacancyRate;
+
 	}
 
 	@AllArgsConstructor
@@ -125,6 +134,7 @@ public class ContractDTO {
 		private Long rentalPrice;
 		private double averageDeposit;
 		private double averageRentalPrice;
+
 
 	}
 
