@@ -14,15 +14,18 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.time.LocalDate;
 
+import static com.core.back9.common.config.annotation.SwaggerAnnotationSpecification.*;
+
 @RequiredArgsConstructor
 @RequestMapping("/api/buildings/{buildingId}/rooms/{roomId}/contracts")
 @RestController
-public class ContractController { // TODO: Tenant, Member 구현 정도에 따라 리팩토링 우선
+public class ContractController {
 
     private final ContractService contractService;
     private final ContractMapper contractMapper;
 
-    @PostMapping("/{tenantId}") // TODO : Member 붙이면 tenantId 캐치 방법 재고려해야함
+    @PostMapping("/{tenantId}")
+    @RegisterContract
     public ResponseEntity<ContractDTO.RegisterResponse> registerContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -41,11 +44,13 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
     }
 
     @GetMapping("/statistic")
+    @GetContractStatisticInfo
     public ResponseEntity<ContractDTO.StatisticInfo> getContractStatisticInfo(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId
     ) {
+
         LocalDate startDate = LocalDate.now().minusYears(1); // 검색 범위를 1년으로 설정하기 위한 변수
 
         ContractDTO.CostInfo costInfo = contractService.getContractCostInfo(member, buildingId, roomId); // 내 호실 임대료 & 공실이 아닌 호실의 임대 평균값 반환
@@ -55,9 +60,11 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
         ContractDTO.StatisticInfo statisticInfo = contractMapper.toStatisticInfo(costInfo, renewalContractRateInfo, vacancyRateInfo);
 
         return ResponseEntity.ok(statisticInfo);
+
     }
 
     @PostMapping("/{contractId}/tenants/{tenantId}")
+    @RenewContract
     public ResponseEntity<ContractDTO.Info> renewContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -76,6 +83,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
     }
 
     @GetMapping("")
+    @GetAllContract
     public ResponseEntity<ContractDTO.InfoList> getAllContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -90,6 +98,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
     }
 
     @GetMapping("/{contractId}")
+    @GetOneContract
     public ResponseEntity<ContractDTO.Info> getOneContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -104,6 +113,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
     }
 
     @PatchMapping("/{contractId}")
+    @ModifyContract
     public ResponseEntity<ContractDTO.Info> modifyContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -120,6 +130,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
     }
 
     @PatchMapping("/{contractId}/complete")
+    @CompleteContract
     public ResponseEntity<ContractDTO.StatusInfo> completeContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -136,6 +147,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
     }
 
     @PatchMapping("/{contractId}/cancel")
+    @CancelContract
     public ResponseEntity<ContractDTO.StatusInfo> cancelContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -152,6 +164,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
     }
 
     @PatchMapping("/{contractId}/progress")
+    @ProgressContract
     public ResponseEntity<ContractDTO.StatusInfo> progressContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -168,6 +181,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
     }
 
     @PatchMapping("/{contractId}/expire")
+    @ExpireContract
     public ResponseEntity<ContractDTO.StatusInfo> expireContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -184,6 +198,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
     }
 
     @PatchMapping("/{contractId}/terminate")
+    @TerminateContract
     public ResponseEntity<ContractDTO.StatusInfo> terminateContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -199,6 +214,7 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
     }
 
     @DeleteMapping("/{contractId}")
+    @DeleteContract
     public ResponseEntity<Integer> deleteContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
