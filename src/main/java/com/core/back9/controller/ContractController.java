@@ -2,6 +2,7 @@ package com.core.back9.controller;
 
 import com.core.back9.dto.ContractDTO;
 import com.core.back9.dto.MemberDTO;
+import com.core.back9.mapper.ContractMapper;
 import com.core.back9.security.AuthMember;
 import com.core.back9.service.ContractService;
 import jakarta.validation.Valid;
@@ -19,6 +20,7 @@ import java.time.LocalDate;
 public class ContractController { // TODO: Tenant, Member 구현 정도에 따라 리팩토링 우선
 
     private final ContractService contractService;
+    private final ContractMapper contractMapper;
 
     @PostMapping("/{tenantId}") // TODO : Member 붙이면 tenantId 캐치 방법 재고려해야함
     public ResponseEntity<ContractDTO.RegisterResponse> registerContract(
@@ -50,7 +52,9 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
         ContractDTO.RenewalContractRateInfo renewalContractRateInfo = contractService.getRenewalContractRateInfo(member, buildingId, roomId);
         ContractDTO.VacancyRateInfo vacancyRateInfo = contractService.getContractVacancyRateInfo(member, buildingId, roomId, startDate);
 
-        return null; // TODO : 내 호실의 임대료, 공실률, 재계약률 및 타호실 동일 항목 평균값 조회 결과 반환(StatisticInfo로 한번에 반환할 예정)
+        ContractDTO.StatisticInfo statisticInfo = contractMapper.toStatisticInfo(costInfo, renewalContractRateInfo, vacancyRateInfo);
+
+        return ResponseEntity.ok(statisticInfo);
     }
 
     @PostMapping("/{contractId}/tenants/{tenantId}")
