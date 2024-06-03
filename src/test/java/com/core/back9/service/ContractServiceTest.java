@@ -622,8 +622,8 @@ public class ContractServiceTest extends ContractServiceFixture {
     }
 
     @Test
-    @DisplayName("내 호실과 비교 대상 호실의 보증금/임대료를 비교할 수 있는 데이터를 조회시 계약 상태인 내 호실이 없는 경우 null을 반환한다.")
-    void getContractCostInfoTestCostIsNull() {
+    @DisplayName("내 호실과 비교 대상 호실의 보증금/임대료를 비교할 수 있는 데이터를 조회시 계약 상태인 내 호실이 없는 경우 0을 반환한다.")
+    void getContractCostInfoTestCostIsZero() {
         // given
         MemberDTO.Info member = MemberDTO.Info.builder()
                 .id(2L)
@@ -674,8 +674,8 @@ public class ContractServiceTest extends ContractServiceFixture {
         assertThat(contractCostInfo)
                 .extracting("deposit", "rentalPrice", "averageDeposit", "averageRentalPrice")
                 .contains(
-                        null,
-                        null,
+                        0L,
+                        0L,
                         300000000.0,
                         500000.0
                 );

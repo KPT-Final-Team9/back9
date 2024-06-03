@@ -357,7 +357,11 @@ public class ContractService {
         Contract contract = contractRepository.findByLatestContract(roomId); // 없으면 null 반환
 
         if (contract == null) {
-            return new ContractDTO.CostDto();
+            return ContractDTO.CostDto.builder()
+                    .deposit(0L)
+                    .rentalPrice(0L)
+                    .build();
+
         }
 
         return contractMapper.toCostDto(contract.getId(), contract.getDeposit(), contract.getRentalPrice());
@@ -466,19 +470,15 @@ public class ContractService {
         LocalDate lastDate = startDate.plusYears(1).minusDays(1);
 
         double occupancyRate = getOccupancyPerRoom(startDate, room, statusList, lastDate);
+        double result = getAverageVacancyRate(buildingId, startDate, room, statusList, lastDate);
+
+        return contractMapper.toVacancyRateInfo(occupancyRate, result);
+    }
+
+    private double getAverageVacancyRate(Long buildingId, LocalDate startDate, Room room, List<ContractStatus> statusList, LocalDate lastDate) {
         List<Contract> contracts = contractRepository.findByAllContractPerBuildingLatestOneYear(buildingId, room.getId(), statusList, startDate, lastDate);
 
-        Map<Room, List<Contract>> contractsByRoom = contracts.stream()
-                .collect(Collectors.groupingBy(
-                        Contract::getRoom,
-                        Collectors.collectingAndThen(
-                                Collectors.toList(),
-                                contractList -> {
-                                    contractList.sort(Comparator.comparing(Contract::getStartDate));
-                                    return contractList;
-                                }
-                        )
-                ));
+        Map<Room, List<Contract>> contractsByRoom = ContractsClassifiedByRoom(contracts);
 
         Map<Room, Long> occupancyPerRoom = contractsByRoom.entrySet().stream()
                 .collect(Collectors.toMap(
@@ -507,11 +507,22 @@ public class ContractService {
                 .average()
                 .orElse(0.0);
 
-        System.out.println("averageVacancyRate = " + averageVacancyRate);
+        return Math.round(averageVacancyRate * 10.0) / 10.0;
 
-        double result = Math.round(averageVacancyRate * 10.0) / 10.0;
+    }
 
-        return contractMapper.toVacancyRateInfo(occupancyRate, result);
+    private Map<Room, List<Contract>> ContractsClassifiedByRoom(List<Contract> contracts) {
+        return contracts.stream()
+                .collect(Collectors.groupingBy(
+                        Contract::getRoom,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                contractList -> {
+                                    contractList.sort(Comparator.comparing(Contract::getStartDate));
+                                    return contractList;
+                                }
+                        )
+                ));
     }
 
     private double getOccupancyPerRoom(LocalDate startDate, Room room, List<ContractStatus> statusList, LocalDate lastDate) {
