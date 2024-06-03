@@ -683,8 +683,147 @@ public class ContractServiceTest extends ContractServiceFixture {
     }
 
     @Test
-    @DisplayName("내 호실의 재계약이 없을 경우 결과는 0.0이다.")
+    @DisplayName("내 호실 및 비교 호실의 재계약률을 조회할 수 있다.")
     void getRenewalContractRateInfo() {
+        // given
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
+        List<Contract> contracts1 = IntStream.range(0, 3)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room1,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < 3 - 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire();
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        List<Contract> contracts1_1 = IntStream.range(0, 3)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room1,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire();
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        /* ========== 아래 부터 비교 호실 데이터 구성 ========== */
+        List<Contract> contracts2 = IntStream.range(0, 3)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room2,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < 3 - 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire();
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        List<Contract> contracts3 = IntStream.range(0, 3)
+                .mapToObj(i -> {
+                    long startDate = 10L * i + 1;
+                    long endDate = 10L * (i + 1);
+                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
+
+                    Contract contract = assumeContract(
+                            LocalDate.now().plusDays(startDate),
+                            LocalDate.now().plusDays(endDate),
+                            100000000L,
+                            200000L,
+                            contractType,
+                            room3,
+                            tenant1
+                    );
+                    Contract savedContract = contractRepository.save(contract);
+
+                    if (i < 3 - 1) {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                        savedContract.contractExpire();
+                    } else {
+                        savedContract.contractComplete();
+                        savedContract.contractInProgress();
+                    }
+
+                    return contract;
+                })
+                .collect(Collectors.toList());
+
+        // when
+        ContractDTO.RenewalContractRateInfo renewalContractRateInfo = contractService.getRenewalContractRateInfo(member, 1L, room1.getId());
+
+        // then
+        assertThat(renewalContractRateInfo.getRenewalContractRate()).isEqualTo(80.0);
+        assertThat(renewalContractRateInfo.getAverageRenewalContractRate()).isEqualTo(100.0);
+
+    }
+
+    @Test
+    @DisplayName("내 호실의 재계약이 없을 경우 재계약률은 0.0이다.")
+    void getRenewalContractRateInfoZeroPercent() {
         // given
         MemberDTO.Info member = MemberDTO.Info.builder()
                 .id(2L)
@@ -891,7 +1030,6 @@ public class ContractServiceTest extends ContractServiceFixture {
                 .mapToObj(i -> {
                     long startDate = 10L * i + 1;
                     long endDate = 10L * (i + 1);
-                    ContractType contractType = (i == 0) ? ContractType.INITIAL : ContractType.RENEWAL;
 
                     Contract contract = assumeContract(
                             LocalDate.now().plusDays(startDate),
@@ -1105,6 +1243,171 @@ public class ContractServiceTest extends ContractServiceFixture {
         assertThat(renewalContractRateInfo.getAverageRenewalContractRate()).isEqualTo(63.4);
 
     }
+
+    @Test
+    @DisplayName("내 호실의 공실률을 조회할 수 있다.")
+    void getContractVacancyRateInfo() {
+        // given
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
+        LocalDate startDate = LocalDate.of(2024, 10, 30).minusYears(1).plusDays(1);
+
+        Contract contract1_1 = assumeContract(
+                LocalDate.of(2023, 10, 31),
+                LocalDate.of(2024, 10, 30),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract contract1_2 = assumeContract(
+                LocalDate.of(2024, 11, 1),
+                LocalDate.of(2024, 11, 30),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+
+        Contract contract1_3 = assumeContract(
+                LocalDate.of(2024, 12, 1),
+                LocalDate.of(2024, 12, 31),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room1,
+                tenant1
+        );
+        contractRepository.saveAll(List.of(contract1_1, contract1_2, contract1_3));
+
+        contract1_1.contractComplete();
+        contract1_1.contractInProgress();
+        contract1_1.contractExpire();
+
+        contract1_2.contractComplete();
+        contract1_2.contractInProgress();
+        contract1_2.contractExpire();
+
+        contract1_3.contractComplete();
+        contract1_3.contractInProgress();
+
+        // when
+        ContractDTO.VacancyRateInfo contractVacancyRateInfo = contractService.getContractVacancyRateInfo(member, 1L, room1.getId(), startDate);
+
+        // then
+        assertThat(contractVacancyRateInfo.getVacancyRate()).isEqualTo(0.0);
+
+    }
+
+    @Test
+    @DisplayName("비교 호실의 공실률 평균을 산출할 수 있다.")
+    void getContractVacancyRateInfoRelative() {
+        // given
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
+        LocalDate startDate = LocalDate.of(2024, 10, 30).minusYears(1);
+
+        Contract contract1_1 = assumeContract(
+                LocalDate.of(2024, 1, 1),
+                LocalDate.of(2024, 9, 30),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room2,
+                tenant1
+        );
+
+        Contract contract1_2 = assumeContract(
+                LocalDate.of(2024, 11, 1),
+                LocalDate.of(2024, 11, 30),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room2,
+                tenant1
+        );
+
+        Contract contract1_3 = assumeContract(
+                LocalDate.of(2024, 12, 1),
+                LocalDate.of(2024, 12, 31),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room2,
+                tenant1
+        );
+        contractRepository.saveAll(List.of(contract1_1, contract1_2, contract1_3));
+
+        contract1_1.contractComplete();
+        contract1_1.contractInProgress();
+        contract1_1.contractExpire();
+
+        contract1_2.contractComplete();
+        contract1_2.contractInProgress();
+        contract1_2.contractExpire();
+
+        contract1_3.contractComplete();
+        contract1_3.contractInProgress();
+
+        Contract contract2_1 = assumeContract(
+                LocalDate.of(2023, 10, 30),
+                LocalDate.of(2024, 10, 29),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room3,
+                tenant1
+        );
+
+        Contract contract2_2 = assumeContract(
+                LocalDate.of(2024, 11, 1),
+                LocalDate.of(2024, 11, 30),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room3,
+                tenant1
+        );
+
+        Contract contract2_3 = assumeContract(
+                LocalDate.of(2024, 12, 1),
+                LocalDate.of(2024, 12, 31),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room3,
+                tenant1
+        );
+        contractRepository.saveAll(List.of(contract2_1, contract2_2, contract2_3));
+
+        contract2_1.contractComplete();
+        contract2_1.contractInProgress();
+        contract2_1.contractExpire();
+
+        contract2_2.contractComplete();
+        contract2_2.contractInProgress();
+        contract2_2.contractExpire();
+
+        contract2_3.contractComplete();
+        contract2_3.contractInProgress();
+
+        // when
+        ContractDTO.VacancyRateInfo contractVacancyRateInfo = contractService.getContractVacancyRateInfo(member, 1L, room1.getId(), startDate);
+
+        // then
+        assertThat(contractVacancyRateInfo.getAverageVacancyRate()).isEqualTo(12.6);
+
+    }
+
 
     private Contract assumeContract(
             LocalDate startDate,
