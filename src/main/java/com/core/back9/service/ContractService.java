@@ -23,9 +23,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
 @Transactional
@@ -86,6 +89,11 @@ public class ContractService {
                 .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_CONTRACT));// 기존 계약이 존재하는지 검증
 
         LocalDate renewalDate = contract.getEndDate().plusDays(1); // 재계약의 시작일은 기존 계약 만료일의 다음날
+
+        if (request.getEndDate().isBefore(renewalDate)) {
+            throw new ApiException(ApiErrorCode.START_DATE_BEFORE_ERROR);
+        }
+
         ContractDTO.RenewDto renewDto = contractMapper.toDto(request, renewalDate); // dto 추가 생성해 재시작일을 반영
 
         Contract validContract = contractMapper.toEntity(renewDto, tenant, room, ContractType.RENEWAL); // dto -> 엔티티 매핑
@@ -305,7 +313,7 @@ public class ContractService {
 
     }
 
-    /* 내 호실의 임대료 및 타호실 동일 항목 평균값 조회 */
+    /* 내 호실의 임대료 및 타호실 임대료 평균값 조회 */
     public ContractDTO.CostInfo getContractCostInfo(MemberDTO.Info member, Long buildingId, Long roomId) {
 
         Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
@@ -320,6 +328,30 @@ public class ContractService {
 
     }
 
+    /* 내 호실의 재계약률 & 비교 호실의 재계약률 평균 (현재일 기준, 누적치) */
+    public ContractDTO.RenewalContractRateInfo getRenewalContractRateInfo(MemberDTO.Info member, Long buildingId, Long roomId) {
+        Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
+
+        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.CANCELED);
+
+        /* 내 호실 재계약률 산출 */
+        Double renewalContractRate = getRenewalContractData(room.getId(), statusList);
+
+        /* 내 호실의 계약을 제외한 선택 빌딩의 모든 계약률 평균 산출 */
+        double averageRenewalContractRate = getRenewalRelativeContractData(buildingId, room, statusList);
+
+        return contractMapper.toRenewalContractRateInfo(renewalContractRate, averageRenewalContractRate);
+
+    }
+
+    private Double getRenewalContractData(Long roomId, List<ContractStatus> statusList) {
+        /* 내 호실 재계약 데이터 조회 & 카운팅(일단 누적치로 가자) - 계약대기, 취소상태 제외 모든 계약 데이터 조회 */
+        List<Contract> contracts = contractRepository.findByAllContractPerRoom(roomId, statusList);
+        Map<ContractType, Long> contractsTypeMap = getContractCountPerType(contracts);
+
+        return calculateRenewalContract(contracts, contractsTypeMap);
+    }
+
     private ContractDTO.CostDto calculateAveragesPerRoom(Long roomId) {
 
         Contract contract = contractRepository.findByLatestContract(roomId); // 없으면 null 반환
@@ -329,6 +361,11 @@ public class ContractService {
         }
 
         return contractMapper.toCostDto(contract.getId(), contract.getDeposit(), contract.getRentalPrice());
+    }
+
+    private Map<ContractType, Long> getContractCountPerType(List<Contract> contracts) {
+        return contracts.stream()
+                .collect(Collectors.groupingBy(Contract::getContractType, Collectors.counting()));
     }
 
     private ContractDTO.CostAverageDto calculateCostAverages(Long buildingId, ContractDTO.CostDto costDto) {
@@ -355,22 +392,6 @@ public class ContractService {
 
     }
 
-    /* 내 호실의 재계약률 & 비교 호실의 재계약률 평균 (현재일 기준, 누적치) */
-    public ContractDTO.RenewalContractRateInfo getRenewalContractRateInfo(MemberDTO.Info member, Long buildingId, Long roomId) {
-        Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
-
-        List<ContractStatus> statusList = List.of(ContractStatus.PENDING, ContractStatus.CANCELED);
-
-        /* 내 호실 재계약률 산출 */
-        Double renewalContractRate = getRenewalContractData(room.getId(), statusList);
-
-        /* 내 호실의 계약을 제외한 선택 빌딩의 모든 계약률 평균 산출 */
-        double averageRenewalContractRate = getRenewalRelativeContractData(buildingId, room, statusList);
-
-        return contractMapper.toRenewalContractRateInfo(renewalContractRate, averageRenewalContractRate);
-
-    }
-
     private double getRenewalRelativeContractData(Long buildingId, Room room, List<ContractStatus> statusList) {
         List<Contract> contracts = contractRepository.findByAllContractAllRoomsPerBuilding(buildingId, room.getId(), statusList);
         Map<Room, Map<ContractType, Long>> contractCountsPerRoomAndType = getContractCountsPerRoomAndType(contracts);
@@ -381,6 +402,16 @@ public class ContractService {
                 .orElse(0.0);
 
         return Math.round(avgData * 10.0) / 10.0;
+    }
+
+    private Map<Room, Map<ContractType, Long>> getContractCountsPerRoomAndType(List<Contract> contractList) {
+        return contractList.stream()
+                .collect(Collectors.groupingBy(
+                        Contract::getRoom,
+                        Collectors.groupingBy(
+                                Contract::getContractType,
+                                Collectors.counting()) // 2차 세분류
+                ));
     }
 
     private double calculateRenewalContract(List<Contract> contracts, Map<ContractType, Long> contractsTypeMap) {
@@ -396,29 +427,6 @@ public class ContractService {
         double result = ((double) pureRenewalContractsCount / (totalContractsCount - 1)) * 100;
 
         return Math.round(result * 10.0) / 10.0;
-    }
-
-    private Map<Room, Map<ContractType, Long>> getContractCountsPerRoomAndType(List<Contract> contractList) {
-        return contractList.stream()
-                .collect(Collectors.groupingBy(
-                        Contract::getRoom,
-                        Collectors.groupingBy(
-                                Contract::getContractType,
-                                Collectors.counting()) // 2차 세분류
-                ));
-    }
-
-    private Double getRenewalContractData(Long roomId, List<ContractStatus> statusList) {
-        /* 내 호실 재계약 데이터 조회 & 카운팅(일단 누적치로 가자) - 계약대기, 취소상태 제외 모든 계약 데이터 조회 */
-        List<Contract> contracts = contractRepository.findByAllContractPerRoom(roomId, statusList);
-        Map<ContractType, Long> contractsTypeMap = getContractCountPerType(contracts);
-
-        return calculateRenewalContract(contracts, contractsTypeMap);
-    }
-
-    private Map<ContractType, Long> getContractCountPerType(List<Contract> contracts) {
-        return contracts.stream()
-                .collect(Collectors.groupingBy(Contract::getContractType, Collectors.counting()));
     }
 
     private long getRenewalContractFailedCount(List<Contract> contracts) {
@@ -446,10 +454,120 @@ public class ContractService {
     }
 
     /* 내 호실의 연간 공실률 & 비교 호실 연평균 공실률 조회 (현재일 기준) */
-    public ContractDTO.VacancyRateInfo getContractVacancyRate(MemberDTO.Info member, Long buildingId, Long roomId) {
+    public ContractDTO.VacancyRateInfo getContractVacancyRateInfo(MemberDTO.Info member, Long buildingId, Long roomId, LocalDate startDate) {
         Room room = validateOwnerAndRoomExistence(member, buildingId, roomId);
 
-        return null;
+        List<ContractStatus> statusList = List.of(
+                ContractStatus.PENDING,
+                ContractStatus.CANCELED,
+                ContractStatus.COMPLETED
+        );
+
+        LocalDate lastDate = startDate.plusYears(1).minusDays(1);
+
+        double occupancyRate = getOccupancyPerRoom(startDate, room, statusList, lastDate);
+        List<Contract> contracts = contractRepository.findByAllContractPerBuildingLatestOneYear(buildingId, room.getId(), statusList, startDate, lastDate);
+
+        Map<Room, List<Contract>> contractsByRoom = contracts.stream()
+                .collect(Collectors.groupingBy(
+                        Contract::getRoom,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                contractList -> {
+                                    contractList.sort(Comparator.comparing(Contract::getStartDate));
+                                    return contractList;
+                                }
+                        )
+                ));
+
+        Map<Room, Long> occupancyPerRoom = contractsByRoom.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> getOccupancy(entry.getValue(), startDate)
+                ));
+
+        Map<Room, Long> additionalOccupancyPerRoom = contractsByRoom.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> {
+                            List<Contract> roomContracts = entry.getValue();
+                            long additionalOccupancy = getAdditionalOccupancyErrorCase(roomContracts);
+                            return getAdditionalOccupancyLastContract(lastDate, roomContracts, additionalOccupancy);
+                        }
+                ));
+
+        Map<Room, Long> totalOccupancyPerRoom = occupancyPerRoom.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue() + additionalOccupancyPerRoom.getOrDefault(entry.getKey(), 0L)
+                ));
+
+        double averageVacancyRate = totalOccupancyPerRoom.values().stream()
+                .mapToDouble(totalOccupancy -> ((double) (365 - totalOccupancy) / 365) * 100)
+                .average()
+                .orElse(0.0);
+
+        System.out.println("averageVacancyRate = " + averageVacancyRate);
+
+        double result = Math.round(averageVacancyRate * 10.0) / 10.0;
+
+        return contractMapper.toVacancyRateInfo(occupancyRate, result);
+    }
+
+    private double getOccupancyPerRoom(LocalDate startDate, Room room, List<ContractStatus> statusList, LocalDate lastDate) {
+        List<Contract> contracts = contractRepository.findByAllContractPerRoomLatestOneYear(room.getId(), statusList, startDate, lastDate);
+        contracts.sort(Comparator.comparing(Contract::getStartDate));
+
+        long occupancy = getOccupancy(contracts, startDate);
+
+        long additionalOccupancy = getAdditionalOccupancyErrorCase(contracts);
+
+        additionalOccupancy = getAdditionalOccupancyLastContract(lastDate, contracts, additionalOccupancy);
+        occupancy += additionalOccupancy;
+
+        double vacancyRate = ((double) (365 - occupancy) / 365) * 100;
+        System.out.println(Math.round(vacancyRate * 10.0) / 10.0);
+        return Math.round(vacancyRate * 10.0) / 10.0;
+    }
+
+    private long getAdditionalOccupancyErrorCase(List<Contract> contracts) {
+        return IntStream.range(0, contracts.size() - 1)
+                .mapToLong(i -> {
+                    LocalDate currentCheckOut = contracts.get(i).getCheckOut();
+                    LocalDate nextStartDate = contracts.get(i + 1).getStartDate();
+                    long gap = ChronoUnit.DAYS.between(currentCheckOut, nextStartDate);
+                    return (gap == 1) ? 1 : 0;
+                })
+                .sum();
+    }
+
+    private long getAdditionalOccupancyLastContract(LocalDate lastDate, List<Contract> contracts, long additionalOccupancy) {
+        if (!contracts.isEmpty()) { // 마지막 계약이 이행 중인 경우 현재일을 간격 비교 데이터로 사용
+            Contract lastContract = contracts.get(contracts.size() - 1);
+            if (lastContract.getContractStatus() == ContractStatus.IN_PROGRESS) {
+                additionalOccupancy += ChronoUnit.DAYS.between(lastContract.getStartDate(), lastDate);
+            } else {
+                additionalOccupancy += ChronoUnit.DAYS.between(lastContract.getStartDate(), lastContract.getCheckOut());
+            }
+        }
+        return additionalOccupancy;
+    }
+
+    private long getOccupancy(List<Contract> contracts, LocalDate startDate) {
+        if (contracts.isEmpty()) {
+            return 0L;
+        }
+
+        return contracts.stream()
+                .limit(contracts.size() - 1)
+                .mapToLong(contract -> {
+                    if (contract.getStartDate().isBefore(startDate)) {
+                        return ChronoUnit.DAYS.between(startDate, contract.getCheckOut());
+                    } else {
+                        return ChronoUnit.DAYS.between(contract.getStartDate(), contract.getCheckOut());
+                    }
+                })
+                .sum();
     }
 
 }
