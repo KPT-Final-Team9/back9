@@ -38,16 +38,17 @@ public class ContractController { // TODO: Tenant, Member 구현 정도에 따�
 
     }
 
-    @GetMapping("/statistic") // TODO : 기간 조건 추가
+    @GetMapping("/statistic")
     public ResponseEntity<ContractDTO.StatisticInfo> getContractStatisticInfo(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
             @PathVariable(name = "roomId") Long roomId
     ) {
+        LocalDate startDate = LocalDate.now().minusYears(1); // 검색 범위를 1년으로 설정하기 위한 변수
 
         ContractDTO.CostInfo costInfo = contractService.getContractCostInfo(member, buildingId, roomId); // 내 호실 임대료 & 공실이 아닌 호실의 임대 평균값 반환
         ContractDTO.RenewalContractRateInfo renewalContractRateInfo = contractService.getRenewalContractRateInfo(member, buildingId, roomId);
-        ContractDTO.VacancyRateInfo vacancyRateInfo = contractService.getContractVacancyRate(member, buildingId, roomId);
+        ContractDTO.VacancyRateInfo vacancyRateInfo = contractService.getContractVacancyRateInfo(member, buildingId, roomId, startDate);
 
         return null; // TODO : 내 호실의 임대료, 공실률, 재계약률 및 타호실 동일 항목 평균값 조회 결과 반환(StatisticInfo로 한번에 반환할 예정)
     }
