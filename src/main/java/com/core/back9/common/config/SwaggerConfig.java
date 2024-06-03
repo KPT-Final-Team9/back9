@@ -1,5 +1,7 @@
 package com.core.back9.common.config;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -9,6 +11,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@OpenAPIDefinition(
+        info = @Info(
+                title = "파이널 프로젝트 9조 api 명세서",
+                description = "호실 평가 데이터 대시보드 구현 프로젝트. \n\n"
+                              + "[StoryBook](https://www.chromatic.com/builds?appId=66421fd64f35d30603e16002) \n\n"
+                              + "[FrontEnd Deploy Link](https://front-alpha-five.vercel.app/dashboard) \n\n"
+                              + "[Team Notion](https://www.notion.so/9-71027abc03c24746aeb6c5cb2e7bac29) \n\n"
+                              + "[Team Figma](https://www.figma.com/design/aZWKlkBTP2eOY6DfgGUkXm/%EC%98%A4%ED%94%BC%EC%8A%A49%EC%A1%B0%EB%8C%80_Figma?node-id=825-1208&t=VoHJV0woufk9u02Q-0)",
+                version = "v1"
+        )
+)
 public class SwaggerConfig {
 
     String root = "com.core.back9.controller";
@@ -26,13 +39,14 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI apiKey() {
-        SecurityScheme apiKey = new SecurityScheme() // API Key 정의
-                .type(SecurityScheme.Type.APIKEY) //API Key정의
+        SecurityScheme apiKey = new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .scheme("bearer")
                 .in(SecurityScheme.In.HEADER) // 헤더에 위치
                 .name("Authorization"); // 이름은 Authorization
 
-        SecurityRequirement securityRequirement = new SecurityRequirement() // 보안 요구사항 정의
-                .addList("Bearer Token"); // Bearer Token 보안 요구사항 추가(모달창에 보임)
+        SecurityRequirement securityRequirement = new SecurityRequirement()
+                .addList("Bearer Token");
 
         return new OpenAPI()
                 .components(new Components().addSecuritySchemes("Bearer Token", apiKey))
