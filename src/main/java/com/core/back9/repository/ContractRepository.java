@@ -154,4 +154,6 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             order by c.id desc
             """)
     Contract findPreviousContract(Long contractId, PageRequest pageRequest);
+
+    List<Contract> findAllByContractStatus(ContractStatus contractStatus);
 }
