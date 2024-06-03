@@ -176,5 +176,7 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             and c.status = 'REGISTER'
             """)
     List<Contract> findByAllContractPerBuildingLatestOneYear(Long buildingId, Long roomId, List<ContractStatus> statusList, LocalDate startDate, LocalDate lastDate);
-}
 
+
+    List<Contract> findAllByContractStatus(ContractStatus contractStatus);
+}
