@@ -58,7 +58,7 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             from Contract c
             where c.room.id=?1
             and c.contractStatus in (?2)
-            and((c.endDate>?3 and c.startDate<?3) or (c.startDate <?4 and c.endDate>?4))
+            and((c.endDate>=?3 and c.startDate<?3) or (c.startDate <?4 and c.endDate>=?4))
             """)
     Optional<List<Contract>> findByContractDuplicate(Long roomId, List<ContractStatus> statusList, LocalDate startDate, LocalDate endDate);
 
@@ -146,7 +146,6 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             """)
     List<Contract> findByAllContractAllRoomsPerBuilding(Long buildingId, Long roomId, List<ContractStatus> statusList);
 
-
     @Query("""
             select c
             from Contract c
@@ -154,6 +153,30 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
             order by c.id desc
             """)
     Contract findPreviousContract(Long contractId, PageRequest pageRequest);
+
+    @Query("""
+            select c
+            from Contract c
+            where c.room.id=?1
+            and c.contractStatus not in (?2)
+            and c.endDate >= ?3
+            and c.startDate < ?4
+            and c.status = 'REGISTER'
+            """)
+    List<Contract> findByAllContractPerRoomLatestOneYear(Long roomId, List<ContractStatus> statusList, LocalDate startDate, LocalDate lastDate);
+
+    @Query("""
+            select c
+            from Contract c
+            where c.room.building.id = ?1
+            and (?2 is null or c.room.id <> ?2)
+            and c.contractStatus not in (?3)
+            and c.endDate >= ?4
+            and c.startDate < ?5
+            and c.status = 'REGISTER'
+            """)
+    List<Contract> findByAllContractPerBuildingLatestOneYear(Long buildingId, Long roomId, List<ContractStatus> statusList, LocalDate startDate, LocalDate lastDate);
+
 
     List<Contract> findAllByContractStatus(ContractStatus contractStatus);
 }

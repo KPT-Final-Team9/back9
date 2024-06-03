@@ -289,8 +289,8 @@ class ContractRepositoryTest extends ContractRepositoryFixture {
         Contract savedContract = contractRepository.save(contract);
         savedContract.contractComplete();
 
-        LocalDate contractStartDate = LocalDate.now().plusDays(19);
-        LocalDate contractEndDate = LocalDate.now().plusDays(39);
+        LocalDate contractStartDate = LocalDate.now().plusDays(10);
+        LocalDate contractEndDate = LocalDate.now().plusDays(20);
 
         // when
         Optional<List<Contract>> contractList = contractRepository.findByContractDuplicate(room1.getId(), statusList, contractStartDate, contractEndDate);
