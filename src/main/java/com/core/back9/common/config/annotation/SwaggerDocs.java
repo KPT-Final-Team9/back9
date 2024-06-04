@@ -7,9 +7,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class SwaggerAnnotationSpecification {
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SwaggerDocs {
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -27,7 +32,8 @@ public class SwaggerAnnotationSpecification {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    public @interface GetContractStatisticInfo{}
+    @interface GetContractStatisticInfo {
+    }
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -39,7 +45,8 @@ public class SwaggerAnnotationSpecification {
             @ApiResponse(responseCode = "201", description = "성공"),
             @ApiResponse(responseCode = "400", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "이미 계약된 호실이 존재합니다.")))
     })
-    public @interface RegisterContract{}
+    @interface RegisterContract {
+    }
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -59,7 +66,8 @@ public class SwaggerAnnotationSpecification {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    public @interface RenewContract{}
+    @interface RenewContract {
+    }
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -71,7 +79,8 @@ public class SwaggerAnnotationSpecification {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    public @interface GetAllContract{}
+    @interface GetAllContract {
+    }
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -89,7 +98,8 @@ public class SwaggerAnnotationSpecification {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    public @interface GetOneContract{}
+    @interface GetOneContract {
+    }
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -107,7 +117,8 @@ public class SwaggerAnnotationSpecification {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    public @interface ModifyContract{}
+    @interface ModifyContract {
+    }
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -127,7 +138,8 @@ public class SwaggerAnnotationSpecification {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    public @interface CompleteContract{}
+    @interface CompleteContract {
+    }
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -147,7 +159,8 @@ public class SwaggerAnnotationSpecification {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    public @interface CancelContract{}
+    @interface CancelContract {
+    }
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -167,12 +180,12 @@ public class SwaggerAnnotationSpecification {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    public @interface ProgressContract{}
+    @interface ProgressContract {}
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
     @Operation(
-            summary = "계약 이행 처리", description = "이행(IN_PROGRESS) 상태인 계약을 만료(EXPIRE) 상태로 변경한다.")
+            summary = "계약 만료 처리", description = "이행(IN_PROGRESS) 상태인 계약을 만료(EXPIRE) 상태로 변경한다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공"),
             @ApiResponse(responseCode = "400",
@@ -187,7 +200,7 @@ public class SwaggerAnnotationSpecification {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    public @interface ExpireContract{}
+    @interface ExpireContract {}
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -207,7 +220,7 @@ public class SwaggerAnnotationSpecification {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    public @interface TerminateContract{}
+    @interface TerminateContract {}
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -225,6 +238,41 @@ public class SwaggerAnnotationSpecification {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    public @interface DeleteContract{}
+    @interface DeleteContract {}
+
+    @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+            summary = "입주사 정보 등록", description = "입주사 정보를 등록한다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "성공"),
+            @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "관리자만 접근할 수 있습니다."))}),
+            @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
+    })
+    @interface RegisterTenant{}
+
+    @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+            summary = "입주사 정보 수정", description = "선택한 입주사의 정보를 수정한다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", content = {@Content(schema = @Schema(example = "유효한 입주사를 찾을 수 없습니다."))}),
+            @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "관리자만 접근할 수 있습니다."))}),
+            @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
+    })
+    @interface ModifyTenant{}
+
+    @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+            summary = "입주사 정보 삭제", description = "선택한 입주사의 정보를 삭제한다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", content = {@Content(schema = @Schema(example = "삭제가 완료되지 않았습니다."))}),
+            @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "관리자만 접근할 수 있습니다."))}),
+            @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
+    })
+    @interface DeleteTenant{}
 
 }

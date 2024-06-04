@@ -159,7 +159,6 @@ public class ContractTest {
                     // then
                     assertThat(contract.getContractStatus()).isEqualTo(ContractStatus.IN_PROGRESS);
                 })
-
         );
 
     }
@@ -213,9 +212,6 @@ public class ContractTest {
                                     LocalDate.now().plusDays(25),
                                     ContractStatus.EXPIRED);
                 })
-
-
-
         );
 
     }

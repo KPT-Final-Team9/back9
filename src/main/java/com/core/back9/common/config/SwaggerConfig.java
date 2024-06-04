@@ -41,7 +41,7 @@ public class SwaggerConfig {
     public OpenAPI apiKey() {
         SecurityScheme apiKey = new SecurityScheme()
                 .type(SecurityScheme.Type.APIKEY)
-                .scheme("bearer")
+                .scheme("Bearer")
                 .in(SecurityScheme.In.HEADER) // 헤더에 위치
                 .name("Authorization"); // 이름은 Authorization
 
