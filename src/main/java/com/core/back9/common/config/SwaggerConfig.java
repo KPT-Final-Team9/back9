@@ -6,19 +6,22 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.tags.Tag;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 @OpenAPIDefinition(
         info = @Info(
                 title = "파이널 프로젝트 9조 api 명세서",
-                description = "호실 평가 데이터 대시보드 구현 프로젝트. \n\n"
-                              + "[StoryBook](https://www.chromatic.com/builds?appId=66421fd64f35d30603e16002) \n\n"
-                              + "[FrontEnd Deploy Link](https://front-alpha-five.vercel.app/dashboard) \n\n"
-                              + "[Team Notion](https://www.notion.so/9-71027abc03c24746aeb6c5cb2e7bac29) \n\n"
-                              + "[Team Figma](https://www.figma.com/design/aZWKlkBTP2eOY6DfgGUkXm/%EC%98%A4%ED%94%BC%EC%8A%A49%EC%A1%B0%EB%8C%80_Figma?node-id=825-1208&t=VoHJV0woufk9u02Q-0)",
+                description = "<h3>호실 평가 데이터 대시보드 구현 프로젝트</h3> \n\n"
+                              + "<b>[StoryBook](https://www.chromatic.com/builds?appId=66421fd64f35d30603e16002)</b> \n\n"
+                              + "<b>[FrontEnd Deploy Link](https://front-alpha-five.vercel.app/dashboard)</b> \n\n"
+                              + "<b>[Team Notion](https://www.notion.so/9-71027abc03c24746aeb6c5cb2e7bac29)</b> \n\n"
+                              + "<b>[Team Figma](https://www.figma.com/design/aZWKlkBTP2eOY6DfgGUkXm/%EC%98%A4%ED%94%BC%EC%8A%A49%EC%A1%B0%EB%8C%80_Figma?node-id=825-1208&t=VoHJV0woufk9u02Q-0)</b>",
                 version = "v1"
         )
 )
@@ -32,26 +35,38 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi getEntireApi() {
         return GroupedOpenApi.builder()
-                .group("Entire")
+                .group("entire")
                 .packagesToScan(paths)
                 .build();
     }
 
     @Bean
-    public OpenAPI apiKey() {
+    public OpenAPI apiInfo() {
         SecurityScheme apiKey = new SecurityScheme()
                 .type(SecurityScheme.Type.APIKEY)
                 .scheme("Bearer")
                 .in(SecurityScheme.In.HEADER) // 헤더에 위치
                 .name("Authorization"); // 이름은 Authorization
 
+        List<Tag> tagList = List.of(
+                new Tag().name("member-public-controller").description("<b>[공통]</b> 회원가입 & 로그인 API"),
+                new Tag().name("building-controller").description("<b>[관리자(ADMIN), 공통]</b> 빌딩 API"),
+                new Tag().name("owner-building-controller").description("<b>[관리자(ADMIN), 공통]</b> 빌딩 API"),
+                new Tag().name("room-controller").description("<b>[관리자(ADMIN)]</b> 호실 생성 & 수정 & 삭제 API"),
+                new Tag().name("owner-score-controller").description("<b>[소유자(OWNER)]</b> 호실 평가 발행 & 설정 API"),
+                new Tag().name("owner-room-controller").description("<b>[소유자(OWNER)]</b> 호실 평가 조회 & 북마크 API"),
+                new Tag().name("contract-controller").description("<b>[OWNER]</b> 계약 & 주요 통계 정보 조회 API"),
+                new Tag().name("tenant-controller").description("<b>[관리자(ADMIN)]</b> 입주사 API"),
+                new Tag().name("tenant-public-controller").description("<b>[공통]</b> 입주사 정보 조회 API"),
+                new Tag().name("user-score-controller").description("<b>[입주자(USER)]</b> 입주자 호실 평가 API")
+        );
+
         SecurityRequirement securityRequirement = new SecurityRequirement()
                 .addList("Bearer Token");
-
         return new OpenAPI()
+                .tags(tagList)
                 .components(new Components().addSecuritySchemes("Bearer Token", apiKey))
                 .addSecurityItem(securityRequirement);
-
     }
 
 }
