@@ -1,5 +1,6 @@
 package com.core.back9.controller;
 
+import com.core.back9.common.config.annotation.SwaggerDocs;
 import com.core.back9.dto.ContractDTO;
 import com.core.back9.dto.MemberDTO;
 import com.core.back9.mapper.ContractMapper;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.time.LocalDate;
 
-import static com.core.back9.common.config.annotation.SwaggerAnnotationSpecification.*;
+import static com.core.back9.common.config.annotation.SwaggerDocs.*;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/buildings/{buildingId}/rooms/{roomId}/contracts")
@@ -25,7 +26,7 @@ public class ContractController {
     private final ContractMapper contractMapper;
 
     @PostMapping("/{tenantId}")
-    @RegisterContract
+    @SwaggerDocs.RegisterContract
     public ResponseEntity<ContractDTO.RegisterResponse> registerContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -44,7 +45,7 @@ public class ContractController {
     }
 
     @GetMapping("/statistic")
-    @GetContractStatisticInfo
+    @SwaggerDocs.GetContractStatisticInfo
     public ResponseEntity<ContractDTO.StatisticInfo> getContractStatisticInfo(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -64,7 +65,7 @@ public class ContractController {
     }
 
     @PostMapping("/{contractId}/tenants/{tenantId}")
-    @RenewContract
+    @SwaggerDocs.RenewContract
     public ResponseEntity<ContractDTO.Info> renewContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -83,7 +84,7 @@ public class ContractController {
     }
 
     @GetMapping("")
-    @GetAllContract
+    @SwaggerDocs.GetAllContract
     public ResponseEntity<ContractDTO.InfoList> getAllContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -98,7 +99,7 @@ public class ContractController {
     }
 
     @GetMapping("/{contractId}")
-    @GetOneContract
+    @SwaggerDocs.GetOneContract
     public ResponseEntity<ContractDTO.Info> getOneContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -113,7 +114,7 @@ public class ContractController {
     }
 
     @PatchMapping("/{contractId}")
-    @ModifyContract
+    @SwaggerDocs.ModifyContract
     public ResponseEntity<ContractDTO.Info> modifyContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -130,7 +131,7 @@ public class ContractController {
     }
 
     @PatchMapping("/{contractId}/complete")
-    @CompleteContract
+    @SwaggerDocs.CompleteContract
     public ResponseEntity<ContractDTO.StatusInfo> completeContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -147,7 +148,7 @@ public class ContractController {
     }
 
     @PatchMapping("/{contractId}/cancel")
-    @CancelContract
+    @SwaggerDocs.CancelContract
     public ResponseEntity<ContractDTO.StatusInfo> cancelContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -164,7 +165,7 @@ public class ContractController {
     }
 
     @PatchMapping("/{contractId}/progress")
-    @ProgressContract
+    @SwaggerDocs.ProgressContract
     public ResponseEntity<ContractDTO.StatusInfo> progressContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -181,7 +182,7 @@ public class ContractController {
     }
 
     @PatchMapping("/{contractId}/expire")
-    @ExpireContract
+    @SwaggerDocs.ExpireContract
     public ResponseEntity<ContractDTO.StatusInfo> expireContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -198,7 +199,7 @@ public class ContractController {
     }
 
     @PatchMapping("/{contractId}/terminate")
-    @TerminateContract
+    @SwaggerDocs.TerminateContract
     public ResponseEntity<ContractDTO.StatusInfo> terminateContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
@@ -214,7 +215,7 @@ public class ContractController {
     }
 
     @DeleteMapping("/{contractId}")
-    @DeleteContract
+    @SwaggerDocs.DeleteContract
     public ResponseEntity<Integer> deleteContract(
             @AuthMember MemberDTO.Info member,
             @PathVariable(name = "buildingId") Long buildingId,
