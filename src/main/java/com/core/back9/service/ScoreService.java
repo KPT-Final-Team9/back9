@@ -114,7 +114,7 @@ public class ScoreService {
 
 	public ScoreDTO.Info updateBookmark(MemberDTO.Info member, Long scoreId, boolean bookmark) {
 		if (member.getRole() == Role.OWNER) {
-			Score validScore = scoreRepository.getValidScoreWithIdAndMemberIdAndStatus(scoreId, member.getId(), Status.REGISTER);
+			Score validScore = scoreRepository.getValidScoreWithIdAndStatus(scoreId, Status.REGISTER);
 			validScore.updateBookmark(bookmark);
 			return scoreMapper.toInfo(validScore);
 		}

@@ -15,6 +15,13 @@ import java.util.Optional;
 @Repository
 public interface ScoreRepository extends JpaRepository<Score, Long>, JpaSpecificationExecutor<Score> {
 
+	Optional<Score> findFirstByIdAndStatus(Long scoreId, Status status);
+
+	default Score getValidScoreWithIdAndStatus(Long scoreId, Status status) {
+		return findFirstByIdAndStatus(scoreId, status)
+		  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_EVALUATION));
+	}
+
 	Optional<Score> findFirstByIdAndMemberIdAndStatus(Long scoreId, Long memberId, Status status);
 
 	default Score getValidScoreWithIdAndMemberIdAndStatus(Long scoreId, Long memberId, Status status) {
