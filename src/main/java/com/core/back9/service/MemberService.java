@@ -1,6 +1,5 @@
 package com.core.back9.service;
 
-import com.core.back9.common.util.SecurityUtil;
 import com.core.back9.dto.MemberDTO;
 import com.core.back9.dto.TokenDTO;
 import com.core.back9.entity.Member;
@@ -80,13 +79,6 @@ public class MemberService {
                 });
     }
 
-//    private void validateMember(String email, String phoneNumber, Role role, Status status) {
-//        memberRepository.findByEmailAndPhoneNumberAndRoleAndStatus(email, phoneNumber, role, status)
-//                .ifPresent(member -> {
-//                    throw new ApiException(ApiErrorCode.DUPLICATE_MEMBER);
-//                });
-//    }
-
     @Transactional
     public MemberDTO.LoginResponse userLogin(MemberDTO.LoginRequest request) {
         Member member = memberRepository.findUserByEmailAndStatus(request.getEmail(), Role.USER, Status.REGISTER)
@@ -131,20 +123,5 @@ public class MemberService {
             throw new ApiException(ApiErrorCode.INVALID_PASSWORD);
         }
     }
-
-//    public MemberDTO.Info getCurrenMemberInfo() {
-//        String currentUsername = SecurityUtil.getCurrentUsername()
-//                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_AUTHENTICATED_USER));
-//
-//        return memberMapper.toInfo(
-//                memberRepository.findByEmailAndStatus(currentUsername, Status.REGISTER)
-//                        .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER))
-//        );
-//    }
-//
-//    public MemberDTO.Info getMemberInfo(String email) {
-//        return memberMapper.toInfo(memberRepository.findByEmailAndStatus(email, Status.REGISTER)
-//                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER)));
-//    }
 
 }
