@@ -45,7 +45,7 @@ public class MemberPublicController {
         return ResponseEntity.ok(memberService.adminSignup(request));
     }
 
-    @Operation(summary = "입주자 로그인")
+    @Operation(summary = "입주자 로그인", description = "입주한 호실에 대해 생성된 평가를 진행할 수 있다.")
     @PostMapping("/sign-in/user")
     public ResponseEntity<MemberDTO.LoginResponse> userLogin(
             @Valid
@@ -54,7 +54,7 @@ public class MemberPublicController {
         return ResponseEntity.ok(memberService.userLogin(request));
     }
 
-    @Operation(summary = "소유자 로그인")
+    @Operation(summary = "소유자 로그인", description = "소유한 호실에 대한 계약 정보와 평가 정보를 관리할 수 있다.")
     @PostMapping("/sign-in/owner")
     public ResponseEntity<MemberDTO.LoginResponse> ownerLogin(
             @Valid
@@ -63,7 +63,7 @@ public class MemberPublicController {
         return ResponseEntity.ok(memberService.ownerLogin(request));
     }
 
-    @Operation(summary = "관리자 로그인")
+    @Operation(summary = "관리자 로그인", description = "빌딩 관리, 입주사 관리, 호실에 소유자 지정하기 등의 작업을 할 수 있다.")
     @PostMapping("/sign-in/admin")
     public ResponseEntity<MemberDTO.LoginResponse> adminLogin(
             @Valid
