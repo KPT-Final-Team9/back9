@@ -180,8 +180,7 @@ public @interface SwaggerDocs {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    @interface ProgressContract {
-    }
+    @interface ProgressContract {}
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -201,8 +200,7 @@ public @interface SwaggerDocs {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    @interface ExpireContract {
-    }
+    @interface ExpireContract {}
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -222,8 +220,7 @@ public @interface SwaggerDocs {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    @interface TerminateContract {
-    }
+    @interface TerminateContract {}
 
     @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
     @Retention(RetentionPolicy.RUNTIME)
@@ -241,6 +238,6 @@ public @interface SwaggerDocs {
             @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "유효한 호실을 찾을 수 없습니다."))}),
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
     })
-    @interface DeleteContract{}
+    @interface DeleteContract {}
 
 }
