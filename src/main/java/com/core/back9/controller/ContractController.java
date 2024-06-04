@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.time.LocalDate;
 
-import static com.core.back9.common.config.annotation.SwaggerDocs.*;
-
 @RequiredArgsConstructor
 @RequestMapping("/api/buildings/{buildingId}/rooms/{roomId}/contracts")
 @RestController
