@@ -240,4 +240,39 @@ public @interface SwaggerDocs {
     })
     @interface DeleteContract {}
 
+    @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+            summary = "입주사 정보 등록", description = "입주사 정보를 등록한다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "성공"),
+            @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "관리자만 접근할 수 있습니다."))}),
+            @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
+    })
+    @interface RegisterTenant{}
+
+    @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+            summary = "입주사 정보 수정", description = "선택한 입주사의 정보를 수정한다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", content = {@Content(schema = @Schema(example = "유효한 입주사를 찾을 수 없습니다."))}),
+            @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "관리자만 접근할 수 있습니다."))}),
+            @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
+    })
+    @interface ModifyTenant{}
+
+    @Target({ElementType.METHOD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+            summary = "입주사 정보 삭제", description = "선택한 입주사의 정보를 삭제한다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "400", content = {@Content(schema = @Schema(example = "삭제가 완료되지 않았습니다."))}),
+            @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema(example = "관리자만 접근할 수 있습니다."))}),
+            @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(example = "권한이 없습니다."))})
+    })
+    @interface DeleteTenant{}
+
 }
