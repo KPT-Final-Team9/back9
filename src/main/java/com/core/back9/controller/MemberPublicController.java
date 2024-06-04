@@ -2,6 +2,7 @@ package com.core.back9.controller;
 
 import com.core.back9.dto.MemberDTO;
 import com.core.back9.service.MemberService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ public class MemberPublicController {
 
     private final MemberService memberService;
 
+    @Operation(summary = "입주자 회원가입")
     @PostMapping("/sign-up/user")
     public ResponseEntity<MemberDTO.RegisterResponse> userSignup(
             @Valid
@@ -25,6 +27,7 @@ public class MemberPublicController {
         return ResponseEntity.ok(memberService.userSignup(request));
     }
 
+    @Operation(summary = "소유자 회원가입")
     @PostMapping("/sign-up/owner")
     public ResponseEntity<MemberDTO.RegisterResponse> ownerSignup(
             @Valid
@@ -33,6 +36,7 @@ public class MemberPublicController {
         return ResponseEntity.ok(memberService.ownerSignup(request));
     }
 
+    @Operation(summary = "관리자 회원가입")
     @PostMapping("/sign-up/admin")
     public ResponseEntity<MemberDTO.RegisterResponse> adminSignup(
             @Valid
@@ -41,6 +45,7 @@ public class MemberPublicController {
         return ResponseEntity.ok(memberService.adminSignup(request));
     }
 
+    @Operation(summary = "입주자 로그인")
     @PostMapping("/sign-in/user")
     public ResponseEntity<MemberDTO.LoginResponse> userLogin(
             @Valid
@@ -49,6 +54,7 @@ public class MemberPublicController {
         return ResponseEntity.ok(memberService.userLogin(request));
     }
 
+    @Operation(summary = "소유자 로그인")
     @PostMapping("/sign-in/owner")
     public ResponseEntity<MemberDTO.LoginResponse> ownerLogin(
             @Valid
@@ -57,6 +63,7 @@ public class MemberPublicController {
         return ResponseEntity.ok(memberService.ownerLogin(request));
     }
 
+    @Operation(summary = "관리자 로그인")
     @PostMapping("/sign-in/admin")
     public ResponseEntity<MemberDTO.LoginResponse> adminLogin(
             @Valid
