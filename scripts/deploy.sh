@@ -1,6 +1,5 @@
 IS_DEV1=$(docker ps | grep back9-dev1)
 IS_DEV2=$(docker ps | grep back9-dev2)
-CURRENT_SERVER_PORT=$(docker exec nginx grep -o 'proxy_pass http://[^:]\+:[0-9]\+' /etc/nginx/nginx.conf | awk -F ':' '{print $NF}' | head -n1)
 HEALTH_CHECK_REQUEST_NGINX=$(bash -c '</dev/tcp/127.0.0.1/80 >/dev/null && echo "Connected" || true')
 
 NGINX_RUNNING=$(docker ps -q -f name=nginx)
@@ -24,6 +23,7 @@ else
 
 fi
 
+CURRENT_SERVER_PORT=$(docker exec nginx grep -o 'proxy_pass http://[^:]\+:[0-9]\+' /etc/nginx/nginx.conf | awk -F ':' '{print $NF}' | head -n1)
 if [ "$CURRENT_SERVER_PORT" = "8082" -o -z "$IS_DEV1" ];then # dev2운영중 or 첫 배포 (환경변수로 설정한 문자열 길이가 0인 경우 -z)
 
   if [ "$IS_DEV1" ];then
@@ -63,6 +63,7 @@ if [ "$CURRENT_SERVER_PORT" = "8082" -o -z "$IS_DEV1" ];then # dev2운영중 or 
 
   HEALTH_CHECK_REQUEST_DEV1=$(bash -c '</dev/tcp/127.0.0.1/8081 >/dev/null && echo "Connected" || true')
 
+  CURRENT_SERVER_PORT=$(docker exec nginx grep -o 'proxy_pass http://[^:]\+:[0-9]\+' /etc/nginx/nginx.conf | awk -F ':' '{print $NF}' | head -n1)
   if [ "$HEALTH_CHECK_REQUEST_DEV1" = "Connected" ];then
     echo "dev1 서버가 성공적으로 배포되었습니다! [ CURRENT_SERVER_PORT ] : $CURRENT_SERVER_PORT"
     /home/ubuntu/app/alarm.sh
@@ -106,6 +107,7 @@ else # dev2 운영중인 경우
 
   HEALTH_CHECK_REQUEST_DEV2=$(bash -c '</dev/tcp/127.0.0.1/8082 >/dev/null && echo "Connected" || true')
 
+  CURRENT_SERVER_PORT=$(docker exec nginx grep -o 'proxy_pass http://[^:]\+:[0-9]\+' /etc/nginx/nginx.conf | awk -F ':' '{print $NF}' | head -n1)
   if [ "$HEALTH_CHECK_REQUEST_DEV2" = "Connected" ];then
     echo "dev2 서버가 성공적으로 배포되었습니다! [ CURRENT_SERVER_PORT ] : $CURRENT_SERVER_PORT"
     /home/ubuntu/app/alarm.sh
