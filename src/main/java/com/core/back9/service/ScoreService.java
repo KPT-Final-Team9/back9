@@ -2,6 +2,7 @@ package com.core.back9.service;
 
 import com.core.back9.dto.MemberDTO;
 import com.core.back9.dto.ScoreDTO;
+import com.core.back9.entity.Building;
 import com.core.back9.entity.Contract;
 import com.core.back9.entity.Room;
 import com.core.back9.entity.Score;
@@ -12,6 +13,7 @@ import com.core.back9.entity.constant.Status;
 import com.core.back9.exception.ApiErrorCode;
 import com.core.back9.exception.ApiException;
 import com.core.back9.mapper.ScoreMapper;
+import com.core.back9.repository.BuildingRepository;
 import com.core.back9.repository.MemberRepository;
 import com.core.back9.repository.RoomRepository;
 import com.core.back9.repository.ScoreRepository;
@@ -36,6 +38,7 @@ import java.util.List;
 public class ScoreService {
 
 	private final MemberRepository memberRepository;
+	private final BuildingRepository buildingRepository;
 	private final RoomRepository roomRepository;
 	private final ScoreRepository scoreRepository;
 	private final ScoreMapper scoreMapper;
@@ -133,19 +136,26 @@ public class ScoreService {
 	  String keyword,
 	  Pageable pageable
 	) {
-		Room room = roomRepository.getRoomBySpecificIds(buildingId, roomId, member.getId(), Status.REGISTER)
-		  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
+		Building building = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
 		Specification<Score> specification = Specification.where(null);
 		specification = specification.and(EvaluationSpecifications.isCompleted());
 		specification = specification.and(EvaluationSpecifications.hasRatingType(ratingType));
+
 		if (roomId != null) {
+			Room room = roomRepository.getRoomBySpecificIds(buildingId, roomId, member.getId(), Status.REGISTER)
+			  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
 			specification = specification.and(EvaluationSpecifications.hasRoomId(room));
+		} else {
+			// 선택된 빌딩의 모든 호실의 데이터
+			specification = specification.and(EvaluationSpecifications.hasBuilding(building, true));
 		}
 		if (startDate != null && endDate != null) {
 			specification = specification.and(EvaluationSpecifications.isUpdatedBetween(startDate, endDate));
 		}
-		if (bookmark != null) {
-			specification = specification.and(EvaluationSpecifications.isBookmarked(bookmark));
+		if (bookmark) {
+			specification = specification.and(EvaluationSpecifications.isBookmarked());
+		} else {
+			// 모든 데이터 true + false
 		}
 		if (keyword != null) {
 			specification = specification.and(EvaluationSpecifications.containsKeyword(keyword));
