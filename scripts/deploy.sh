@@ -108,7 +108,7 @@ else # dev2 운영중인 경우
   HEALTH_CHECK_REQUEST_DEV2=$(bash -c '</dev/tcp/127.0.0.1/8082 >/dev/null && echo "Connected" || true')
 
 #  CURRENT_SERVER_PORT=$(docker exec nginx grep -o 'proxy_pass http://[^:]\+:[0-9]\+' /etc/nginx/nginx.conf | awk -F ':' '{print $NF}' | head -n1)
-  CURRENT_SERVER_PORT=$(curl -s http://172.18.0.1:8081/public-api/health | grep -o '"status":"[^"]*' | awk -F '"' '{print $4}')
+  CURRENT_SERVER_PORT=$(curl -s http://172.18.0.1:8082/public-api/health | grep -o '"status":"[^"]*' | awk -F '"' '{print $4}')
   if [ "$HEALTH_CHECK_REQUEST_DEV2" = "Connected" ];then
     echo "dev2 서버가 성공적으로 배포되었습니다! [ CURRENT_SERVER_PORT ] : $CURRENT_SERVER_PORT"
     /home/ubuntu/app/alarm.sh

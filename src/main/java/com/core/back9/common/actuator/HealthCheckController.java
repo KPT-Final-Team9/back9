@@ -1,6 +1,5 @@
 package com.core.back9.common.actuator;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,19 +22,13 @@ public class HealthCheckController {
     private final Environment environment;
 
     @GetMapping
-    public Map<String, Object> healthCheck(HttpServletRequest request) {
+    public Map<String, Object> healthCheck() {
         Map<String, Object> healthStatus = new LinkedHashMap<>();
 
-        int port = request.getServerPort();
-
-        String server = port == 8081 ? "back9-dev1"
-                : port == 8082 ? "back9-dev2"
-                : port == 8080 ? "local"
-                : "unknown";
+        int port = serverPortProvider.getApplicationPort();
 
         healthStatus.put("status", "Connected");
         healthStatus.put("port", port);
-        healthStatus.put("operation server", server);
         healthStatus.put("현재 시간", LocalDateTime.now());
 
         // 추가 정보
