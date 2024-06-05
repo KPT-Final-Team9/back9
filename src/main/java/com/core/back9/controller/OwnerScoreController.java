@@ -18,7 +18,7 @@ import java.time.LocalTime;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/buildings/{buildingId}/rooms/{roomId}/scores")
+@RequestMapping("/api/scores")
 public class OwnerScoreController {
 
 	private final ScoreService scoreService;
@@ -27,8 +27,8 @@ public class OwnerScoreController {
 	@GetMapping("")
 	public ResponseEntity<Page<ScoreDTO.Info>> searchScores(
 	  @AuthMember MemberDTO.Info member,
-	  @PathVariable Long buildingId,
-	  @PathVariable Long roomId,
+	  @RequestParam Long buildingId,
+	  @RequestParam(required = false) Long roomId,
 	  @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
 	  @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
 	  @RequestParam(required = false, defaultValue = "") RatingType ratingType,
@@ -47,8 +47,6 @@ public class OwnerScoreController {
 	@PatchMapping("/{scoreId}/bookmark-add")
 	public ResponseEntity<ScoreDTO.Info> addBookmark(
 	  @AuthMember MemberDTO.Info member,
-	  @PathVariable Long buildingId,
-	  @PathVariable Long roomId,
 	  @PathVariable Long scoreId
 	) {
 		return ResponseEntity.ok(scoreService.updateBookmark(member, scoreId, true));
@@ -58,8 +56,6 @@ public class OwnerScoreController {
 	@PatchMapping("/{scoreId}/bookmark-remove")
 	public ResponseEntity<ScoreDTO.Info> removeBookmark(
 	  @AuthMember MemberDTO.Info member,
-	  @PathVariable Long buildingId,
-	  @PathVariable Long roomId,
 	  @PathVariable Long scoreId
 	) {
 		return ResponseEntity.ok(scoreService.updateBookmark(member, scoreId, false));

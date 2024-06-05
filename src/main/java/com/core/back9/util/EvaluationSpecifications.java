@@ -1,5 +1,6 @@
 package com.core.back9.util;
 
+import com.core.back9.entity.Building;
 import com.core.back9.entity.Room;
 import com.core.back9.entity.Score;
 import com.core.back9.entity.constant.RatingType;
@@ -39,9 +40,9 @@ public class EvaluationSpecifications {
 		};
 	}
 
-	public static Specification<Score> isBookmarked(Boolean bookmark) {
+	public static Specification<Score> isBookmarked() {
 		return (Root<Score> score, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) ->
-		  criteriaBuilder.equal(score.get("bookmark"), bookmark);
+		  criteriaBuilder.equal(score.get("bookmark"), true);
 	}
 
 	public static Specification<Score> containsKeyword(String keyword) {
@@ -63,6 +64,17 @@ public class EvaluationSpecifications {
 			}
 			Join<Score, Room> roomJoin = root.join("room", JoinType.INNER);
 			return has ? roomJoin.in(rooms) : criteriaBuilder.not(roomJoin.in(rooms));
+		});
+	}
+
+	public static Specification<Score> hasBuilding(Building building, boolean has) {
+		return ((root, query, criteriaBuilder) -> {
+			if (building == null) {
+				return criteriaBuilder.conjunction();
+			}
+			Join<Score, Room> roomJoin = root.join("room", JoinType.INNER);
+			Join<Room, Building> buildingJoin = roomJoin.join("building", JoinType.INNER);
+			return has ? buildingJoin.in(building) : criteriaBuilder.not(buildingJoin.in(building));
 		});
 	}
 
