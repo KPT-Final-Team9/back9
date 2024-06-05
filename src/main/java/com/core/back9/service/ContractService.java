@@ -382,12 +382,12 @@ public class ContractService {
             contracts = contractRepository.findByContractInProgressAllRoomsPerBuilding(buildingId, costDto.getId());
         }
 
-        Double averageDeposit = contracts.stream() // 평균 보증금 계산
+        double averageDeposit = contracts.stream() // 평균 보증금 계산
                 .mapToDouble(Contract::getDeposit)
                 .average()
                 .orElse(0.0);
 
-        Double averageRentalPrice = contracts.stream() // 평균 임대료 계산
+        double averageRentalPrice = contracts.stream() // 평균 임대료 계산
                 .mapToDouble(Contract::getRentalPrice)
                 .average()
                 .orElse(0.0);
