@@ -28,8 +28,10 @@ import java.util.List;
 public class SwaggerConfig {
 
     String root = "com.core.back9.controller";
+    String actuator = "com.core.back9.common.actuator";
     String[] paths = {
-            root
+            root,
+            actuator
     };
 
     @Bean
