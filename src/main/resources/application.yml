@@ -9,6 +9,15 @@ spring:
     default: dev
     active: dev
 
+management:
+  server:
+    port: 9090
+  endpoints:
+    web:
+      base-path: /public-api/management
+      exposure:
+        include: health,info,metrics
+
 springdoc:
   use-fqn: true
   api-docs:
