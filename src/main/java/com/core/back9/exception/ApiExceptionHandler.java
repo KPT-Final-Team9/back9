@@ -34,7 +34,7 @@ public class ApiExceptionHandler {
 
 	@ExceptionHandler(ApiException.class)
 	public ResponseEntity<String> apiExceptionHandler(ApiException exception, WebRequest webRequest) {
-		sendDiscordNotification(exception.getErrorMessage(), webRequest);
+//		sendDiscordNotification(exception.getErrorMessage(), webRequest);
 		return ResponseEntity
 		  .status(exception.getApiErrorCode().getErrorCode())
 		  .body(exception.getErrorMessage());
@@ -42,7 +42,7 @@ public class ApiExceptionHandler {
 
 	@ExceptionHandler(RuntimeException.class)
 	public ResponseEntity<String> allExceptionHandler(RuntimeException exception, WebRequest webRequest) {
-		sendDiscordNotification(exception.getLocalizedMessage(), webRequest);
+//		sendDiscordNotification(exception.getLocalizedMessage(), webRequest);
 		return ResponseEntity
 		  .status(HttpStatus.INTERNAL_SERVER_ERROR)
 		  .body(exception.getLocalizedMessage());
@@ -50,7 +50,7 @@ public class ApiExceptionHandler {
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<String> validExceptionHandler(MethodArgumentNotValidException ex, WebRequest webRequest) {
-		sendDiscordNotification(ex.getBindingResult().getAllErrors().get(0).getDefaultMessage(), webRequest);
+//		sendDiscordNotification(ex.getBindingResult().getAllErrors().get(0).getDefaultMessage(), webRequest);
 		return ResponseEntity
 		  .status(HttpStatus.BAD_REQUEST)
 		  .body(ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
