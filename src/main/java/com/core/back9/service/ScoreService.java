@@ -154,8 +154,6 @@ public class ScoreService {
 		}
 		if (bookmark) {
 			specification = specification.and(EvaluationSpecifications.isBookmarked());
-		} else {
-			// 모든 데이터 true + false
 		}
 		if (keyword != null) {
 			specification = specification.and(EvaluationSpecifications.containsKeyword(keyword));
