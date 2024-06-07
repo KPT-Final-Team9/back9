@@ -3,6 +3,10 @@ package com.core.back9.dto;
 import com.core.back9.entity.constant.Role;
 import com.core.back9.entity.constant.Status;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,13 +21,19 @@ public class MemberDTO {
     @Builder
     @Getter
     public static class RegisterRequest {
+        @NotBlank(message = "이메일은 필수 입력값입니다.")
+        @Email(message = "잘못된 이메일 형식입니다.")
         private String email;
+
+        @NotBlank(message = "비밀번호는 필수 입력값입니다.")
+        @Size(min = 8, max = 16, message = "비밀번호는 8자 이상, 16자 이하여야 합니다.")
         private String password;
+
+        @NotBlank(message = "휴대폰 번호는 필수 입력값입니다.")
+        @Pattern(regexp = "^01[016789]-\\d{3,4}-\\d{4}$", message = "잘못된 휴대폰 번호 형식입니다.")
         private String phoneNumber;
+
         private Long tenantId;
-//		private SignType signType;
-//		private String firebaseUid;
-//		private String firebaseFcmToken;
     }
 
     @AllArgsConstructor
@@ -38,9 +48,6 @@ public class MemberDTO {
         private String phoneNumber;
         private Status status;
         private TenantDTO.Response tenant;
-        //		private SignType signType;
-//		private String firebaseUid;
-//		private String firebaseFcmToken;
         private LocalDateTime createdAt;
     }
 
@@ -49,7 +56,12 @@ public class MemberDTO {
     @Builder
     @Getter
     public static class LoginRequest {
+        @NotBlank(message = "이메일은 필수 입력값입니다.")
+        @Email(message = "잘못된 이메일 형식입니다.")
         private String email;
+
+        @NotBlank(message = "비밀번호는 필수 입력값입니다.")
+        @Size(min = 8, max = 16, message = "비밀번호는 8자 이상, 16자 이하여야 합니다.")
         private String password;
     }
 
@@ -75,9 +87,6 @@ public class MemberDTO {
         private String phoneNumber;
         private Status status;
         private TenantDTO.Info tenant;
-        //		private SignType signType;
-//		private String firebaseUid;
-//		private String firebaseFcmToken;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
     }
