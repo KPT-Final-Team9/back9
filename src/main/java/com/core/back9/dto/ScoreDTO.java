@@ -50,6 +50,7 @@ public class ScoreDTO {
 	@Builder
 	@Getter
 	public static class Info {
+		private Long id;
 		private int score;
 		private String comment;
 		private boolean bookmark;
