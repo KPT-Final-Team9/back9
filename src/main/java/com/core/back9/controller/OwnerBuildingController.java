@@ -78,4 +78,10 @@ public class OwnerBuildingController {
 		return ResponseEntity.ok(scoreService.selectYearScoreOfMyRooms(member, buildingId));
 	}
 
+	@Operation(summary = "대시보드 페이지", description = "해당 빌딩의 내 모든 호실에 대해 최근 2년 동안 유효한 평가가 1건도 없으면 false를 반환한다.")
+	@GetMapping("/{buildingId}/valid-score")
+	public ResponseEntity<Boolean> hasValidScore(@AuthMember MemberDTO.Info member, @PathVariable Long buildingId) {
+		return ResponseEntity.ok(scoreService.hasValidScore(member, buildingId));
+	}
+
 }

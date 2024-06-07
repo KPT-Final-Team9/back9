@@ -1,5 +1,6 @@
 package com.core.back9.service;
 
+import com.core.back9.common.entity.BaseEntity;
 import com.core.back9.dto.MemberDTO;
 import com.core.back9.dto.ScoreDTO;
 import com.core.back9.entity.Building;
@@ -299,6 +300,22 @@ public class ScoreService {
 			allAvgByMonthList.add(scoreMapper.toAllAvgWithMonth(current, scoresOfMonth));
 		}
 		return allAvgByMonthList;
+	}
+
+	public boolean hasValidScore(MemberDTO.Info member, Long buildingId) {
+
+		List<Long> roomIds = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(buildingId, member.getId(), Status.REGISTER).stream()
+				.map(BaseEntity::getId).toList();
+
+        LocalDateTime twoYearsAgo = LocalDateTime.now().minusYears(2);
+
+		for (Long roomId : roomIds) {
+            if (!scoreRepository.findFirstByRoomIdAndStatus(roomId, Status.REGISTER, twoYearsAgo).isEmpty()) {
+                return true;
+            }
+		}
+
+		return false;
 	}
 
 }
