@@ -44,6 +44,7 @@ services:
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot -d officedev.site
 
 networks:
   backend-network:
