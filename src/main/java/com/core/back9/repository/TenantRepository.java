@@ -41,4 +41,6 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
             where t.id=?2 and t.status='REGISTER'
             """)
     Optional<Integer> deleteRegisteredTenant(Status status, Long tenantId);
+
+    Tenant findByCompanyNumberAndStatus(String companyNumber, Status status);
 }

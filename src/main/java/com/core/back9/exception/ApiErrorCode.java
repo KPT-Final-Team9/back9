@@ -31,6 +31,7 @@ public enum ApiErrorCode {
     EXPIRED_TOKEN(HttpStatus.BAD_REQUEST.value(), "만료된 JWT입니다."),
 	ALREADY_COMPLETED_EVALUATION(HttpStatus.BAD_REQUEST.value(), "이미 완료된 평가입니다."),
     START_DATE_BEFORE_ERROR(HttpStatus.BAD_REQUEST.value(), "시작일이 끝일보다 이른 일자일 수 없습니다."),
+    DUPLICATE_COMPANYNUMBER(HttpStatus.BAD_REQUEST.value(), "중복된 사업자 번호 입니다."),
 
 	THREAD_POOL_REJECTED(HttpStatus.REQUEST_TIMEOUT.value(), "더 이상 요청을 처리 할 수 없습니다"),
 

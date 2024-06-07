@@ -47,5 +47,9 @@ public class Tenant extends BaseEntity {
 		return this;
 	}
 
+	public boolean isCompanyNumberEqual(String companyNumber) {
+		return this.companyNumber.equals(companyNumber);
+	}
+
 
 }
