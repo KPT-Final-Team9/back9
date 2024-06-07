@@ -9,7 +9,7 @@ if [ -z "$NGINX_RUNNING" ]; then
     echo "Nginx 컨테이너가 실행 중이 아닙니다. nginx 컨테이너를 실행시킵니다."
 
     # Docker Compose 실행
-    docker-compose up -d nginx
+    docker-compose up -d nginx certbot
 
     if [ "$HEALTH_CHECK_REQUEST_NGINX" = "Connected" ]; then
             echo "Nginx 컨테이너가 성공적으로 실행되었습니다. [ CONTAINER ID ] : $NGINX_RUNNING"
