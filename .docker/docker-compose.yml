@@ -38,6 +38,7 @@ services:
       - backend-network
 
   certbot:
+    container_name: certbot
     image: certbot/certbot
     restart: unless-stopped
     volumes:
