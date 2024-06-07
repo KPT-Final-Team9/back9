@@ -33,6 +33,11 @@ public class TenantService {
             throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "관리자만 접근할 수 있습니다.");
         }
 
+        Tenant selectedTenant = tenantRepository.findByCompanyNumberAndStatus(request.getCompanyNumber(), Status.REGISTER);
+        if(!selectedTenant.isCompanyNumberEqual(request.getCompanyNumber())) {
+            throw new ApiException(ApiErrorCode.DUPLICATE_COMPANYNUMBER);
+        }
+
         Tenant tenant = tenantMapper.toEntity(request);
 
         return tenantMapper.toRegisterResponse(tenantRepository.save(tenant));

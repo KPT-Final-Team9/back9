@@ -2,6 +2,7 @@ package com.core.back9.dto;
 
 import com.core.back9.entity.constant.Status;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +18,10 @@ public class TenantDTO {
 	@Builder
 	@Getter
 	public static class Request {
+		@NotEmpty(message = "입주사명은 필수 입력입니다.")
 		private String name;
+
+		@NotEmpty(message = "사업자번호는 필수 입력입니다.")
 		private String companyNumber;
 	}
 
