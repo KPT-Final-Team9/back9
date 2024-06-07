@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -59,5 +61,15 @@ public interface ScoreRepository extends JpaRepository<Score, Long>, JpaSpecific
 	  @Param("memberId") Long memberId,
 	  @Param("roomId") Long roomId
 	);
+
+	@Query("""
+          select s
+          from Score s
+          where s.room.id = :roomId
+          and s.status = :status
+          and s.createdAt != s.updatedAt
+          and s.updatedAt > :twoYearsAgo
+          """)
+	List<Score> findFirstByRoomIdAndStatus(Long roomId, Status status, LocalDateTime twoYearsAgo);
 
 }

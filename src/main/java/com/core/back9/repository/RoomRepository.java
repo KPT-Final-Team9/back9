@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -68,5 +69,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 		return findFirstRepresentRoom(buildingId, memberId)
 		  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
 	}
+
+	List<Room> findAllByBuildingIdAndMemberIdAndStatus(Long buildingId, Long MemberId, Status status);
 
 }
