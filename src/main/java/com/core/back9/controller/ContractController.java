@@ -50,7 +50,7 @@ public class ContractController {
             @PathVariable(name = "roomId") Long roomId
     ) {
 
-        LocalDate startDate = LocalDate.now().minusYears(1); // 검색 범위를 1년으로 설정하기 위한 변수
+        LocalDate startDate = LocalDate.now().minusYears(1).plusDays(1); // 검색 범위를 1년으로 설정하기 위한 변수
 
         ContractDTO.CostInfo costInfo = contractService.getContractCostInfo(member, buildingId, roomId); // 내 호실 임대료 & 공실이 아닌 호실의 임대 평균값 반환
         ContractDTO.RenewalContractRateInfo renewalContractRateInfo = contractService.getRenewalContractRateInfo(member, buildingId, roomId);
