@@ -310,12 +310,29 @@ public class ScoreService {
         LocalDateTime twoYearsAgo = LocalDateTime.now().minusYears(2);
 
 		for (Long roomId : roomIds) {
-            if (!scoreRepository.findFirstByRoomIdAndStatus(roomId, Status.REGISTER, twoYearsAgo).isEmpty()) {
+            if (!scoreRepository.findByRoomIdAndStatus(roomId, Status.REGISTER, twoYearsAgo).isEmpty()) {
                 return true;
             }
 		}
 
 		return false;
+	}
+
+	public List<ScoreDTO.Info> getEvaluationsInProgress(MemberDTO.Info member) {
+		List<Score> evaluationsInProgress = new ArrayList<>();
+		Long memberId = member.getId();
+
+		addEvaluation(evaluationsInProgress, memberId, RatingType.FACILITY);
+		addEvaluation(evaluationsInProgress, memberId, RatingType.MANAGEMENT);
+		addEvaluation(evaluationsInProgress, memberId, RatingType.COMPLAINT);
+
+		return evaluationsInProgress.stream().map(scoreMapper::toInfo).toList();
+	}
+
+	private void addEvaluation(List<Score> evaluationsInProgress, Long memberId, RatingType ratingType) {
+		scoreRepository.findFirstByMemberIdAndRatingTypeAndStatusOrderByIdDesc(memberId, ratingType, Status.REGISTER)
+				.ifPresent(evaluationsInProgress::add);
+
 	}
 
 }
