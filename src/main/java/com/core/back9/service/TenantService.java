@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -33,8 +34,9 @@ public class TenantService {
             throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "관리자만 접근할 수 있습니다.");
         }
 
-        Tenant selectedTenant = tenantRepository.findByCompanyNumberAndStatus(request.getCompanyNumber(), Status.REGISTER);
-        if(!selectedTenant.isCompanyNumberEqual(request.getCompanyNumber())) {
+        Optional<Tenant> selectedTenant = tenantRepository.findByCompanyNumberAndStatus(request.getCompanyNumber(), Status.REGISTER);
+
+        if(selectedTenant.isPresent()) {
             throw new ApiException(ApiErrorCode.DUPLICATE_COMPANYNUMBER);
         }
 

@@ -46,10 +46,4 @@ public class Tenant extends BaseEntity {
 		this.status = Status.REGISTER;
 		return this;
 	}
-
-	public boolean isCompanyNumberEqual(String companyNumber) {
-		return this.companyNumber.equals(companyNumber);
-	}
-
-
 }
