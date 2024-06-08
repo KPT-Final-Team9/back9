@@ -45,10 +45,10 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
 	@Query(
 	  """
-		SELECT COUNT(r) = 0 
-		FROM Room r 
-		WHERE r.building.id = :buildingId 
-		AND r.member.id = :memberId 
+		SELECT COUNT(r) = 0
+		FROM Room r
+		WHERE r.building.id = :buildingId
+		AND r.member.id = :memberId
 		AND r.represent = true
 		"""
 	)

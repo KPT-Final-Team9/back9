@@ -1306,6 +1306,73 @@ public class ContractServiceTest extends ContractServiceFixture {
     }
 
     @Test
+    @DisplayName("진행 중인 계약 기간이 1년이 넘는 기간이어서 조회 범위를 넘길 시 공실률은 0으로 산출된다.")
+    void getContractVacancyRateInfoExceptionCheck() {
+        // given
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
+        LocalDate startDate = LocalDate.of(2024, 6, 9).minusYears(1);
+
+        Contract contract1_3 = assumeContract(
+                LocalDate.of(2023, 5, 29),
+                LocalDate.of(2024, 9, 11),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room2,
+                tenant1
+        );
+        contractRepository.saveAll(List.of(contract1_3));
+
+        contract1_3.contractComplete();
+        contract1_3.contractInProgress();
+
+        // when
+        ContractDTO.VacancyRateInfo contractVacancyRateInfo = contractService.getContractVacancyRateInfo(member, 1L, room2.getId(), startDate);
+
+        // then
+        assertThat(contractVacancyRateInfo.getVacancyRate()).isEqualTo(0.0);
+
+    }
+
+    @Test
+    @DisplayName("종료된 계약의 기간이 1년이 넘는 기간이어도 검색 범위의 시작부터 종료일까지를 기반으로 결과가 산출된다.")
+    void getContractVacancyRateInfoExceptionCheck2() {
+        // given
+        MemberDTO.Info member = MemberDTO.Info.builder()
+                .id(2L)
+                .role(Role.OWNER)
+                .build();
+
+        LocalDate startDate = LocalDate.of(2024, 6, 9).minusYears(1).plusDays(1);
+
+        Contract contract1_3 = assumeContract(
+                LocalDate.of(2023, 5, 1),
+                LocalDate.of(2024, 6, 1),
+                100000000L,
+                200000L,
+                ContractType.INITIAL,
+                room2,
+                tenant1
+        );
+        contractRepository.saveAll(List.of(contract1_3));
+
+        contract1_3.contractComplete();
+        contract1_3.contractInProgress();
+        contract1_3.contractExpire();
+
+        // when
+        ContractDTO.VacancyRateInfo contractVacancyRateInfo = contractService.getContractVacancyRateInfo(member, 1L, room2.getId(), startDate);
+
+        // then
+        assertThat(contractVacancyRateInfo.getVacancyRate()).isEqualTo(2.2);
+
+    }
+
+    @Test
     @DisplayName("비교 호실의 공실률 평균을 산출할 수 있다.")
     void getContractVacancyRateInfoRelative() {
         // given
