@@ -6,6 +6,7 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
@@ -50,6 +51,9 @@ public class SwaggerConfig {
                 .in(SecurityScheme.In.HEADER) // 헤더에 위치
                 .name("Authorization"); // 이름은 Authorization
 
+        Server server = new Server();
+        server.setUrl("https://officeback.site");
+
         List<Tag> tagList = List.of(
                 new Tag().name("member-public-controller").description("<b>[공통]</b> 회원가입 & 로그인 API"),
                 new Tag().name("building-controller").description("<b>[관리자(ADMIN), 공통]</b> 빌딩 API"),
@@ -67,6 +71,7 @@ public class SwaggerConfig {
                 .addList("Bearer Token");
         return new OpenAPI()
                 .tags(tagList)
+                .servers(List.of(server))
                 .components(new Components().addSecuritySchemes("Bearer Token", apiKey))
                 .addSecurityItem(securityRequirement);
     }

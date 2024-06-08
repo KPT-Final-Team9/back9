@@ -24,7 +24,6 @@ services:
     container_name: nginx
     image: nginx
     volumes:
-      - /home/ubuntu/app/nginx/nginx.conf:/etc/nginx/nginx.conf
       - /home/ubuntu/app/nginx/nginx.green.conf:/etc/nginx/nginx.green.conf
       - /home/ubuntu/app/nginx/nginx.blue.conf:/etc/nginx/nginx.blue.conf
       - ./data/certbot/conf:/etc/letsencrypt
