@@ -318,4 +318,10 @@ public class ScoreService {
 		return false;
 	}
 
+	@Transactional(readOnly = true)
+	public List<ScoreDTO.Info> selectAllByMember(MemberDTO.Info member) {
+		return scoreRepository.findAllByMemberIdAndStatus(member.getId(), Status.REGISTER)
+		  .stream().map(scoreMapper::toInfo).toList();
+	}
+
 }

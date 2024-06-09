@@ -581,4 +581,16 @@ public class ContractService {
                 .sum();
     }
 
+    public ContractDTO.InfoWithRoomList selectContractsByTenantId(MemberDTO.Info member) {
+        long tenantId = member.getTenant().getId();
+        Tenant validTenant = tenantRepository.getValidOneTenantOrThrow(tenantId);
+        List<Contract> allContractsByTenant = contractRepository.findAllByTenantIdAndStatus(validTenant.getId(), Status.REGISTER);
+        long allContractsCount = allContractsByTenant.size();
+        List<ContractDTO.InfoWithRoom> infoWithRoomList = allContractsByTenant.stream().map(contractMapper::toInfoWithRoom).toList();
+        return contractMapper.toInfoWithRoomList(allContractsCount, infoWithRoomList);
+    }
+
+    // TODO 사용자 계약종료 실행
+
+
 }

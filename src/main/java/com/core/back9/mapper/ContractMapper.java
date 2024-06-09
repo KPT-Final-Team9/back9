@@ -51,4 +51,8 @@ public interface ContractMapper {
     ContractDTO.VacancyRateInfo toVacancyRateInfo(Double vacancyRate, Double averageVacancyRate);
 
     ContractDTO.StatisticInfo toStatisticInfo(ContractDTO.CostInfo costInfo, ContractDTO.RenewalContractRateInfo contractRateInfo, ContractDTO.VacancyRateInfo vacancyRateInfo);
+
+    ContractDTO.InfoWithRoom toInfoWithRoom(Contract contract);
+
+    ContractDTO.InfoWithRoomList toInfoWithRoomList(Long count, List<ContractDTO.InfoWithRoom> infoWithRoomList);
 }

@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -29,5 +30,14 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
         return findFirstByIdAndRoleAndStatus(id, role, status)
           .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_PRINCIPAL));
     }
+
+    Optional<Member> findFirstByEmailAndStatus(String email, Status status);
+
+    default Member getValidMemberWithEmailAndStatus(String email, Status status) {
+        return findFirstByEmailAndStatus(email, status)
+          .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER));
+    }
+
+    List<Member> findAllByTenantIdAndStatus(Long tenantId, Status status);
 
 }

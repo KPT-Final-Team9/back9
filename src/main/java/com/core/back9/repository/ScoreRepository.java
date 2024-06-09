@@ -72,4 +72,6 @@ public interface ScoreRepository extends JpaRepository<Score, Long>, JpaSpecific
           """)
 	List<Score> findFirstByRoomIdAndStatus(Long roomId, Status status, LocalDateTime twoYearsAgo);
 
+	List<Score> findAllByMemberIdAndStatus(Long memberId, Status status);
+
 }
