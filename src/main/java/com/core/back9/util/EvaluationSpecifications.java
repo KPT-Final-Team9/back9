@@ -14,9 +14,9 @@ public class EvaluationSpecifications {
 
 	public static Specification<Score> isCompleted() {
 		return (Root<Score> score, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
-			Predicate scoreGreaterThanZero = criteriaBuilder.greaterThan(score.get("score"), 0);
+			Predicate scoreGreaterThanOrEqualToZero = criteriaBuilder.greaterThanOrEqualTo(score.get("score"), 0);
 			Predicate createdDateAndUpdatedDateNotEqual = criteriaBuilder.notEqual(score.get("createdAt"), score.get("updatedAt"));
-			return criteriaBuilder.and(scoreGreaterThanZero, createdDateAndUpdatedDateNotEqual);
+			return criteriaBuilder.and(scoreGreaterThanOrEqualToZero, createdDateAndUpdatedDateNotEqual);
 		};
 	}
 

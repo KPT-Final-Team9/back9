@@ -77,7 +77,7 @@ public class ScoreService {
 				try {
 					if (isPossible(user.getId(), validRoom.getId(), ratingType)) {
 						Score newScore = Score.builder()
-						  .score(0)
+						  .score(-1)
 						  .comment("")
 						  .bookmark(false)
 						  .ratingType(ratingType)
@@ -106,7 +106,7 @@ public class ScoreService {
 
 			Score validScore = scoreRepository.getValidScoreWithIdAndMemberIdAndStatus(scoreId, member.getId(), Status.REGISTER);
 
-			if (validScore.getScore() > 0 || !validScore.getCreatedAt().isEqual(validScore.getUpdatedAt())) {
+			if (validScore.getScore() >= 0 || !validScore.getCreatedAt().isEqual(validScore.getUpdatedAt())) {
 				throw new ApiException(ApiErrorCode.ALREADY_COMPLETED_EVALUATION);
 			}
 
