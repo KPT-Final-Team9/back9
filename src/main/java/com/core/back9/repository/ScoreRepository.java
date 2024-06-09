@@ -1,6 +1,7 @@
 package com.core.back9.repository;
 
 import com.core.back9.entity.Score;
+import com.core.back9.entity.constant.RatingType;
 import com.core.back9.entity.constant.Status;
 import com.core.back9.exception.ApiErrorCode;
 import com.core.back9.exception.ApiException;
@@ -70,7 +71,9 @@ public interface ScoreRepository extends JpaRepository<Score, Long>, JpaSpecific
           and s.createdAt != s.updatedAt
           and s.updatedAt > :twoYearsAgo
           """)
-	List<Score> findFirstByRoomIdAndStatus(Long roomId, Status status, LocalDateTime twoYearsAgo);
+	List<Score> findByRoomIdAndStatus(Long roomId, Status status, LocalDateTime twoYearsAgo);
+
+	Optional<Score> findFirstByMemberIdAndRatingTypeAndStatusOrderByIdDesc(Long memberId, RatingType ratingType, Status status);
 
 	List<Score> findAllByMemberIdAndStatus(Long memberId, Status status);
 

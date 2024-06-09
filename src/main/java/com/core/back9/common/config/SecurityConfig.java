@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         authorizeHttpRequest -> authorizeHttpRequest
-                                .requestMatchers("/public-api/**").permitAll()
+                                .requestMatchers("/**").permitAll()
                                 .anyRequest().authenticated()
                 )
 

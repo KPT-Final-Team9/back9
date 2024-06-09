@@ -558,10 +558,16 @@ public class ContractService {
             if (lastContract.getContractStatus() == ContractStatus.IN_PROGRESS) {
                 additionalOccupancy += ChronoUnit.DAYS.between(lastContract.getStartDate(), lastDate);
             } else {
-                additionalOccupancy += ChronoUnit.DAYS.between(lastContract.getStartDate(), lastContract.getCheckOut());
+                if(lastContract.getStartDate().isBefore(lastDate.minusYears(1).plusDays(1)) && 365 <= ChronoUnit.DAYS.between(lastContract.getStartDate(), lastContract.getCheckOut())) {
+                    additionalOccupancy += ChronoUnit.DAYS.between(lastDate.minusYears(1).plusDays(1), lastContract.getCheckOut());
+                } else {
+                    additionalOccupancy += ChronoUnit.DAYS.between(lastContract.getStartDate(), lastContract.getCheckOut());
+                }
             }
         }
-        return additionalOccupancy;
+
+        return Math.min(additionalOccupancy, 365L);
+
     }
 
     private long getOccupancy(List<Contract> contracts, LocalDate startDate) {

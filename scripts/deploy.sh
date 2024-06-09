@@ -46,8 +46,7 @@ if [ "$CURRENT_SERVER_PORT" = "8082" -o -z "$IS_DEV1" ];then # dev2운영중 or 
   ((counter++))
   sleep 3
 
-    HEALTH_CHECK_REQUEST_DEV1=$(bash -c '</dev/tcp/127.0.0.1/8081 >/dev/null && echo "Connected" || true')
-
+    HEALTH_CHECK_REQUEST_DEV1=$(curl -s http://172.18.0.1:8082/public-api/health | grep -o '"status":"[^"]*' | awk -F '"' '{print $4}')
     if [ "$HEALTH_CHECK_REQUEST_DEV1" = "Connected" ]; then # 서비스 가능하면 health check 중지 (문자열 길이가 0보다 큰지 판단 -n)
       echo "health check 성공 !"
       echo "시도 횟수 : $counter"
@@ -61,11 +60,8 @@ if [ "$CURRENT_SERVER_PORT" = "8082" -o -z "$IS_DEV1" ];then # dev2운영중 or 
 
   echo "5. deploy check new version"
 
-  HEALTH_CHECK_REQUEST_DEV1=$(bash -c '</dev/tcp/127.0.0.1/8081 >/dev/null && echo "Connected" || true')
-
-#  CURRENT_SERVER_PORT=$(docker exec nginx grep -o 'proxy_pass http://[^:]\+:[0-9]\+' /etc/nginx/nginx.conf | awk -F ':' '{print $NF}' | head -n1)
-  CURRENT_SERVER_PORT=$(curl -s http://172.18.0.1:8081/public-api/health | grep -o '"status":"[^"]*' | awk -F '"' '{print $4}')
-  if [ "$HEALTH_CHECK_REQUEST_DEV1" = "Connected" ];then
+  CURRENT_SERVER_PORT=$(docker exec nginx grep -o 'proxy_pass http://[^:]\+:[0-9]\+' /etc/nginx/nginx.conf | awk -F ':' '{print $NF}' | head -n1)
+  if [ "$CURRENT_SERVER_PORT" = "8081" ];then
     echo "dev1 서버가 성공적으로 배포되었습니다! [ CURRENT_SERVER_PORT ] : $CURRENT_SERVER_PORT"
     /home/ubuntu/app/alarm.sh
   fi
@@ -91,7 +87,7 @@ else # dev2 운영중인 경우
     ((counter++))
     sleep 3
 
-    HEALTH_CHECK_REQUEST_DEV2=$(bash -c '</dev/tcp/127.0.0.1/8082 >/dev/null && echo "Connected" || true')
+    HEALTH_CHECK_REQUEST_DEV2=$(curl -s http://172.18.0.1:8082/public-api/health | grep -o '"status":"[^"]*' | awk -F '"' '{print $4}')
     if [ "$HEALTH_CHECK_REQUEST_DEV2" = "Connected" ]; then # 서비스 가능하면 health check 중지 (문자열 길이가 0보다 큰지 판단 -n)
       echo "health check 성공!"
       echo "시도 횟수 : $counter"
@@ -105,11 +101,8 @@ else # dev2 운영중인 경우
 
   echo "5. deploy check new version"
 
-  HEALTH_CHECK_REQUEST_DEV2=$(bash -c '</dev/tcp/127.0.0.1/8082 >/dev/null && echo "Connected" || true')
-
-#  CURRENT_SERVER_PORT=$(docker exec nginx grep -o 'proxy_pass http://[^:]\+:[0-9]\+' /etc/nginx/nginx.conf | awk -F ':' '{print $NF}' | head -n1)
-  CURRENT_SERVER_PORT=$(curl -s http://172.18.0.1:8082/public-api/health | grep -o '"status":"[^"]*' | awk -F '"' '{print $4}')
-  if [ "$HEALTH_CHECK_REQUEST_DEV2" = "Connected" ];then
+  CURRENT_SERVER_PORT=$(docker exec nginx grep -o 'proxy_pass http://[^:]\+:[0-9]\+' /etc/nginx/nginx.conf | awk -F ':' '{print $NF}' | head -n1)
+  if [ "$CURRENT_SERVER_PORT" = "8082" ];then
     echo "dev2 서버가 성공적으로 배포되었습니다! [ CURRENT_SERVER_PORT ] : $CURRENT_SERVER_PORT"
     /home/ubuntu/app/alarm.sh
   fi

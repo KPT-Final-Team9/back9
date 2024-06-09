@@ -42,5 +42,5 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
             """)
     Optional<Integer> deleteRegisteredTenant(Status status, Long tenantId);
 
-    Tenant findByCompanyNumberAndStatus(String companyNumber, Status status);
+    Optional<Tenant> findByCompanyNumberAndStatus(String companyNumber, Status status);
 }
