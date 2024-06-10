@@ -18,63 +18,63 @@ import java.util.Optional;
 @Repository
 public interface ScoreRepository extends JpaRepository<Score, Long>, JpaSpecificationExecutor<Score> {
 
-	Optional<Score> findFirstByIdAndStatus(Long scoreId, Status status);
+    Optional<Score> findFirstByIdAndStatus(Long scoreId, Status status);
 
-	default Score getValidScoreWithIdAndStatus(Long scoreId, Status status) {
-		return findFirstByIdAndStatus(scoreId, status)
-		  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_EVALUATION));
-	}
+    default Score getValidScoreWithIdAndStatus(Long scoreId, Status status) {
+        return findFirstByIdAndStatus(scoreId, status)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_EVALUATION));
+    }
 
-	Optional<Score> findFirstByIdAndMemberIdAndStatus(Long scoreId, Long memberId, Status status);
+    Optional<Score> findFirstByIdAndMemberIdAndStatus(Long scoreId, Long memberId, Status status);
 
-	default Score getValidScoreWithIdAndMemberIdAndStatus(Long scoreId, Long memberId, Status status) {
-		return findFirstByIdAndMemberIdAndStatus(scoreId, memberId, status)
-		  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_EVALUATION));
-	}
+    default Score getValidScoreWithIdAndMemberIdAndStatus(Long scoreId, Long memberId, Status status) {
+        return findFirstByIdAndMemberIdAndStatus(scoreId, memberId, status)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_EVALUATION));
+    }
 
-	@Query("""
-	  SELECT COUNT(s) = 0 FROM Score s WHERE
-	  YEAR(s.createdAt) = :year AND
-	  MONTH(s.createdAt) BETWEEN :startMonth AND :endMonth AND
-	  s.member.id = :memberId AND
-	  s.room.id = :roomId AND
-	  s.ratingType = 'FACILITY'
-	  """)
-	boolean existsByYearAndQuarterAndMemberIdAndRoomId(
-	  @Param("year") int year,
-	  @Param("startMonth") int startMonth,
-	  @Param("endMonth") int endMonth,
-	  @Param("memberId") Long memberId,
-	  @Param("roomId") Long roomId
-	);
+    @Query("""
+            SELECT COUNT(s) = 0 FROM Score s WHERE
+            YEAR(s.createdAt) = :year AND
+            MONTH(s.createdAt) BETWEEN :startMonth AND :endMonth AND
+            s.member.id = :memberId AND
+            s.room.id = :roomId AND
+            s.ratingType = 'FACILITY'
+            """)
+    boolean existsByYearAndQuarterAndMemberIdAndRoomId(
+            @Param("year") int year,
+            @Param("startMonth") int startMonth,
+            @Param("endMonth") int endMonth,
+            @Param("memberId") Long memberId,
+            @Param("roomId") Long roomId
+    );
 
-	@Query("""
-	  SELECT COUNT(s) = 0 FROM Score s WHERE
-	  YEAR(s.createdAt) = :year AND
-	  MONTH(s.createdAt) = :currentMonth AND
-	  s.member.id = :memberId AND
-	  s.room.id = :roomId AND
-	  s.ratingType = 'MANAGEMENT'
-	  """)
-	boolean existsByYearAndMonthAndMemberIdAndRoomId(
-	  @Param("year") int year,
-	  @Param("currentMonth") int currentMonth,
-	  @Param("memberId") Long memberId,
-	  @Param("roomId") Long roomId
-	);
+    @Query("""
+            SELECT COUNT(s) = 0 FROM Score s WHERE
+            YEAR(s.createdAt) = :year AND
+            MONTH(s.createdAt) = :currentMonth AND
+            s.member.id = :memberId AND
+            s.room.id = :roomId AND
+            s.ratingType = 'MANAGEMENT'
+            """)
+    boolean existsByYearAndMonthAndMemberIdAndRoomId(
+            @Param("year") int year,
+            @Param("currentMonth") int currentMonth,
+            @Param("memberId") Long memberId,
+            @Param("roomId") Long roomId
+    );
 
-	@Query("""
-          select s
-          from Score s
-          where s.room.id = :roomId
-          and s.status = :status
-          and s.createdAt != s.updatedAt
-          and s.updatedAt > :twoYearsAgo
-          """)
-	List<Score> findByRoomIdAndStatus(Long roomId, Status status, LocalDateTime twoYearsAgo);
+    @Query("""
+            select s
+            from Score s
+            where s.room.id = :roomId
+            and s.status = :status
+            and s.score >= 0
+            and s.updatedAt > :twoYearsAgo
+            """)
+    List<Score> findByRoomIdAndStatus(Long roomId, Status status, LocalDateTime twoYearsAgo);
 
-	Optional<Score> findFirstByMemberIdAndRatingTypeAndStatusOrderByIdDesc(Long memberId, RatingType ratingType, Status status);
+    Optional<Score> findFirstByMemberIdAndRatingTypeAndStatusOrderByIdDesc(Long memberId, RatingType ratingType, Status status);
 
-	List<Score> findAllByMemberIdAndStatus(Long memberId, Status status);
+    List<Score> findAllByMemberIdAndStatus(Long memberId, Status status);
 
 }
