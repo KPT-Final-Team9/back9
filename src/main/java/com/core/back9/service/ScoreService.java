@@ -32,24 +32,25 @@ import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Transactional
 @Service
 public class ScoreService {
 
-	private final MemberRepository memberRepository;
-	private final BuildingRepository buildingRepository;
-	private final RoomRepository roomRepository;
-	private final ScoreRepository scoreRepository;
-	private final ScoreMapper scoreMapper;
+    private final MemberRepository memberRepository;
+    private final BuildingRepository buildingRepository;
+    private final RoomRepository roomRepository;
+    private final ScoreRepository scoreRepository;
+    private final ScoreMapper scoreMapper;
 
-	public void create(
-	  MemberDTO.Info member,
-	  Long buildingId,
-	  Long roomId,
-	  RatingType ratingType
-	) {
+    public void create(
+            MemberDTO.Info member,
+            Long buildingId,
+            Long roomId,
+            RatingType ratingType
+    ) {
 		/* TODO batch 생성이라면 멤버(OWNER) 권한은 필요없음
 		    예외적으로 로그인 멤버가 OWNER 상태일 때 수동으로 발생
 		*/
@@ -59,285 +60,290 @@ public class ScoreService {
 		  -> 4월 1일에 발생한 평가를 진행하지 않고 7월 1일이 되었을 때
 		 */
 
-		if (member.getRole() == Role.OWNER) {
-			/* 유효한 호실 */
-			Room validRoom = roomRepository.getRoomBySpecificIds(buildingId, roomId, member.getId(), Status.REGISTER)
-			  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
+        if (member.getRole() == Role.OWNER) {
+            /* 유효한 호실 */
+            Room validRoom = roomRepository.getRoomBySpecificIds(buildingId, roomId, member.getId(), Status.REGISTER)
+                    .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
 
-			/* 해당 호실의 계약 목록 */
-			List<Contract> contracts = validRoom.getContracts();
+            /* 해당 호실의 계약 목록 */
+            List<Contract> contracts = validRoom.getContracts();
 
-			/* 계약 목록 중 계약 이행중인 입주사
-			 * 이행중인 계약은 단 한건이라고 판단 -> findFirst -> 없다면 계약 이행중인 상태가 아니다! */
-			Contract progressContract = contracts.stream().filter(contract -> contract.getContractStatus() == ContractStatus.IN_PROGRESS)
-			  .findFirst().orElseThrow(() -> new ApiException(ApiErrorCode.CONTRACT_NOT_IN_PROGRESS));
+            /* 계약 목록 중 계약 이행중인 입주사
+             * 이행중인 계약은 단 한건이라고 판단 -> findFirst -> 없다면 계약 이행중인 상태가 아니다! */
+            Contract progressContract = contracts.stream().filter(contract -> contract.getContractStatus() == ContractStatus.IN_PROGRESS)
+                    .findFirst().orElseThrow(() -> new ApiException(ApiErrorCode.CONTRACT_NOT_IN_PROGRESS));
 
-			/* 계약 이행 중인 입주사에 포함된 모든 사용자에게 평가 레코드 생성 (평가타입은 리퀘스트로 받음) */
-			progressContract.getTenant().getMembers().forEach(user -> {
-				try {
-					if (isPossible(user.getId(), validRoom.getId(), ratingType)) {
-						Score newScore = Score.builder()
-						  .score(-1)
-						  .comment("")
-						  .bookmark(false)
-						  .ratingType(ratingType)
-						  .room(validRoom)
-						  .member(user)
-						  .status(Status.REGISTER)
-						  .build();
-						scoreRepository.save(newScore);
-					}
-				} catch (ApiException apiException) {
-					System.out.printf("평가 레코드 생성 실패 사용자 id: %s, role: %s, status: %s%n", user.getId(), user.getRole(), user.getStatus());
-				}
-			});
-			return;
+            /* 계약 이행 중인 입주사에 포함된 모든 사용자에게 평가 레코드 생성 (평가타입은 리퀘스트로 받음) */
+            progressContract.getTenant().getMembers().forEach(user -> {
+                try {
+                    if (isPossible(user.getId(), validRoom.getId(), ratingType)) {
+                        Score newScore = Score.builder()
+                                .score(-1)
+                                .comment("")
+                                .bookmark(false)
+                                .ratingType(ratingType)
+                                .room(validRoom)
+                                .member(user)
+                                .status(Status.REGISTER)
+                                .build();
+                        scoreRepository.save(newScore);
+                    }
+                } catch (ApiException apiException) {
+                    System.out.printf("평가 레코드 생성 실패 사용자 id: %s, role: %s, status: %s%n", user.getId(), user.getRole(), user.getStatus());
+                }
+            });
+            return;
 
-		}
-		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "평가 수동 발생은 소유자의 권한입니다");
-	}
+        }
+        throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION, "평가 수동 발생은 소유자의 권한입니다");
+    }
 
-	public ScoreDTO.UpdateResponse updateScore(
-	  MemberDTO.Info member,    // USER
-	  Long scoreId,
-	  ScoreDTO.UpdateRequest updateRequest
-	) {
-		if (member.getRole() == Role.USER) {
+    public ScoreDTO.UpdateResponse updateScore(
+            MemberDTO.Info member,    // USER
+            Long scoreId,
+            ScoreDTO.UpdateRequest updateRequest
+    ) {
+        if (member.getRole() == Role.USER) {
 
-			Score validScore = scoreRepository.getValidScoreWithIdAndMemberIdAndStatus(scoreId, member.getId(), Status.REGISTER);
+            Score validScore = scoreRepository.getValidScoreWithIdAndMemberIdAndStatus(scoreId, member.getId(), Status.REGISTER);
 
-			if (validScore.getScore() >= 0 || !validScore.getCreatedAt().isEqual(validScore.getUpdatedAt())) {
-				throw new ApiException(ApiErrorCode.ALREADY_COMPLETED_EVALUATION);
-			}
+            if (validScore.getScore() >= 0) {
+                throw new ApiException(ApiErrorCode.ALREADY_COMPLETED_EVALUATION);
+            }
 
-			validScore.updateScore(updateRequest);
-			return scoreMapper.toUpdateResponse(validScore);
-		}
-		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
-	}
+            validScore.updateScore(updateRequest);
+            return scoreMapper.toUpdateResponse(validScore);
+        }
+        throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
+    }
 
-	public ScoreDTO.Info updateBookmark(MemberDTO.Info member, Long scoreId, boolean bookmark) {
-		if (member.getRole() == Role.OWNER) {
-			Score validScore = scoreRepository.getValidScoreWithIdAndStatus(scoreId, Status.REGISTER);
-			validScore.updateBookmark(bookmark);
-			return scoreMapper.toInfo(validScore);
-		}
-		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
-	}
+    public ScoreDTO.Info updateBookmark(MemberDTO.Info member, Long scoreId, boolean bookmark) {
+        if (member.getRole() == Role.OWNER) {
+            Score validScore = scoreRepository.getValidScoreWithIdAndStatus(scoreId, Status.REGISTER);
+            validScore.updateBookmark(bookmark);
+            return scoreMapper.toInfo(validScore);
+        }
+        throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
+    }
 
-	@Transactional(readOnly = true)
-	public Page<ScoreDTO.Info> selectScores(
-	  MemberDTO.Info member,
-	  Long buildingId,
-	  Long roomId,
-	  LocalDateTime startDate,
-	  LocalDateTime endDate,
-	  RatingType ratingType,
-	  Boolean bookmark,
-	  String keyword,
-	  Pageable pageable
-	) {
-		Building building = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
-		Specification<Score> specification = Specification.where(null);
-		specification = specification.and(EvaluationSpecifications.isCompleted());
-		specification = specification.and(EvaluationSpecifications.hasRatingType(ratingType));
+    @Transactional(readOnly = true)
+    public Page<ScoreDTO.Info> selectScores(
+            MemberDTO.Info member,
+            Long buildingId,
+            Long roomId,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            RatingType ratingType,
+            Boolean bookmark,
+            String keyword,
+            Pageable pageable
+    ) {
+        Building building = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
+        Specification<Score> specification = Specification.where(null);
+        specification = specification.and(EvaluationSpecifications.isEvaluationCompleted());
+        specification = specification.and(EvaluationSpecifications.hasRatingType(ratingType));
 
-		if (roomId != null) {
-			Room room = roomRepository.getRoomBySpecificIds(buildingId, roomId, member.getId(), Status.REGISTER)
-			  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
-			specification = specification.and(EvaluationSpecifications.hasRoomId(room));
-		} else {
-			// 선택된 빌딩의 모든 호실의 데이터
-			specification = specification.and(EvaluationSpecifications.hasBuilding(building, true));
-		}
-		if (startDate != null && endDate != null) {
-			specification = specification.and(EvaluationSpecifications.isUpdatedBetween(startDate, endDate));
-		}
-		if (bookmark) {
-			specification = specification.and(EvaluationSpecifications.isBookmarked());
-		}
-		if (keyword != null) {
-			specification = specification.and(EvaluationSpecifications.containsKeyword(keyword));
-		}
-		return scoreRepository.findAll(specification, pageable).map(scoreMapper::toInfo);
-	}
+        if (roomId != null) {
+            Room room = roomRepository.getRoomBySpecificIds(buildingId, roomId, member.getId(), Status.REGISTER)
+                    .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
+            specification = specification.and(EvaluationSpecifications.hasRoomId(room));
+        } else {
+            // 선택된 빌딩의 모든 호실의 데이터
+            specification = specification.and(EvaluationSpecifications.hasBuilding(building, true));
+        }
+        if (startDate != null && endDate != null) {
+            specification = specification.and(EvaluationSpecifications.isUpdatedBetween(startDate, endDate));
+        }
+        if (bookmark) {
+            specification = specification.and(EvaluationSpecifications.isBookmarked());
+        }
+        if (keyword != null) {
+            specification = specification.and(EvaluationSpecifications.containsKeyword(keyword));
+        }
+        return scoreRepository.findAll(specification, pageable).map(scoreMapper::toInfo);
+    }
 
-	@Transactional(readOnly = true)
-	public ScoreDTO.ListOfYearAvgWithMeAndOthers selectYearScoresIntervalMonth(MemberDTO.Info member, Long buildingId, Long roomId, YearMonth yearMonth) {
+    @Transactional(readOnly = true)
+    public ScoreDTO.ListOfYearAvgWithMeAndOthers selectYearScoresIntervalMonth(MemberDTO.Info member, Long buildingId, Long roomId, YearMonth yearMonth) {
 
-		Room validRoom = roomRepository.getValidSpecificRoom(buildingId, roomId, member.getId(), Status.REGISTER);
-		List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
-		  buildingId, member.getId(), Status.REGISTER, null
-		).stream().toList();
+        Room validRoom = roomRepository.getValidSpecificRoom(buildingId, roomId, member.getId(), Status.REGISTER);
+        List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
+                buildingId, member.getId(), Status.REGISTER, null
+        ).stream().toList();
 
-		Specification<Score> specification = Specification.where(null);
-		specification = specification.and(EvaluationSpecifications.hasRoomId(validRoom));
-		specification = specification.and(EvaluationSpecifications.isOneYearAgo(yearMonth.atEndOfMonth().atTime(LocalTime.MAX)));
-		List<Score> myYearScores = scoreRepository.findAll(specification);    // 내 단일 호실 점수 목록
+        Specification<Score> specification = Specification.where(null);
+        specification = specification.and(EvaluationSpecifications.hasRoomId(validRoom));
+        specification = specification.and(EvaluationSpecifications.isOneYearAgo(yearMonth.atEndOfMonth().atTime(LocalTime.MAX)));
+        List<Score> myYearScores = scoreRepository.findAll(specification);    // 내 단일 호실 점수 목록
 
-		specification = Specification.where(null);
-		specification = specification.and(EvaluationSpecifications.hasRoomList(roomList, false));
-		specification = specification.and(EvaluationSpecifications.isOneYearAgo(yearMonth.atEndOfMonth().atTime(LocalTime.MAX)));
-		List<Score> othersYearScores = scoreRepository.findAll(specification);    // 타 호실 점수 목록
+        specification = Specification.where(null);
+        specification = specification.and(EvaluationSpecifications.hasRoomList(roomList, false));
+        specification = specification.and(EvaluationSpecifications.isOneYearAgo(yearMonth.atEndOfMonth().atTime(LocalTime.MAX)));
+        List<Score> othersYearScores = scoreRepository.findAll(specification);    // 타 호실 점수 목록
 
-		List<ScoreDTO.AllAvgByMonth> yearlyScoreMy = getYearlyScoreListOfMyOrOthers(yearMonth, myYearScores);
-		List<ScoreDTO.AllAvgByMonth> yearlyScoreOthers = getYearlyScoreListOfMyOrOthers(yearMonth, othersYearScores);
+        List<ScoreDTO.AllAvgByMonth> yearlyScoreMy = getYearlyScoreListOfMyOrOthers(yearMonth, myYearScores);
+        List<ScoreDTO.AllAvgByMonth> yearlyScoreOthers = getYearlyScoreListOfMyOrOthers(yearMonth, othersYearScores);
 
-		return scoreMapper.toListOfYearAvgWithMeAndOthers(yearlyScoreMy, yearlyScoreOthers);
-	}
+        return scoreMapper.toListOfYearAvgWithMeAndOthers(yearlyScoreMy, yearlyScoreOthers);
+    }
 
-	public ScoreDTO.AvgByQuarter selectScoresByQuarter(MemberDTO.Info member, Long buildingId, int year, int quarter) {
-		List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
-		  buildingId, member.getId(), Status.REGISTER, null
-		).stream().toList();
+    public ScoreDTO.AvgByQuarter selectScoresByQuarter(MemberDTO.Info member, Long buildingId, int year, int quarter) {
+        List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
+                buildingId, member.getId(), Status.REGISTER, null
+        ).stream().toList();
 
-		List<Score> currentQuarterScoreList = getQuarterlyScoreListOfMyOrOthers(roomList, year, quarter, true);
+        List<Score> currentQuarterScoreList = getQuarterlyScoreListOfMyOrOthers(roomList, year, quarter, true);
 
-		return scoreMapper.toQuarterlyTotalAvg(year, quarter, currentQuarterScoreList);
-	}
+        return scoreMapper.toQuarterlyTotalAvg(year, quarter, currentQuarterScoreList);
+    }
 
-	public ScoreDTO.CurrentAndBeforeQuarterlyTotalAvg selectQuarterlyScoreOfMyRooms(MemberDTO.Info member, Long buildingId, int year, int quarter) {
-		List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
-		  buildingId, member.getId(), Status.REGISTER, null
-		).stream().toList();
+    public ScoreDTO.CurrentAndBeforeQuarterlyTotalAvg selectQuarterlyScoreOfMyRooms(MemberDTO.Info member, Long buildingId, int year, int quarter) {
+        List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
+                buildingId, member.getId(), Status.REGISTER, null
+        ).stream().toList();
 
-		List<ScoreDTO.TotalAvgByRoom> currentQuarterByRoomList = getQuarterlyScoreListOfMyRooms(roomList, year, quarter);
+        List<ScoreDTO.TotalAvgByRoom> currentQuarterByRoomList = getQuarterlyScoreListOfMyRooms(roomList, year, quarter);
 
-		int beforeYear = year, beforeQuarter;
-		if (quarter == 1) {
-			beforeQuarter = 4;
-			beforeYear = year - 1;
-		} else {
-			beforeQuarter = quarter - 1;
-		}
+        int beforeYear = year, beforeQuarter;
+        if (quarter == 1) {
+            beforeQuarter = 4;
+            beforeYear = year - 1;
+        } else {
+            beforeQuarter = quarter - 1;
+        }
 
-		List<ScoreDTO.TotalAvgByRoom> beforeQuarterByRoomList = getQuarterlyScoreListOfMyRooms(roomList, beforeYear, beforeQuarter);
+        List<ScoreDTO.TotalAvgByRoom> beforeQuarterByRoomList = getQuarterlyScoreListOfMyRooms(roomList, beforeYear, beforeQuarter);
 
-		return scoreMapper.toQuarterlyTotalAvgWithCurrentAndBefore(currentQuarterByRoomList, beforeQuarterByRoomList);
-	}
+        return scoreMapper.toQuarterlyTotalAvgWithCurrentAndBefore(currentQuarterByRoomList, beforeQuarterByRoomList);
+    }
 
-	public List<ScoreDTO.AllAvgByRoom> selectYearScoreOfMyRooms(MemberDTO.Info member, Long buildingId) {
-		List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
-		  buildingId, member.getId(), Status.REGISTER, null
-		).stream().toList();
+    public List<ScoreDTO.AllAvgByRoom> selectYearScoreOfMyRooms(MemberDTO.Info member, Long buildingId) {
+        List<Room> roomList = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(
+                buildingId, member.getId(), Status.REGISTER, null
+        ).stream().toList();
 
-		YearMonth now = YearMonth.now();
+        YearMonth now = YearMonth.now();
 
-		return roomList.stream().map(room -> {
+        return roomList.stream().map(room -> {
 
-			Specification<Score> specification = Specification.where(null);
-			specification = specification.and(EvaluationSpecifications.hasRoomId(room));
-			specification = specification.and(EvaluationSpecifications.isOneYearAgo(now.atEndOfMonth().atTime(LocalTime.MAX)));
-			List<Score> myYearScores = scoreRepository.findAll(specification);    // 내 단일 호실 점수 목록
+            Specification<Score> specification = Specification.where(null);
+            specification = specification.and(EvaluationSpecifications.hasRoomId(room));
+            specification = specification.and(EvaluationSpecifications.isOneYearAgo(now.atEndOfMonth().atTime(LocalTime.MAX)));
+            List<Score> myYearScores = scoreRepository.findAll(specification);    // 내 단일 호실 점수 목록
 
-			return scoreMapper.toAllAvgWithMonthByRoom(room, getYearlyScoreListOfMyOrOthers(now, myYearScores));
-		}).toList();
-	}
+            return scoreMapper.toAllAvgWithMonthByRoom(room, getYearlyScoreListOfMyOrOthers(now, myYearScores));
+        }).toList();
+    }
 
-	private boolean isPossible(Long memberId, Long roomId, RatingType ratingType) {
-		DateUtils dateUtils = new DateUtils();
-		int quarter = dateUtils.getQuarter();
+    private boolean isPossible(Long memberId, Long roomId, RatingType ratingType) {
+        DateUtils dateUtils = new DateUtils();
+        int quarter = dateUtils.getQuarter();
 
-		memberRepository.findFirstByIdAndRoleAndStatus(memberId, Role.USER, Status.REGISTER)
-		  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER, "평가 레코드를 생성할 수 없는 사용자입니다"));
+        memberRepository.findFirstByIdAndRoleAndStatus(memberId, Role.USER, Status.REGISTER)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_MEMBER, "평가 레코드를 생성할 수 없는 사용자입니다"));
 
-		if (ratingType == RatingType.FACILITY) {
-			// 시설 - 분기별
-			return scoreRepository.existsByYearAndQuarterAndMemberIdAndRoomId(
-			  dateUtils.getYear(),
-			  dateUtils.getStartMonth(quarter),
-			  dateUtils.getEndMonth(quarter),
-			  memberId, roomId);
-		} else {
-			// 관리 - 월별
-			return scoreRepository.existsByYearAndMonthAndMemberIdAndRoomId(
-			  dateUtils.getYear(), dateUtils.getMonthValue(),
-			  memberId, roomId);
-		}
-	}
+        if (ratingType == RatingType.FACILITY) {
+            // 시설 - 분기별
+            return scoreRepository.existsByYearAndQuarterAndMemberIdAndRoomId(
+                    dateUtils.getYear(),
+                    dateUtils.getStartMonth(quarter),
+                    dateUtils.getEndMonth(quarter),
+                    memberId, roomId);
+        } else {
+            // 관리 - 월별
+            return scoreRepository.existsByYearAndMonthAndMemberIdAndRoomId(
+                    dateUtils.getYear(), dateUtils.getMonthValue(),
+                    memberId, roomId);
+        }
+    }
 
-	public List<ScoreDTO.TotalAvgByRoom> getQuarterlyScoreListOfMyRooms(List<Room> roomList, int year, int quarter) {
-		return roomList.stream().map(room -> {
-			DateUtils dateUtils = new DateUtils();
-			LocalDateTime[] startDayAndEndDay = dateUtils.getStartDayAndEndDayByYearAndQuarter(year, quarter);
+    public List<ScoreDTO.TotalAvgByRoom> getQuarterlyScoreListOfMyRooms(List<Room> roomList, int year, int quarter) {
+        return roomList.stream().map(room -> {
+            DateUtils dateUtils = new DateUtils();
+            LocalDateTime[] startDayAndEndDay = dateUtils.getStartDayAndEndDayByYearAndQuarter(year, quarter);
 
-			Specification<Score> specification = Specification.where(null);
-			specification = specification.and(EvaluationSpecifications.isCompleted());
-			specification = specification.and(EvaluationSpecifications.isUpdatedBetween(
-			  startDayAndEndDay[0], startDayAndEndDay[1]
-			));
-			specification = specification.and(EvaluationSpecifications.hasRoomId(room));
-			List<Score> scoreByRoom = scoreRepository.findAll(specification);
+            Specification<Score> specification = Specification.where(null);
+            specification = specification.and(EvaluationSpecifications.isEvaluationCompleted());
+            specification = specification.and(EvaluationSpecifications.isUpdatedBetween(
+                    startDayAndEndDay[0], startDayAndEndDay[1]
+            ));
+            specification = specification.and(EvaluationSpecifications.hasRoomId(room));
+            List<Score> scoreByRoom = scoreRepository.findAll(specification);
 
-			return scoreMapper.toTotalAvgByRoom(room, scoreByRoom);
-		}).toList();
-	}
+            return scoreMapper.toTotalAvgByRoom(room, scoreByRoom);
+        }).toList();
+    }
 
-	public List<Score> getQuarterlyScoreListOfMyOrOthers(List<Room> roomList, int year, int quarter, boolean isMine) {
-		DateUtils dateUtils = new DateUtils();
-		LocalDateTime[] startDayAndEndDay = dateUtils.getStartDayAndEndDayByYearAndQuarter(year, quarter);
+    public List<Score> getQuarterlyScoreListOfMyOrOthers(List<Room> roomList, int year, int quarter, boolean isMine) {
+        DateUtils dateUtils = new DateUtils();
+        LocalDateTime[] startDayAndEndDay = dateUtils.getStartDayAndEndDayByYearAndQuarter(year, quarter);
 
-		Specification<Score> specification = Specification.where(null);
-		specification = specification.and(EvaluationSpecifications.isCompleted());
-		specification = specification.and(EvaluationSpecifications.isUpdatedBetween(
-		  startDayAndEndDay[0], startDayAndEndDay[1]
-		));
-		specification = specification.and(EvaluationSpecifications.hasRoomList(roomList, isMine));
-		return scoreRepository.findAll(specification);
-	}
+        Specification<Score> specification = Specification.where(null);
+        specification = specification.and(EvaluationSpecifications.isEvaluationCompleted());
+        specification = specification.and(EvaluationSpecifications.isUpdatedBetween(
+                startDayAndEndDay[0], startDayAndEndDay[1]
+        ));
+        specification = specification.and(EvaluationSpecifications.hasRoomList(roomList, isMine));
+        return scoreRepository.findAll(specification);
+    }
 
-	public List<ScoreDTO.AllAvgByMonth> getYearlyScoreListOfMyOrOthers(YearMonth yearMonth, List<Score> scoreList) {
-		List<ScoreDTO.AllAvgByMonth> allAvgByMonthList = new ArrayList<>();
-		for (int i = 0; i < 12; i++) {
-			YearMonth current = yearMonth.minusMonths(i);
-			LocalDateTime startDayOfMonth = current.atDay(1).atStartOfDay();
-			LocalDateTime endDayOfMonth = current.atEndOfMonth().atTime(LocalTime.MAX);
+    public List<ScoreDTO.AllAvgByMonth> getYearlyScoreListOfMyOrOthers(YearMonth yearMonth, List<Score> scoreList) {
+        List<ScoreDTO.AllAvgByMonth> allAvgByMonthList = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            YearMonth current = yearMonth.minusMonths(i);
+            LocalDateTime startDayOfMonth = current.atDay(1).atStartOfDay();
+            LocalDateTime endDayOfMonth = current.atEndOfMonth().atTime(LocalTime.MAX);
 
-			List<Score> scoresOfMonth = scoreList.stream()
-			  .filter(score -> !score.getCreatedAt().isBefore(startDayOfMonth) && !score.getCreatedAt().isAfter(endDayOfMonth))
-			  .toList();
+            List<Score> scoresOfMonth = scoreList.stream()
+                    .filter(score -> !score.getCreatedAt().isBefore(startDayOfMonth) && !score.getCreatedAt().isAfter(endDayOfMonth))
+                    .toList();
 
-			allAvgByMonthList.add(scoreMapper.toAllAvgWithMonth(current, scoresOfMonth));
-		}
-		return allAvgByMonthList;
-	}
+            allAvgByMonthList.add(scoreMapper.toAllAvgWithMonth(current, scoresOfMonth));
+        }
+        return allAvgByMonthList;
+    }
 
-	public boolean hasValidScore(MemberDTO.Info member, Long buildingId) {
+    public boolean hasValidScore(MemberDTO.Info member, Long buildingId) {
 
-		List<Long> roomIds = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(buildingId, member.getId(), Status.REGISTER).stream()
-				.map(BaseEntity::getId).toList();
+        List<Long> roomIds = roomRepository.findAllByBuildingIdAndMemberIdAndStatus(buildingId, member.getId(), Status.REGISTER).stream()
+                .map(BaseEntity::getId).toList();
 
         LocalDateTime twoYearsAgo = LocalDateTime.now().minusYears(2);
 
-		for (Long roomId : roomIds) {
+        for (Long roomId : roomIds) {
             if (!scoreRepository.findByRoomIdAndStatus(roomId, Status.REGISTER, twoYearsAgo).isEmpty()) {
                 return true;
             }
-		}
+        }
 
-		return false;
-	}
-  
-  @Transactional(readOnly = true)
-	public List<ScoreDTO.Info> selectAllByMember(MemberDTO.Info member) {
-		return scoreRepository.findAllByMemberIdAndStatus(member.getId(), Status.REGISTER)
-		  .stream().map(scoreMapper::toInfo).toList();
-  }
+        return false;
+    }
 
-	public List<ScoreDTO.Info> getEvaluationsInProgress(MemberDTO.Info member) {
-		List<Score> evaluationsInProgress = new ArrayList<>();
-		Long memberId = member.getId();
+    @Transactional(readOnly = true)
+    public List<ScoreDTO.Info> selectAllByMember(MemberDTO.Info member) {
+        return scoreRepository.findAllByMemberIdAndStatus(member.getId(), Status.REGISTER)
+                .stream().map(scoreMapper::toInfo).toList();
+    }
 
-		addEvaluation(evaluationsInProgress, memberId, RatingType.FACILITY);
-		addEvaluation(evaluationsInProgress, memberId, RatingType.MANAGEMENT);
-		addEvaluation(evaluationsInProgress, memberId, RatingType.COMPLAINT);
+    public List<ScoreDTO.InfoWithCompletionStatus> getEvaluationsInProgress(MemberDTO.Info member) {
+        List<Score> evaluationsInProgress = new ArrayList<>();
+        Long memberId = member.getId();
 
-		return evaluationsInProgress.stream().map(scoreMapper::toInfo).toList();
-	}
+        addEvaluation(evaluationsInProgress, memberId, RatingType.FACILITY);
+        addEvaluation(evaluationsInProgress, memberId, RatingType.MANAGEMENT);
+        addEvaluation(evaluationsInProgress, memberId, RatingType.COMPLAINT);
 
-	private void addEvaluation(List<Score> evaluationsInProgress, Long memberId, RatingType ratingType) {
-		scoreRepository.findFirstByMemberIdAndRatingTypeAndStatusOrderByIdDesc(memberId, ratingType, Status.REGISTER)
-				.ifPresent(evaluationsInProgress::add);
-	}
+        return evaluationsInProgress.stream()
+                .map(evaluation -> {
+                    boolean completed = evaluation.getScore() >= 0;
+                    return scoreMapper.toInfoWithCompletionStatus(evaluation, completed);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private void addEvaluation(List<Score> evaluationsInProgress, Long memberId, RatingType ratingType) {
+        scoreRepository.findFirstByMemberIdAndRatingTypeAndStatusOrderByIdDesc(memberId, ratingType, Status.REGISTER)
+                .ifPresent(evaluationsInProgress::add);
+    }
 
 }
