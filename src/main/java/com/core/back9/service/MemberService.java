@@ -18,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service
@@ -122,6 +124,17 @@ public class MemberService {
         if (!passwordEncoder.matches(requestPassword, member.getPassword())) {
             throw new ApiException(ApiErrorCode.INVALID_PASSWORD);
         }
+    }
+
+    public MemberDTO.Info selectOne(MemberDTO.Info member) {
+        Member validMember = memberRepository.getValidMemberWithEmailAndStatus(member.getEmail(), Status.REGISTER);
+        return memberMapper.toInfo(validMember);
+    }
+
+    public List<MemberDTO.Info> selectAllMembersByTenantId(MemberDTO.Info member) {
+        long tenantId = member.getTenant().getId();
+        return memberRepository.findAllByTenantIdAndStatus(tenantId, Status.REGISTER)
+          .stream().map(memberMapper::toInfo).toList();
     }
 
 }

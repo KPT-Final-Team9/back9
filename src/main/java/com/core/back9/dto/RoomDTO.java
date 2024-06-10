@@ -79,4 +79,18 @@ public class RoomDTO {
 		private MemberDTO.OwnerInfo ownerInfo;
 	}
 
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class InfoWithBuilding {
+		private Long id;
+		private BuildingDTO.Info building;
+		private String name;
+		private String floor;
+		private float area;
+		private Usage usage;
+		private Status status;
+	}
+
 }

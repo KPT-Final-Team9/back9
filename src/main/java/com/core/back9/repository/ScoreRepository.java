@@ -75,4 +75,6 @@ public interface ScoreRepository extends JpaRepository<Score, Long>, JpaSpecific
 
 	Optional<Score> findFirstByMemberIdAndRatingTypeAndStatusOrderByIdDesc(Long memberId, RatingType ratingType, Status status);
 
+	List<Score> findAllByMemberIdAndStatus(Long memberId, Status status);
+
 }

@@ -179,4 +179,8 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
 
 
     List<Contract> findAllByContractStatus(ContractStatus contractStatus);
+
+    @Query("SELECT c FROM Contract c JOIN FETCH c.tenant t WHERE t.id = :tenantId AND c.status = :status")
+    List<Contract> findAllByTenantIdAndStatus(Long tenantId, Status status);
+
 }

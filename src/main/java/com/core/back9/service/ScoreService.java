@@ -317,6 +317,12 @@ public class ScoreService {
 
 		return false;
 	}
+  
+  @Transactional(readOnly = true)
+	public List<ScoreDTO.Info> selectAllByMember(MemberDTO.Info member) {
+		return scoreRepository.findAllByMemberIdAndStatus(member.getId(), Status.REGISTER)
+		  .stream().map(scoreMapper::toInfo).toList();
+  }
 
 	public List<ScoreDTO.Info> getEvaluationsInProgress(MemberDTO.Info member) {
 		List<Score> evaluationsInProgress = new ArrayList<>();
@@ -332,7 +338,6 @@ public class ScoreService {
 	private void addEvaluation(List<Score> evaluationsInProgress, Long memberId, RatingType ratingType) {
 		scoreRepository.findFirstByMemberIdAndRatingTypeAndStatusOrderByIdDesc(memberId, ratingType, Status.REGISTER)
 				.ifPresent(evaluationsInProgress::add);
-
 	}
 
 }

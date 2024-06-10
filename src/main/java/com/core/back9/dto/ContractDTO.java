@@ -176,4 +176,28 @@ public class ContractDTO {
 		private double averageVacancyRate; // 비교 공실률
 	}
 
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class InfoWithRoom {
+		private Long id;
+		private RoomDTO.InfoWithBuilding room;
+		private LocalDate startDate;
+		private LocalDate endDate;
+		private LocalDate checkOut;
+		private Long deposit;
+		private Long rentalPrice;
+		private ContractStatus contractStatus;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class InfoWithRoomList {
+		private Long count;
+		private List<InfoWithRoom> infoWithRoomList;
+	}
+
 }
