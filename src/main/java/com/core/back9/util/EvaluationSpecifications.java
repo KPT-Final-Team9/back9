@@ -12,7 +12,7 @@ import java.util.List;
 
 public class EvaluationSpecifications {
 
-    public static Specification<Score> isCompleted() {
+    public static Specification<Score> isEvaluationCompleted() {
         return (Root<Score> score, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) ->
                 criteriaBuilder.greaterThanOrEqualTo(score.get("score"), 0);
     }
