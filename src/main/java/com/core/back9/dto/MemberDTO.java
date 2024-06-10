@@ -89,6 +89,14 @@ public class MemberDTO {
         private TenantDTO.Info tenant;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+
+        public boolean isUser() {
+            return this.role == Role.USER;
+        }
+
+        public boolean isOwner() {
+            return this.role == Role.OWNER;
+        }
     }
 
     @AllArgsConstructor

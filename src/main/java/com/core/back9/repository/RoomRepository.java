@@ -72,4 +72,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
 	List<Room> findAllByBuildingIdAndMemberIdAndStatus(Long buildingId, Long MemberId, Status status);
 
+	Optional<Room> findFirstByIdAndStatus(Long roomId, Status status);
+
+	default Room getValidRoomByIdAndStatus(Long roomId, Status status) {
+		return findFirstByIdAndStatus(roomId, status)
+		  .orElseThrow(() -> new ApiException(ApiErrorCode.NOT_FOUND_VALID_ROOM));
+	}
+
 }
