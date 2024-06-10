@@ -84,9 +84,9 @@ public class SwaggerConfig {
     private Map<String, String> getServerUrlMap(String[] activeProfiles) {
         Map<String, String> urlSetting = new HashMap<>();
 
-        if(List.of(activeProfiles).contains("dev")) {
+        if (List.of(activeProfiles).contains("dev")) {
             urlSetting.put("https://officedev.site", "dev server");
-        } else if(List.of(activeProfiles).contains("local")) {
+        } else if (List.of(activeProfiles).contains("local")) {
             urlSetting.put("http://localhost:8080", "local server");
         } else {
             urlSetting.put("http://localhost:8080", "test server");

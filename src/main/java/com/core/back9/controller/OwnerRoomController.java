@@ -92,6 +92,15 @@ public class OwnerRoomController {
 		return ResponseEntity.ok(roomService.updateRepresent(member, buildingId, roomId, pageable));
 	}
 
+	@Operation(summary = "대표 호실 조회")
+	@GetMapping("/represent")
+	public ResponseEntity<RoomDTO.Info> getRepresent(
+			@AuthMember MemberDTO.Info member,
+			@PathVariable Long buildingId
+	) {
+		return ResponseEntity.ok(roomService.getRepresent(buildingId, member));
+	}
+
 	@Operation(summary = "평가 레코드 발행",
 	  description = "해당 호실에 계약중인 입주사의 유효한 입주자에게 평가 레코드를 발생시킨다.")
 	@PatchMapping("/{roomId}/scores-generate")

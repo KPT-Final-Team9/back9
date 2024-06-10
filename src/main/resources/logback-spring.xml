@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%green(%d{yyyy-MM-dd HH:mm:ss.SSS, ${logback.timezone:-Asia/Seoul}}) %magenta([%thread]) %highlight(%5level) %-50logger{50} - %yellow(%msg%n)"/>
+    <property name="FILE_LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS, ${logback.timezone:-Asia/Seoul}} [%thread] %5level %logger - %msg%n"/>
+
+    <include resource="console-appender.xml"/>
+    <!--    <include resource="http-appender.xml"/>-->
+    <include resource="error-appender.xml"/>
+
+    <!-- 로그 레벨 -->
+    <!--
+    	1) ERROR : 오류 메시지 표시
+        2) WARN  : 경고성 메시지 표시
+        3) INFO  : 정보성 메시지 표시
+        4) DEBUG : 디버깅하기 위한 메시지 표시
+        5) TRACE :  Debug보다 훨씬 상세한 메시지 표시
+
+        아래에서는 info로 설정하였는데, 이 경우엔 INFO 보다 위에 있는 DEBUG와 TRACE는 표시하지 않는다.
+    -->
+    <logger name="ExceptionLogger" level="WARN" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ERROR"/>
+    </logger>
+
+    <!--    <logger name="HttpLogger" level="INFO" additivity="false">-->
+    <!--        <appender-ref ref="HTTP"/>-->
+    <!--    </logger>-->
+
+    <springProfile name="local,dev,test">
+        <root level="info">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+</configuration>

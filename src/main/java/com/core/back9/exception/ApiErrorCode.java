@@ -33,6 +33,8 @@ public enum ApiErrorCode {
 	ALREADY_COMPLETED_EVALUATION(HttpStatus.BAD_REQUEST.value(), "이미 완료된 평가입니다."),
     START_DATE_BEFORE_ERROR(HttpStatus.BAD_REQUEST.value(), "시작일이 끝일보다 이른 일자일 수 없습니다."),
     DUPLICATE_COMPANYNUMBER(HttpStatus.BAD_REQUEST.value(), "중복된 사업자 번호 입니다."),
+    INVALID_REQUEST_CONTENT(HttpStatus.BAD_REQUEST.value(), "잘못된 형식의 요청이 있거나 유효성 검증에 실패했습니다."),
+    TYPE_MISMATCH(HttpStatus.BAD_REQUEST.value(), "잘못된 요청 타입입니다."),
 
 	THREAD_POOL_REJECTED(HttpStatus.REQUEST_TIMEOUT.value(), "더 이상 요청을 처리 할 수 없습니다"),
 
