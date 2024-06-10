@@ -8,7 +8,6 @@ import com.core.back9.service.BuildingService;
 import com.core.back9.service.ScoreService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,11 +25,10 @@ public class OwnerBuildingController {
 	@Operation(summary = "전체 빌딩 정보 조회",
 	  description = "로그인 한 소유자(owner)의 전체 빌딩 정보를 조회한다.")
 	@GetMapping("")
-	public ResponseEntity<Page<BuildingDTO.Info>> getAll(
-	  @AuthMember MemberDTO.Info member,
-	  Pageable pageable
+	public ResponseEntity<List<BuildingDTO.SimpleInfo>> getAll(
+	  @AuthMember MemberDTO.Info member
 	) {
-		return ResponseEntity.ok(buildingService.selectAll(member, pageable));
+		return ResponseEntity.ok(buildingService.selectAll(member));
 	}
 
 	@Operation(summary = "단일 빌딩 정보 조회",

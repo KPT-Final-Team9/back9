@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -50,5 +51,14 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
 		"""
 	)
 	Page<Building> findAllBuildingWithRoomsByBuildingIdAndMemberId(@Param("memberId") Long memberId, Pageable pageable);
+
+	@Query(
+	  """
+		SELECT b FROM Building b
+		JOIN FETCH b.roomList r
+		WHERE r.member.id = :memberId
+		"""
+	)
+	List<Building> findAllBuildingWithRoomsByBuildingIdAndMemberId(@Param("memberId") Long memberId);
 
 }
