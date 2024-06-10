@@ -179,4 +179,11 @@ public class RoomService {
 		return settingRepository.save(newSetting);
 	}
 
+	public RoomDTO.Info getRepresent(Long buildingId, MemberDTO.Info member) {
+
+		Room representRoom = roomRepository.getValidRepresentRoom(buildingId, member.getId());
+
+		return roomMapper.toInfo(representRoom);
+
+	}
 }

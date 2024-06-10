@@ -57,9 +57,9 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 	@Query(
 	  """
 		SELECT r
-		FROM Room r 
-		WHERE r.building.id = :buildingId 
-		AND r.member.id = :memberId 
+		FROM Room r
+		WHERE r.building.id = :buildingId
+		AND r.member.id = :memberId
 		AND r.represent = true
 		"""
 	)
