@@ -85,7 +85,7 @@ public class SwaggerConfig {
         Map<String, String> urlSetting = new HashMap<>();
 
         if (List.of(activeProfiles).contains("dev")) {
-            urlSetting.put("https://officedev.site", "dev server");
+            urlSetting.put("https://officeback.site", "dev server");
         } else if (List.of(activeProfiles).contains("local")) {
             urlSetting.put("http://localhost:8080", "local server");
         } else {
