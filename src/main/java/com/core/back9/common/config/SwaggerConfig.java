@@ -8,11 +8,17 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Configuration
 @OpenAPIDefinition(
@@ -26,7 +32,10 @@ import java.util.List;
                 version = "v1"
         )
 )
+@RequiredArgsConstructor
 public class SwaggerConfig {
+
+    private final Environment env;
 
     String root = "com.core.back9.controller";
     String actuator = "com.core.back9.common.actuator";
@@ -51,8 +60,42 @@ public class SwaggerConfig {
                 .in(SecurityScheme.In.HEADER) // 헤더에 위치
                 .name("Authorization"); // 이름은 Authorization
 
+        List<Tag> tagList = getTagList();
 
-        List<Tag> tagList = List.of(
+        String[] activeProfiles = env.getActiveProfiles();
+        Map<String, String> urlSetting = getServerUrlMap(activeProfiles);
+
+        Map.Entry<String, String> entry = urlSetting.entrySet().iterator().next();
+        String url = entry.getKey();
+        String description = entry.getValue();
+
+        SecurityRequirement securityRequirement = new SecurityRequirement()
+                .addList("Bearer Token");
+
+        return new OpenAPI()
+                .tags(tagList)
+                .servers(List.of(
+                        new Server().url(url).description(description)
+                ))
+                .components(new Components().addSecuritySchemes("Bearer Token", apiKey))
+                .addSecurityItem(securityRequirement);
+    }
+
+    private Map<String, String> getServerUrlMap(String[] activeProfiles) {
+        Map<String, String> urlSetting = new HashMap<>();
+
+        if(List.of(activeProfiles).contains("dev")) {
+            urlSetting.put("https://officedev.site", "dev server");
+        } else if(List.of(activeProfiles).contains("local")) {
+            urlSetting.put("http://localhost:8080", "local server");
+        } else {
+            urlSetting.put("http://localhost:8080", "test server");
+        }
+        return urlSetting;
+    }
+
+    private List<Tag> getTagList() {
+        return List.of(
                 new Tag().name("member-public-controller").description("<b>[공통]</b> 회원가입 & 로그인 API"),
                 new Tag().name("building-controller").description("<b>[관리자(ADMIN), 공통]</b> 빌딩 API"),
                 new Tag().name("owner-building-controller").description("<b>[관리자(ADMIN), 공통]</b> 빌딩 API"),
@@ -64,17 +107,6 @@ public class SwaggerConfig {
                 new Tag().name("tenant-public-controller").description("<b>[공통]</b> 입주사 정보 조회 API"),
                 new Tag().name("user-score-controller").description("<b>[입주자(USER)]</b> 입주자 호실 평가 API")
         );
-
-        SecurityRequirement securityRequirement = new SecurityRequirement()
-                .addList("Bearer Token");
-        return new OpenAPI()
-                .tags(tagList)
-                .servers(List.of(
-                        new Server().url("https://officeback.site").description("개발 서버용"),
-                        new Server().url("http://localhost:8080").description("로컬 서버용")
-                ))
-                .components(new Components().addSecuritySchemes("Bearer Token", apiKey))
-                .addSecurityItem(securityRequirement);
     }
 
 }
