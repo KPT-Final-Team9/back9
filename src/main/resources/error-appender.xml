@@ -1,0 +1,20 @@
+<included>
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch> <!-- 해당 레벨만 기록 -->
+            <onMismatch>ACCEPT</onMismatch> <!-- 상위 수준의 레벨에 대한 기록을 원하면 ACCEPT 로 하면 기록됨 -->
+        </filter>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./logs/warn-error-logs.%d{yyyy-MM-dd}.%i.log</fileNamePattern> <!-- %i : rolling index 설정 -->
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>30</maxHistory> <!-- 최대 저장 기한 -->
+            <totalSizeCap>25MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+</included>
