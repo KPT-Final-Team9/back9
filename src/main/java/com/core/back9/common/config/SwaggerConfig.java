@@ -51,8 +51,6 @@ public class SwaggerConfig {
                 .in(SecurityScheme.In.HEADER) // 헤더에 위치
                 .name("Authorization"); // 이름은 Authorization
 
-        Server server = new Server();
-        server.setUrl("https://officeback.site");
 
         List<Tag> tagList = List.of(
                 new Tag().name("member-public-controller").description("<b>[공통]</b> 회원가입 & 로그인 API"),
@@ -71,7 +69,10 @@ public class SwaggerConfig {
                 .addList("Bearer Token");
         return new OpenAPI()
                 .tags(tagList)
-                .servers(List.of(server))
+                .servers(List.of(
+                        new Server().url("https://officeback.site").description("개발 서버용"),
+                        new Server().url("http://localhost:8080").description("로컬 서버용")
+                ))
                 .components(new Components().addSecuritySchemes("Bearer Token", apiKey))
                 .addSecurityItem(securityRequirement);
     }
