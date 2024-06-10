@@ -32,6 +32,8 @@ public interface BuildingMapper {
 	)
 	BuildingDTO.Info toInfo(Building building, Pageable pageable);
 
+	BuildingDTO.SimpleInfo toSimpleInfo(Building building);
+
 	@Named("toRoomPage")
 	default Page<RoomDTO.Info> toRoomPage(List<Room> roomList, Pageable pageable) {
 		return roomMapper.toInfoPage(roomList, pageable);

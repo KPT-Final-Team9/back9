@@ -50,4 +50,13 @@ public class BuildingDTO {
 		private Page<RoomDTO.Info> roomPage;
 	}
 
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
+	public static class SimpleInfo {
+		private Long id;
+		private String name;
+	}
+
 }

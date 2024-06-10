@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Transactional
 @Service
@@ -39,10 +41,10 @@ public class BuildingService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<BuildingDTO.Info> selectAll(MemberDTO.Info member, Pageable pageable) {
+	public List<BuildingDTO.SimpleInfo> selectAll(MemberDTO.Info member) {
 
-		return buildingRepository.findAllBuildingWithRoomsByBuildingIdAndMemberId(member.getId(), pageable)
-		  .map(building -> buildingMapper.toInfo(building, pageable));
+		return buildingRepository.findAllBuildingWithRoomsByBuildingIdAndMemberId(member.getId())
+		  .stream().map(buildingMapper::toSimpleInfo).toList();
 
 	}
 
