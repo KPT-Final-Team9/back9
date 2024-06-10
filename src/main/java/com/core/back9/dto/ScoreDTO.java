@@ -63,6 +63,21 @@ public class ScoreDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
+	public static class InfoWithCompletionStatus {
+		private Long id;
+		private int score;
+		private String comment;
+		private boolean bookmark;
+		private RatingType ratingType;
+		private boolean completed;
+		private LocalDateTime createdAt;
+		private LocalDateTime updatedAt;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Builder
+	@Getter
 	public static class ScoreSearchRequest {
 		private LocalDate startDate;
 		private LocalDate endDate;

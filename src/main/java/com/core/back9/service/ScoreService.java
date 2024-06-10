@@ -32,6 +32,7 @@ import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Transactional
@@ -139,7 +140,7 @@ public class ScoreService {
     ) {
         Building building = buildingRepository.getValidBuildingWithIdOrThrow(buildingId, Status.REGISTER);
         Specification<Score> specification = Specification.where(null);
-        specification = specification.and(EvaluationSpecifications.isCompleted());
+        specification = specification.and(EvaluationSpecifications.isEvaluationCompleted());
         specification = specification.and(EvaluationSpecifications.hasRatingType(ratingType));
 
         if (roomId != null) {
@@ -262,7 +263,7 @@ public class ScoreService {
             LocalDateTime[] startDayAndEndDay = dateUtils.getStartDayAndEndDayByYearAndQuarter(year, quarter);
 
             Specification<Score> specification = Specification.where(null);
-            specification = specification.and(EvaluationSpecifications.isCompleted());
+            specification = specification.and(EvaluationSpecifications.isEvaluationCompleted());
             specification = specification.and(EvaluationSpecifications.isUpdatedBetween(
                     startDayAndEndDay[0], startDayAndEndDay[1]
             ));
@@ -278,7 +279,7 @@ public class ScoreService {
         LocalDateTime[] startDayAndEndDay = dateUtils.getStartDayAndEndDayByYearAndQuarter(year, quarter);
 
         Specification<Score> specification = Specification.where(null);
-        specification = specification.and(EvaluationSpecifications.isCompleted());
+        specification = specification.and(EvaluationSpecifications.isEvaluationCompleted());
         specification = specification.and(EvaluationSpecifications.isUpdatedBetween(
                 startDayAndEndDay[0], startDayAndEndDay[1]
         ));
@@ -324,7 +325,7 @@ public class ScoreService {
                 .stream().map(scoreMapper::toInfo).toList();
     }
 
-    public List<ScoreDTO.Info> getEvaluationsInProgress(MemberDTO.Info member) {
+    public List<ScoreDTO.InfoWithCompletionStatus> getEvaluationsInProgress(MemberDTO.Info member) {
         List<Score> evaluationsInProgress = new ArrayList<>();
         Long memberId = member.getId();
 
@@ -332,7 +333,12 @@ public class ScoreService {
         addEvaluation(evaluationsInProgress, memberId, RatingType.MANAGEMENT);
         addEvaluation(evaluationsInProgress, memberId, RatingType.COMPLAINT);
 
-        return evaluationsInProgress.stream().map(scoreMapper::toInfo).toList();
+        return evaluationsInProgress.stream()
+                .map(evaluation -> {
+                    boolean completed = evaluation.getScore() >= 0;
+                    return scoreMapper.toInfoWithCompletionStatus(evaluation, completed);
+                })
+                .collect(Collectors.toList());
     }
 
     private void addEvaluation(List<Score> evaluationsInProgress, Long memberId, RatingType ratingType) {

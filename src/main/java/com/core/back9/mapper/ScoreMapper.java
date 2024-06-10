@@ -22,6 +22,9 @@ public interface ScoreMapper {
 
     ScoreDTO.Info toInfo(Score score);
 
+    @Mapping(source = "completed", target = "completed")
+    ScoreDTO.InfoWithCompletionStatus toInfoWithCompletionStatus(Score score, boolean completed);
+
     @Mapping(source = "year", target = "selectedYear")
     @Mapping(source = "quarter", target = "selectedQuarter")
     @Mapping(target = "totalAvg", expression = "java(calculateTotalAvg(scores))")
