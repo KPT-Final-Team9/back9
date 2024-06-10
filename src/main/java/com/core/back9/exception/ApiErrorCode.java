@@ -16,8 +16,10 @@ public enum ApiErrorCode {
     NOT_FOUND_VALID_PRINCIPAL(HttpStatus.NOT_FOUND.value(), "유효한 주체를 찾을 수 없습니다."),
     NOT_FOUND_VALID_EVALUATION(HttpStatus.NOT_FOUND.value(), "유효한 평가를 찾을 수 없습니다."),
     NOT_FOUND_VALID_COMPLAINT(HttpStatus.NOT_FOUND.value(), "유효한 민원을 찾을 수 없습니다."),
+    NOT_FOUND_VALID_ALARM(HttpStatus.NOT_FOUND.value(), "유효한 알림을 찾을 수 없습니다."),
 
     ROOM_ALREADY_ASSIGNED(HttpStatus.BAD_REQUEST.value(), "이미 계약된 호실이 존재합니다."),
+    ALREADY_COMPLETED_COMPLAINT(HttpStatus.BAD_REQUEST.value(), "이미 처리된 민원입니다."),
     CONTRACT_NOT_IN_PROGRESS(HttpStatus.BAD_REQUEST.value(), "계약이 이행 중인 상태가 아닙니다."),
     INVALID_CHANGE(HttpStatus.BAD_REQUEST.value(), "유효한 변경이 아닙니다."),
     DELETE_FAIL(HttpStatus.BAD_REQUEST.value(), "삭제가 완료되지 않았습니다."),

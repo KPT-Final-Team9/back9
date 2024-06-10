@@ -52,6 +52,18 @@ public class Score extends BaseEntity {
 		this.status = status;
 	}
 
+	public static Score createComplaint(Room room, Member member) {
+		return Score.builder()
+		  .score(-1)
+		  .comment("")
+		  .bookmark(false)
+		  .ratingType(RatingType.COMPLAINT)
+		  .room(room)
+		  .member(member)
+		  .status(Status.REGISTER)
+		  .build();
+	}
+
 	public void updateScore(ScoreDTO.UpdateRequest updateRequest) {
 		this.score = updateRequest.getScore();
 		this.comment = updateRequest.getComment();
