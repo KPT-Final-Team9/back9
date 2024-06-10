@@ -23,15 +23,6 @@ public class ComplaintDTO {
 	@NoArgsConstructor
 	@Builder
 	@Getter
-	public static class CompletedRequest {
-		private ComplaintStatus complaintStatus;
-		private String completedMessage;
-	}
-
-	@AllArgsConstructor
-	@NoArgsConstructor
-	@Builder
-	@Getter
 	public static class Info {
 		private Long id;
 		private String complaintMessage;

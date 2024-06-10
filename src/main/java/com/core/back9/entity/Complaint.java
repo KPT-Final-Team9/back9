@@ -41,10 +41,7 @@ public class Complaint extends BaseEntity {
 	private String completedMessage;
 
 	@Builder
-	public Complaint(Room room, Member member,
-					 String complaintMessage, Status status,
-					 ComplaintStatus complaintStatus, String completedMessage
-	) {
+	public Complaint(Room room, Member member, String complaintMessage, Status status, ComplaintStatus complaintStatus, String completedMessage) {
 		this.room = room;
 		this.member = member;
 		this.complaintMessage = complaintMessage;
@@ -53,33 +50,51 @@ public class Complaint extends BaseEntity {
 		this.completedMessage = completedMessage;
 	}
 
+	public static Complaint createOf(Room room, Member member, String complaintMessage) {
+		return Complaint.builder()
+		  .room(room)
+		  .member(member)
+		  .complaintMessage(complaintMessage)
+		  .status(Status.REGISTER)
+		  .complaintStatus(ComplaintStatus.IN_PROGRESS)
+		  .build();
+	}
+
 	public Complaint updateComplaintStatus(ComplaintStatus complaintStatus) {
 		this.complaintStatus = complaintStatus;
 		return this;
 	}
 
-	public Complaint completeComplaint(MemberDTO.Info member, String completeMessage) {
+	public void completeComplaint(MemberDTO.Info member, String completeMessage) {
 		if (member.isOwner()) {
-			this.complaintStatus = ComplaintStatus.COMPLETED;
-			if (completeMessage == null || completeMessage.isEmpty()) {
-				this.completedMessage = "요청하신 민원이 처리 완료됐습니다.";
-			} else {
-				this.completedMessage = completeMessage;
+			if (this.complaintStatus == ComplaintStatus.COMPLETED
+			  || this.complaintStatus == ComplaintStatus.REJECTED) {
+				this.complaintStatus = ComplaintStatus.COMPLETED;
+				if (completeMessage == null || completeMessage.isEmpty()) {
+					this.completedMessage = "요청하신 민원이 처리 완료됐습니다.";
+				} else {
+					this.completedMessage = completeMessage;
+				}
+				return;
 			}
-			return this;
+			throw new ApiException(ApiErrorCode.ALREADY_COMPLETED_COMPLAINT);
 		}
 		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
 	}
 
-	public Complaint rejectComplaint(MemberDTO.Info member, String rejectMessage) {
+	public void rejectComplaint(MemberDTO.Info member, String rejectMessage) {
 		if (member.isOwner()) {
-			this.complaintStatus = ComplaintStatus.REJECTED;
-			if (rejectMessage == null || rejectMessage.isEmpty()) {
-				this.completedMessage = "요청하신 민원이 반려되었습니다.";
-			} else {
-				this.completedMessage = rejectMessage;
+			if (this.complaintStatus == ComplaintStatus.COMPLETED
+			  || this.complaintStatus == ComplaintStatus.REJECTED) {
+				this.complaintStatus = ComplaintStatus.REJECTED;
+				if (rejectMessage == null || rejectMessage.isEmpty()) {
+					this.completedMessage = "요청하신 민원이 반려되었습니다.";
+				} else {
+					this.completedMessage = rejectMessage;
+				}
+				return;
 			}
-			return this;
+			throw new ApiException(ApiErrorCode.ALREADY_COMPLETED_COMPLAINT);
 		}
 		throw new ApiException(ApiErrorCode.DO_NOT_HAVE_PERMISSION);
 	}
