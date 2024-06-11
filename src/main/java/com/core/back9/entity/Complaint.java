@@ -11,11 +11,13 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "complaints")
+@Where(clause = "status = 'REGISTER'")
 public class Complaint extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -67,8 +69,8 @@ public class Complaint extends BaseEntity {
 
 	public void completeComplaint(MemberDTO.Info member, String completeMessage) {
 		if (member.isOwner()) {
-			if (this.complaintStatus == ComplaintStatus.COMPLETED
-			  || this.complaintStatus == ComplaintStatus.REJECTED) {
+			if (this.complaintStatus != ComplaintStatus.COMPLETED
+			  && this.complaintStatus != ComplaintStatus.REJECTED) {
 				this.complaintStatus = ComplaintStatus.COMPLETED;
 				if (completeMessage == null || completeMessage.isEmpty()) {
 					this.completedMessage = "요청하신 민원이 처리 완료됐습니다.";
@@ -84,8 +86,8 @@ public class Complaint extends BaseEntity {
 
 	public void rejectComplaint(MemberDTO.Info member, String rejectMessage) {
 		if (member.isOwner()) {
-			if (this.complaintStatus == ComplaintStatus.COMPLETED
-			  || this.complaintStatus == ComplaintStatus.REJECTED) {
+			if (this.complaintStatus != ComplaintStatus.COMPLETED
+			  && this.complaintStatus != ComplaintStatus.REJECTED) {
 				this.complaintStatus = ComplaintStatus.REJECTED;
 				if (rejectMessage == null || rejectMessage.isEmpty()) {
 					this.completedMessage = "요청하신 민원이 반려되었습니다.";
