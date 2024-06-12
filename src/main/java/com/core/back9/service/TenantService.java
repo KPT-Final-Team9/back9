@@ -37,7 +37,7 @@ public class TenantService {
         Optional<Tenant> selectedTenant = tenantRepository.findByCompanyNumberAndStatus(request.getCompanyNumber(), Status.REGISTER);
 
         if(selectedTenant.isPresent()) {
-            throw new ApiException(ApiErrorCode.DUPLICATE_COMPANYNUMBER);
+            throw new ApiException(ApiErrorCode.DUPLICATE_COMPANY_NUMBER);
         }
 
         Tenant tenant = tenantMapper.toEntity(request);
